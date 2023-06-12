@@ -4,8 +4,8 @@
   "homepage": ".",
   "private": true,
   "dependencies": {
-    "ketcher-react": "2.8.0",
-    "ketcher-standalone": "2.8.0",
+    "ketcher-react": "2.10.0",
+    "ketcher-standalone": "2.10.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
