@@ -1,0 +1,146 @@
+name: Test WASM build, prepare web application and deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  test_and_deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      #
+      # Compile INCHI_EXE and run the test suite
+      #
+      - name: Setup emsdk
+        uses: mymindstorm/setup-emsdk@v12
+        with:
+          version: 3.1.31
+          actions-cache-folder: 'emsdk-cache'
+
+      - name: Verify emsdk
+        run: |
+          emcc -v
+
+      - name: Verify Node.js version
+        run: |
+          node -v
+
+      - name: Checkout this repository
+        uses: actions/checkout@v3
+        with:
+          path: './InChI-Web-Demo'
+
+      - name: Checkout InChI 1.0.6 repository
+        uses: actions/checkout@v3
+        with:
+          path: './InChI_1_06'
+          repository: 'IUPAC-InChI/InChI_1_06'
+
+      - name: Patch InChI_1_06's util.c
+        run: |
+          cd $GITHUB_WORKSPACE/InChI_1_06
+          git apply $GITHUB_WORKSPACE/InChI-Web-Demo/inchi/util.c.patch
+
+      - name: Compile InChI_1_06's INCHI_EXE
+        # Creates inchi-1.js and inchi-1.wasm in $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_EXE/bin/wasm
+        run: |
+          cd $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_EXE/inchi-1/gcc
+          mkdir -p ../../bin/wasm
+          make -j C_COMPILER=emcc CPP_COMPILER=em++ LINKER=em++ LINKER_OPTIONS="-lnodefs.js -lnoderawfs.js -sSTACK_SIZE=1048576" BIN_DIR=../../bin/wasm INCHI_EXECUTABLE_NAME=inchi-1.js
+
+      - name: Prepare InChI_1_06's tests
+        run: |
+          cd $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-TEST/test
+          unzip test-datasets.zip -d test-datasets
+          unzip test-results.zip -d expected-test-results
+          cp $GITHUB_WORKSPACE/InChI-Web-Demo/inchi/INCHI-1-TEST/inchify_*.sh .
+
+      - name: Run InChI_1_06's tests and compare test results with expected results
+        run: |
+          cd $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-TEST/test
+          ./inchify_InChI_TestSet.sh "node ../../INCHI-1-SRC/INCHI_EXE/bin/wasm/inchi-1.js" test-datasets test-results test-logs
+          ./inchify_zzp.sh "node ../../INCHI-1-SRC/INCHI_EXE/bin/wasm/inchi-1.js" test-datasets test-results test-logs
+          diff -q --strip-trailing-cr test-results/ expected-test-results/ && echo "Tests are OK!"
+
+      #
+      # Build InChI WASM module
+      #
+      - name: Compile InChI_1_06 WebAssembly module (INCHI_WEB)
+        # Creates inchi-web106.js and inchi-web106.wasm in $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_WEB
+        run: |
+          cd $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC
+          cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/inchi/INCHI_WEB .
+          cd INCHI_WEB
+          make -j INCHI_WEB_NAME=inchi-web106 MODULE_NAME=inchiModule106
+
+      #
+      # Build Ketcher
+      #
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19
+          cache: 'yarn'
+          cache-dependency-path: ${{github.workspace}}/InChI-Web-Demo/ketcher/react-app/yarn.lock
+
+      - name: Verify Node.js version
+        run: |
+          node -v
+
+      - name: Build Ketcher React App
+        # creates build directoy in $GITHUB_WORKSPACE/InChI-Web-Demo/ketcher/react-app
+        run: |
+          cd $GITHUB_WORKSPACE/InChI-Web-Demo/ketcher/react-app
+          yarn install --frozen-lockfile
+          yarn run build
+
+      #
+      # Bootstrap
+      #
+      - name: Download Bootstrap
+        run: |
+          cd $GITHUB_WORKSPACE
+          wget https://github.com/twbs/bootstrap/releases/download/v5.2.3/bootstrap-5.2.3-dist.zip
+          wget https://github.com/twbs/icons/releases/download/v1.10.3/bootstrap-icons-1.10.3.zip
+          unzip bootstrap-5.2.3-dist.zip -d bootstrap
+          unzip bootstrap-icons-1.10.3.zip -d bootstrap-icons
+
+      #
+      # GitHub pages deployment
+      #
+      - name: Collect artifacts for deployment
+        run: |
+          cd $GITHUB_WORKSPACE
+          cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/pages .
+          cd pages
+          mkdir inchi
+          cp $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_WEB/inchi-web106.* inchi
+          mkdir ketcher
+          cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/ketcher/react-app/build/* ketcher
+          cp -R $GITHUB_WORKSPACE/bootstrap .
+          cp -R $GITHUB_WORKSPACE/bootstrap-icons .
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ${{github.workspace}}/pages
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1

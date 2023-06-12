@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>InChI Web Demo</title>
+
+    <!-- InChI modules -->
+    <script type="text/javascript" src="inchi/inchi-web106.js"></script>
+
+    <link href="css/index.css" rel="stylesheet">
+    <link href="bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="bootstrap/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <link href="bootstrap-icons/bootstrap-icons-1.10.3/bootstrap-icons.css" rel="stylesheet" integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e" crossorigin="anonymous">
+  </head>
+  <body onload="onBodyLoad()">
+    <div class="container" style="margin-bottom: 2rem;">
+      <div class="row mt-1">
+        <div class="col-lg-3">
+          <a href="https://www.inchi-trust.org/">
+            <img style="height:80px;width:auto;" src="img/InChI-logo2.png">
+          </a>
+        </div>
+        <h1 class="col-lg-9 mt-auto">InChI Web Demo</h1>
+      </div>
+      <noscript>You need to enable JavaScript!</noscript>
+
+      <ul class="nav nav-tabs mt-1" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="tab1" data-bs-toggle="tab" data-bs-target="#tab1-pane" type="button" role="tab" aria-controls="tab1-pane" aria-selected="true">Draw structure and convert to InChI</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab2" data-bs-toggle="tab" data-bs-target="#tab2-pane" type="button" role="tab" aria-controls="tab2-pane" aria-selected="false">Convert Molfile to InChI</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab3" data-bs-toggle="tab" data-bs-target="#tab3-pane" type="button" role="tab" aria-controls="tab3-pane" aria-selected="false">Convert InChI to structure</button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+
+        <div class="tab-pane fade show active" id="tab1-pane" role="tabpanel" aria-labelledby="tab1" tabindex="0">
+          <div class="row mt-1">
+            <div class="col-lg-8">
+              <div class="ratio" style="--bs-aspect-ratio:62%;min-height:450px;">
+                <iframe id="tab1-ketcher" class="w-100" src="ketcher/index.html" onload="onKetcherLoaded('tab1-ketcher', () => updateTab1())"></iframe>
+              </div>
+            </div>
+            <div class="col-lg-4 mt-auto">
+              <div id="tab1-options"></div>
+              <div class="mt-2">
+                <label class="form-check-label mb-2" for="tab1-inchiversion">Select InChI version</label>
+                <select id="tab1-inchiversion" class="form-select" onchange="updateTab1()"></select>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+            <div class="border-bottom py-1 px-3">
+              <small class="font-monospace">InChI</small>
+            </div>
+            <pre id="tab1-inchi" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
+          </div>
+          <div class="row mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+            <div class="border-bottom py-1 px-3">
+              <small class="font-monospace">InChIKey</small>
+            </div>
+            <pre id="tab1-inchikey" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
+          </div>
+          <div class="row mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+            <div class="border-bottom py-1 px-3">
+              <small class="font-monospace">AuxInfo</small>
+            </div>
+            <pre id="tab1-auxinfo" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
+          </div>
+          <div class="row mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+            <div class="border-bottom py-1 px-3">
+              <small class="font-monospace">Warnings/Errors</small>
+            </div>
+            <pre id="tab1-logs" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="tab2-pane" role="tabpanel" aria-labelledby="tab2" tabindex="0">
+          <div class="row mt-1">
+            <div class="col-lg-8">
+              <div class="ratio" style="--bs-aspect-ratio:62%;min-height:450px;">
+                <div class="w-100">
+                  <textarea id="tab2-molfileTextarea" class="form-control pe-5 h-100" style="resize:none;" placeholder="Paste or drag-and-drop a Molfile here" ondragover="onTextareaDragover(event)" ondrop="onMolfileTextareaDrop(event)" oninput="updateTab2()"></textarea>
+                  <button class="btn btn-outline-secondary border-0" style="position:absolute;top:10px;right:10px;" onclick="document.getElementById('tab2-molfileTextarea').value = '';updateTab2()"><i class="bi bi-trash"></i></button>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4 mt-auto">
+              <div id="tab2-options"></div>
+              <div class="mt-2">
+                <label class="form-check-label mb-2" for="tab2-inchiversion">Select InChI version</label>
+                <select id="tab2-inchiversion" class="form-select" onchange="updateTab2()"></select>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+            <div class="border-bottom py-1 px-3">
+              <small class="font-monospace">InChI</small>
+            </div>
+            <pre id="tab2-inchi" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
+          </div>
+          <div class="row mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+            <div class="border-bottom py-1 px-3">
+              <small class="font-monospace">InChIKey</small>
+            </div>
+            <pre id="tab2-inchikey" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
+          </div>
+          <div class="row mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+            <div class="border-bottom py-1 px-3">
+              <small class="font-monospace">AuxInfo</small>
+            </div>
+            <pre id="tab2-auxinfo" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
+          </div>
+          <div class="row mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+            <div class="border-bottom py-1 px-3">
+              <small class="font-monospace">Warnings/Errors</small>
+            </div>
+            <pre id="tab2-logs" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="tab3-pane" role="tabpanel" aria-labelledby="tab3" tabindex="0">
+          <div class="row mt-1">
+            <div class="col-lg-8">
+              <div class="ratio" style="height:100px;">
+                <div class="w-100">
+                  <textarea id="tab3-inchiTextarea" class="form-control pe-5 h-100" style="resize:none;" placeholder="Paste an InChI string here&#10;e.g. InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H" oninput="updateTab3()"></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4 mt-auto">
+              <div class="mt-2">
+                <label class="form-check-label mb-2" for="tab3-inchiversion">Select InChI version</label>
+                <select id="tab3-inchiversion" class="form-select" onchange="updateTab3()"></select>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-1">
+            <div class="col-lg-8">
+              <div class="ratio" style="--bs-aspect-ratio:62%;min-height:450px;">
+                <iframe id="tab3-ketcher" class="w-100" src="ketcher/index.html"></iframe>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+            <div class="border-bottom py-1 px-3">
+              <small class="font-monospace">Warnings/Errors</small>
+            </div>
+            <pre id="tab3-logs" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+    <script src="index.js"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+diff --git a/INCHI-1-SRC/INCHI_BASE/src/util.c b/INCHI-1-SRC/INCHI_BASE/src/util.c
+index 373f03d..fe6d9bf 100644
+--- a/INCHI-1-SRC/INCHI_BASE/src/util.c
++++ b/INCHI-1-SRC/INCHI_BASE/src/util.c
+@@ -38,7 +38,7 @@
+ 
+ #include "mode.h"
+ 
+-#if defined(COMPILE_ANSI_ONLY) && defined(__APPLE__)
++#if defined(COMPILE_ANSI_ONLY) && (defined(__APPLE__) || defined(__EMSCRIPTEN__))
+ /*    For build under OSX, advice from Burt Leland */
+ #include "ichicomp.h"    /* Needed for __isascii define */
+ #endif
