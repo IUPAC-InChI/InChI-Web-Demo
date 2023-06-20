@@ -17,8 +17,8 @@
     <div class="container" style="margin-bottom: 2rem;">
       <div class="row mt-1">
         <div class="col-lg-3">
-          <a href="https://www.inchi-trust.org/">
-            <img style="height:80px;width:auto;" src="img/InChI-logo2.png">
+          <a href="https://www.inchi-trust.org/" target="_blank">
+            <img style="height:80px;width:auto;" src="img/InChI-logo2.png" alt="InChI Trust Logo">
           </a>
         </div>
         <h1 class="col-lg-9 mt-auto">InChI Web Demo</h1>
@@ -34,6 +34,9 @@
         </li>
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="tab3" data-bs-toggle="tab" data-bs-target="#tab3-pane" type="button" role="tab" aria-controls="tab3-pane" aria-selected="false">Convert InChI to structure</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tabAbout" data-bs-toggle="tab" data-bs-target="#tabAbout-pane" type="button" role="tab" aria-controls="tabAbout-pane" aria-selected="false">About</button>
         </li>
       </ul>
 
@@ -152,6 +155,60 @@
               <small class="font-monospace">Warnings/Errors</small>
             </div>
             <pre id="tab3-logs" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="tabAbout-pane" role="tabpanel" aria-labelledby="tabAbout" tabindex="0">
+          <div class="row mt-1">
+            <div class="col-lg-12">
+              <h2 class="mt-2 pb-2 mb-2 border-bottom">Funding</h2>
+              Development of this demo application has been supported by the following organizations:
+            </div>
+          </div>
+          <div class="row mt-5 mb-5">
+            <div class="col-lg-4">
+              The Volkswagen Foundation with the project <a href="https://portal.volkswagenstiftung.de/search/projectDetails.do?ref=98698" target="_blank"><i>Universal molecular syntax for sustainable machine learning applications</i></a>.
+            </div>
+            <div class="col-lg-3 offset-lg-1">
+              <a href="https://www.volkswagenstiftung.de" target="_blank">
+                <img style="width:100%;height:auto;" src="img/Logo_Volkswagenstiftung.svg" alt="Volkswagenstiftung Logo">
+              </a>
+            </div>
+          </div>
+          <hr>
+          <div class="row mt-5 mb-5">
+            <div class="col-lg-4">
+              <a href="https://www.nfdi4chem.de" target="_blank"><i>NFDI4Chem</i></a> funded by the German Research Foundation (project number <a href="https://gepris.dfg.de/gepris/projekt/441958208" target="_blank">441958208</a>).
+            </div>
+            <div class="col-lg-3 offset-lg-1">
+              <a href="http://www.dfg.de" target="_blank">
+                <img style="width:100%;height:auto;" src="img/dfg_logo_schriftzug_blau_foerderung_en.gif" alt="DFG Logo">
+              </a>
+            </div>
+            <div class="col-lg-3 offset-lg-1">
+              <a href="https://www.nfdi4chem.de" target="_blank">
+                <img style="width:100%;height:auto;" src="img/NFDI4Chem-Logo_mehrfarbig_schwarz.png" alt="NFDI4Chem Logo">
+              </a>
+            </div>
+          </div>
+          <hr>
+          <div class="row mt-5">
+            <div class="col-lg-4">
+              <i>DALIA</i> funded by the German Federal Ministry of Education and Research and Next Generation EU (funding ID <a href="https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=16DWWQP07B" target="_blank">16DWWQP07B</a>).
+            </div>
+            <div class="col-lg-3 offset-lg-1">
+              <a href="https://www.bmbf.de" target="_blank">
+                <img style="width:100%;height:auto;" src="img/Foerderhinweis_BMBF.jpg" alt="BMBF Logo">
+              </a>
+            </div>
+            <div class="col-lg-3 offset-lg-1">
+              <img style="width:100%;height:auto;" src="img/Dalia_Wortmarke_Kompakt_Blau_RGB.svg" alt="Dalia Logo">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-3 offset-lg-5">
+              <img style="width:100%;height:auto;" src="img/Foerderhinweis_EU_horizontal.jpg" alt="Next Generation EU Logo">
+            </div>
           </div>
         </div>
 
