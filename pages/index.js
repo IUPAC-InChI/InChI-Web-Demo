@@ -15,7 +15,6 @@ const availableInchiVersions = Object.keys(inchiModulePromises);
 /*
  * Page loaded:
  * - initialize user-selectable parameters
- * - enable tooltips
  */
 function onBodyLoad() {
   addInchiVersionsToSelect("tab1-inchiversion");
@@ -25,8 +24,6 @@ function onBodyLoad() {
   addInchiOptions("tab2-options", () => updateTab2());
 
   addInchiVersionsToSelect("tab3-inchiversion");
-
-  enableTooltips();
 }
 
 function addInchiVersionsToSelect(selectId) {
@@ -38,51 +35,41 @@ function addInchiVersionsToSelect(selectId) {
   });
 }
 
-// Tooltip texts are from InChI's API reference.
-const inchiOptions = [
-  { name: "NEWPSOFF", tooltip: "Both ends of wedge point to stereocenters" },
-  { name: "DoNotAddH", tooltip: "All hydrogens in input structure are explicit" },
-  { name: "SNon", tooltip: "Ignore stereo" },
-  { name: "SRel", tooltip: "Use relative stereo" },
-  { name: "SRac", tooltip: "Use racemic stereo" },
-  { name: "SUCF", tooltip: "Use Chiral Flag in MOL/SD file record: if On – use Absolute stereo, Off – use Relative stereo" },
-  { name: "SUU", tooltip: "Always indicate unknown/undefined stereo" },
-  { name: "SLUUD", tooltip: "Stereo labels for \“unknown\” and \“undefined\” are different, ‘u’ and ‘?’, resp." },
-  { name: "FixedH", tooltip: "Include reconnected metals results" },
-  { name: "RecMet", tooltip: "Include Fixed H layer" },
-  { name: "KET", tooltip: "Account for keto-enol tautomerism (experimental; extension to InChI 1)" },
-  { name: "15T", tooltip: "Account for 1,5-tautomerism (experimental; extension to InChI 1)" }
-];
+function addInchiOptions(targetDivId, updateFunction) {
+  const template = document.getElementById("inchiOptionsTemplate");
+  const clone = template.content.cloneNode(true);
 
-function addInchiOptions(divId, updateFunction) {
-  inchiOptions.forEach(option => {
-    const div = document.createElement("div");
-    div.classList.add("form-check", "mb-2");
-
-    const input = document.createElement("input");
-    input.id = divId + "-" + option["name"];
-    input.classList.add("form-check-input");
-    input.type = "checkbox";
-    input.value = option["name"];
-    input.addEventListener("change", updateFunction);
-
-    const label = document.createElement("label");
-    label.classList.add("form-check-label");
-    label.htmlFor = input.id;
-    label.innerHTML = option["name"];
-    label.setAttribute("data-bs-toggle", "tooltip");
-    label.setAttribute("data-bs-title", option["tooltip"]);
-    label.setAttribute("data-bs-placement", "right");
-
-    div.appendChild(input);
-    div.appendChild(label);
-    document.getElementById(divId).appendChild(div);
+  /*
+   * Reassign the name of the "stereoRadio" radio button group.
+   */
+  clone.querySelectorAll("input.form-check-input[type=\"radio\"][name=\"stereoRadio\"]").forEach(input => {
+    input.name = "stereoRadio-" + targetDivId;
   });
-}
 
-function enableTooltips() {
-  // https://getbootstrap.com/docs/5.3/components/tooltips/#enable-tooltips
-  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(elem => new bootstrap.Tooltip(elem));
+  /*
+   * Register an on-change event on the "Include Stereo" checkbox to switch the
+   * 'disabled' state of the inputs that cope with stereo options.
+   */
+  clone.getElementById("includeStereo").addEventListener("change", function() {
+    document.getElementById(targetDivId).querySelectorAll("input.form-check-input[data-inchi-stereo-option]").forEach(input => {
+      input.disabled = !this.checked;
+    });
+  });
+
+  /*
+   * Reassign ids of all <input> elements and change the target id of their
+   * <label> element accordingly. Also register an on-change event to call
+   * updateFunction.
+   */
+  clone.querySelectorAll("input.form-check-input").forEach(input => {
+    const newId = input.id + "-" + targetDivId;
+    input.id = newId;
+    input.nextElementSibling.htmlFor = newId;
+
+    input.addEventListener("change", updateFunction);
+  });
+
+  document.getElementById(targetDivId).appendChild(clone);
 }
 
 /*
@@ -155,6 +142,9 @@ async function updateTab2() {
 }
 
 async function convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, inchiTextElementId, inchikeyTextElementId, auxinfoTextElementId, logTextElementId) {
+  const log = [];
+  log.push("InChI options: " + options);
+
   let inchiResult;
   try {
     inchiResult = await inchiFromMolfile(molfile, options, inchiVersion);
@@ -165,7 +155,6 @@ async function convertMolfileToInchiAndWriteResults(molfile, options, inchiVersi
   writeResult(inchiResult.inchi, inchiTextElementId);
   writeResult(inchiResult.auxinfo, auxinfoTextElementId);
 
-  const log = [];
   if (inchiResult.log !== "") {
     log.push(inchiResult.log);
   }
@@ -188,12 +177,23 @@ async function convertMolfileToInchiAndWriteResults(molfile, options, inchiVersi
 }
 
 function collectOptions(tabOptionsId) {
-  /*
-   * Efficient way to collect all options.
-   * Idea from https://github.com/rapodaca/inchi-wasm/blob/master/web/index.html#L166
-   */
-  const elements = document.querySelectorAll("[id=" + tabOptionsId + "] div.form-check input.form-check-input");
-  return Array.from(elements).filter(e => e.checked).map(e => "-" + e.value).join(" ");
+  const options = [];
+
+  document.getElementById(tabOptionsId)
+    .querySelectorAll("input.form-check-input:enabled[data-inchi-option-on]:checked")
+    .forEach(input => {
+      options.push(input.dataset.inchiOptionOn);
+    }
+  );
+
+  document.getElementById(tabOptionsId)
+    .querySelectorAll("input.form-check-input:enabled[data-inchi-option-off]:not(:checked)")
+    .forEach(input => {
+      options.push(input.dataset.inchiOptionOff);
+    }
+  );
+
+  return options.map(o => "-" + o).join(" ");
 }
 
 function writeResult(text, ...ids) {

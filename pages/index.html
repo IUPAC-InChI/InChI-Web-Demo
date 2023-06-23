@@ -15,6 +15,7 @@
   </head>
   <body onload="onBodyLoad()">
     <div class="container" style="margin-bottom: 2rem;">
+
       <div class="row mt-1">
         <div class="col-lg-3">
           <a href="https://www.inchi-trust.org/" target="_blank">
@@ -121,7 +122,7 @@
           </div>
           <div class="row mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
             <div class="border-bottom py-1 px-3">
-              <small class="font-monospace">Warnings/Errors</small>
+              <small class="font-monospace">Log</small>
             </div>
             <pre id="tab2-logs" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
           </div>
@@ -152,7 +153,7 @@
           </div>
           <div class="row mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
             <div class="border-bottom py-1 px-3">
-              <small class="font-monospace">Warnings/Errors</small>
+              <small class="font-monospace">Log</small>
             </div>
             <pre id="tab3-logs" class="py-1 px-3 mb-0" style="white-space:pre-wrap;"></pre>
           </div>
@@ -212,6 +213,65 @@
       </div>
 
     </div>
+
+    <!-- Template for InChI options -->
+    <template id="inchiOptionsTemplate">
+      <div class="form-check mb-2">
+        <input id="mobileH" class="form-check-input" type="checkbox" data-inchi-option-off="DoNotAddH" checked>
+        <label class="form-check-label" for="mobileH">Mobile H Perception</label>
+      </div>
+      <div class="row row-cols-auto">
+        <div class="col">
+          <div class="form-check mb-2">
+            <input id="includeStereo" class="form-check-input" type="checkbox" data-inchi-option-off="SNon" checked>
+            <label class="form-check-label" for="includeStereo">Include Stereo:</label>
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-check mb-2 ms-xl-0 ms-lg-4">
+            <input id="SAbs" class="form-check-input" type="radio" name="stereoRadio" data-inchi-stereo-option checked>
+            <label class="form-check-label" for="SAbs">Absolute</label>
+          </div>
+          <div class="form-check mb-2 ms-xl-0 ms-lg-4">
+            <input id="SRel" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRel" data-inchi-stereo-option>
+            <label class="form-check-label" for="SRel">Relative</label>
+          </div>
+          <div class="form-check mb-2 ms-xl-0 ms-lg-4">
+            <input id="SRac" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRac" data-inchi-stereo-option>
+            <label class="form-check-label" for="SRac">Racemic</label>
+          </div>
+          <div class="form-check mb-2 ms-xl-0 ms-lg-4">
+            <input id="SUCF" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SUCF" data-inchi-stereo-option>
+            <label class="form-check-label" for="SUCF">From chiral flag</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-check mb-2 ms-4">
+        <input id="SUU" class="form-check-input" type="checkbox" data-inchi-option-on="SUU" data-inchi-stereo-option>
+        <label class="form-check-label" for="SUU">Always include omitted/undefined stereo</label>
+      </div>
+      <div class="form-check mb-2 ms-4">
+        <input id="SLUUD" class="form-check-input" type="checkbox" data-inchi-option-on="SLUUD" data-inchi-stereo-option>
+        <label class="form-check-label" for="SLUUD">Different marks for unknwon/undefined stereo</label>
+      </div>
+      <div class="form-check mb-2 ms-4">
+        <input id="NEWPSOFF" class="form-check-input" type="checkbox" data-inchi-option-on="NEWPSOFF" data-inchi-stereo-option>
+        <label class="form-check-label" for="NEWPSOFF">Both ends of wedge point to stereocenters</label>
+      </div>
+      <div class="form-check mb-2">
+        <input id="RecMet" class="form-check-input" type="checkbox" data-inchi-option-on="RecMet">
+        <label class="form-check-label" for="RecMet">Include Bonds to Metal</label>
+      </div>
+      <div class="form-check mb-2">
+        <input id="KET" class="form-check-input" type="checkbox" data-inchi-option-on="KET">
+        <label class="form-check-label" for="KET">Keto-enol Tautomerism</label>
+      </div>
+      <div class="form-check mb-2">
+        <input id="15T" class="form-check-input" type="checkbox" data-inchi-option-on="15T">
+        <label class="form-check-label" for="15T">1,5-tautomerism</label>
+      </div>
+    </template>
+
     <script src="index.js"></script>
   </body>
 </html>
