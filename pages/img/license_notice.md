@@ -1,0 +1,1 @@
+[NFDI4Chem-Logo_mehrfarbig_schwarz.png](NFDI4Chem-Logo_mehrfarbig_schwarz.png): [Logo of NFDI4Chem](https://commons.wikimedia.org/wiki/File:NFDI4Chem-Logo_mehrfarbig_schwarz.png) by *TimeSpin* is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en).
