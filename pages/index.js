@@ -120,6 +120,9 @@ async function updateTab1() {
   if (ketcher.containsReaction()) {
     writeResult("Cannot convert reactions to InChI", "tab1-logs");
     return;
+  } else if (ketcher.editor.struct().isBlank()) {
+    // no structure
+    return;
   } else {
     molfile = await ketcher.getMolfile();
   }
