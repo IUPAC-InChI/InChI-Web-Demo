@@ -1,3 +1,12 @@
 button.nav-link:not(.active) {
-  color:#00612c;
+  color: #00612c;
+}
+
+.inchi-result-text {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.inchi-log {
+  white-space: pre-wrap;
 }
