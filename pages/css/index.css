@@ -2,6 +2,11 @@ a {
   color: #00612c !important;
 }
 
+::selection {
+  color: #ffffff;
+  background-color: #9db668;
+}
+
 button.nav-link:not(.active) {
   color: #00612c;
 }
