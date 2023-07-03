@@ -1,5 +1,21 @@
+a {
+  color: #00612c !important;
+}
+
 button.nav-link:not(.active) {
   color: #00612c;
+}
+
+input.form-check-input:is([type="checkbox"], [type="radio"]):checked {
+  background-color: #00612c;
+  border-color: #00612c;
+}
+
+input.form-check-input:is([type="checkbox"], [type="radio"]):focus,
+select.form-select:focus,
+textarea.form-control:focus {
+  border-color: #7e9849;
+  box-shadow: 0 0 0 0.25rem rgba(126, 152, 73, 0.25);
 }
 
 .inchi-result-text {
