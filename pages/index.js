@@ -5,13 +5,13 @@
  * - initialize user-selectable parameters
  */
 function onBodyLoad() {
-  addInchiVersionsToSelect("tab1-inchiversion");
-  addInchiOptions("tab1-options", () => updateTab1());
+  addInchiVersionsToSelect("inchi-tab1-inchiversion");
+  addInchiOptions("inchi-tab1-options", () => updateInchiTab1());
 
-  addInchiVersionsToSelect("tab2-inchiversion");
-  addInchiOptions("tab2-options", () => updateTab2());
+  addInchiVersionsToSelect("inchi-tab2-inchiversion");
+  addInchiOptions("inchi-tab2-options", () => updateInchiTab2());
 
-  addInchiVersionsToSelect("tab3-inchiversion");
+  addInchiVersionsToSelect("inchi-tab3-inchiversion");
 }
 
 function addInchiVersionsToSelect(selectId) {
@@ -63,15 +63,15 @@ function addInchiOptions(targetDivId, updateFunction) {
 /*
  * Update actions (when user changes inputs)
  */
-async function updateTab1() {
+async function updateInchiTab1() {
   // clear output fields
-  writeResult("", "tab1-inchi", "tab1-inchikey", "tab1-auxinfo", "tab1-logs");
+  writeResult("", "inchi-tab1-inchi", "inchi-tab1-inchikey", "inchi-tab1-auxinfo", "inchi-tab1-logs");
 
   // collect user input
   let molfile;
-  const ketcher = getKetcher("tab1-ketcher");
+  const ketcher = getKetcher("inchi-tab1-ketcher");
   if (ketcher.containsReaction()) {
-    writeResult("Cannot convert reactions to InChI", "tab1-logs");
+    writeResult("Cannot convert reactions to InChI", "inchi-tab1-logs");
     return;
   } else if (ketcher.editor.struct().isBlank()) {
     // no structure
@@ -79,24 +79,24 @@ async function updateTab1() {
   } else {
     molfile = await ketcher.getMolfile();
   }
-  const options = collectOptions("tab1-options");
-  const inchiVersion = document.getElementById("tab1-inchiversion").value;
+  const options = collectInchiOptions("inchi-tab1-options");
+  const inchiVersion = document.getElementById("inchi-tab1-inchiversion").value;
 
   // run conversion
-  await convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, "tab1-inchi", "tab1-inchikey", "tab1-auxinfo", "tab1-logs");
+  await convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, "inchi-tab1-inchi", "inchi-tab1-inchikey", "inchi-tab1-auxinfo", "inchi-tab1-logs");
 }
 
-async function updateTab2() {
+async function updateInchiTab2() {
   // clear output fields
-  writeResult("", "tab2-inchi", "tab2-inchikey", "tab2-auxinfo", "tab2-logs");
+  writeResult("", "inchi-tab2-inchi", "inchi-tab2-inchikey", "inchi-tab2-auxinfo", "inchi-tab2-logs");
 
   // collect user input
-  const molfile = document.getElementById("tab2-molfileTextarea").value;
-  const options = collectOptions("tab2-options");
-  const inchiVersion = document.getElementById("tab2-inchiversion").value;
+  const molfile = document.getElementById("inchi-tab2-molfileTextarea").value;
+  const options = collectInchiOptions("inchi-tab2-options");
+  const inchiVersion = document.getElementById("inchi-tab2-inchiversion").value;
 
   // run conversion
-  await convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, "tab2-inchi", "tab2-inchikey", "tab2-auxinfo", "tab2-logs");
+  await convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, "inchi-tab2-inchi", "inchi-tab2-inchikey", "inchi-tab2-auxinfo", "inchi-tab2-logs");
 }
 
 async function convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, inchiTextElementId, inchikeyTextElementId, auxinfoTextElementId, logTextElementId) {
@@ -134,7 +134,7 @@ async function convertMolfileToInchiAndWriteResults(molfile, options, inchiVersi
   writeResult(log.join("\n"), logTextElementId);
 }
 
-function collectOptions(tabOptionsId) {
+function collectInchiOptions(tabOptionsId) {
   const options = [];
 
   document.getElementById(tabOptionsId)
@@ -160,11 +160,11 @@ function writeResult(text, ...ids) {
   }
 }
 
-async function updateTab3() {
-  const inchi = document.getElementById("tab3-inchiTextarea").value.trim();
-  const inchiVersion = document.getElementById("tab3-inchiversion").value;
-  const ketcher = getKetcher("tab3-ketcher");
-  const logTextElementId = "tab3-logs";
+async function updateInchiTab3() {
+  const inchi = document.getElementById("inchi-tab3-inchiTextarea").value.trim();
+  const inchiVersion = document.getElementById("inchi-tab3-inchiversion").value;
+  const ketcher = getKetcher("inchi-tab3-ketcher");
+  const logTextElementId = "inchi-tab3-logs";
 
   // clear outputs
   ketcher.editor.clear()
@@ -232,8 +232,8 @@ async function onMolfileTextareaDrop(event) {
     return;
   }
 
-  document.getElementById("tab2-molfileTextarea").value = content;
-  await updateTab2();
+  document.getElementById("inchi-tab2-molfileTextarea").value = content;
+  await updateInchiTab2();
 }
 
 async function extractContent(dataTransfer) {
