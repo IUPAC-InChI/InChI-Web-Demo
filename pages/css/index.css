@@ -11,6 +11,10 @@ button.nav-link:not(.active) {
   color: #00612c;
 }
 
+ul.nav-pills button.nav-link.active {
+  background-color: #00612c;
+}
+
 input.form-check-input:is([type="checkbox"], [type="radio"]):checked {
   background-color: #00612c;
   border-color: #00612c;
