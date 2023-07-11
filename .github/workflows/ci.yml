@@ -104,7 +104,7 @@ jobs:
         # Creates librinchi-100.js and librinchi-100.wasm in $GITHUB_WORKSPACE/RInChI/src/rinchi_lib
         run: |
           cd $GITHUB_WORKSPACE/RInChI/src/rinchi_lib
-          make -j
+          make -j -f Makefile-32bit
 
       #
       # Build Ketcher
