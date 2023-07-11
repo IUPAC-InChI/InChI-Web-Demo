@@ -8,6 +8,9 @@
     <!-- InChI modules -->
     <script type="text/javascript" src="inchi/inchi-web106.js"></script>
 
+    <!-- RInChI modules -->
+    <script type="text/javascript" src="rinchi/librinchi-100.js"></script>
+
     <link href="css/index.css" rel="stylesheet">
     <link href="bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="bootstrap/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
@@ -29,6 +32,9 @@
       <ul class="nav nav-pills mt-1" role="tablist">
         <li class="nav-item" role="presentation">
           <button class="nav-link active" id="pills-inchi-tab" data-bs-toggle="pill" data-bs-target="#pills-inchi" type="button" role="tab" aria-controls="pills-inchi" aria-selected="true">InChI</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="pills-rinchi-tab" data-bs-toggle="pill" data-bs-target="#pills-rinchi" type="button" role="tab" aria-controls="pills-rinchi" aria-selected="false">RInChI</button>
         </li>
         <li class="nav-item" role="presentation">
           <button class="nav-link" id="pills-about-tab" data-bs-toggle="pill" data-bs-target="#pills-about" type="button" role="tab" aria-controls="pills-about" aria-selected="false">Funding</button>
@@ -180,6 +186,100 @@
 
         </div>
 
+        <!-- RInChI pill -->
+        <div class="tab-pane fade" id="pills-rinchi" role="tabpanel" aria-labelledby="pills-rinchi-tab" tabindex="0">
+
+          <!-- RInChI tabs -->
+          <ul class="nav nav-tabs mt-1" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="rinchi-tab1" data-bs-toggle="tab" data-bs-target="#rinchi-tab1-pane" type="button" role="tab" aria-controls="rinchi-tab1-pane" aria-selected="true">Draw reaction and convert to RInChI</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="rinchi-tab2" data-bs-toggle="tab" data-bs-target="#rinchi-tab2-pane" type="button" role="tab" aria-controls="rinchi-tab2-pane" aria-selected="false">Convert RXN file to RInChI</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="rinchi-tab3" data-bs-toggle="tab" data-bs-target="#rinchi-tab3-pane" type="button" role="tab" aria-controls="rinchi-tab3-pane" aria-selected="false">Convert RInChI to reaction</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="rinchi-tab4" data-bs-toggle="tab" data-bs-target="#rinchi-tab4-pane" type="button" role="tab" aria-controls="rinchi-tab4-pane" aria-selected="false">Convert RInChI to RXN file</button>
+            </li>
+          </ul>
+
+          <!-- Contents of RInChI tabs -->
+          <div class="tab-content">
+
+            <!-- Draw reaction and convert to RInChI -->
+            <div class="tab-pane fade show active" id="rinchi-tab1-pane" role="tabpanel" aria-labelledby="rinchi-tab1" tabindex="0">
+              <div class="row mt-1">
+                <div class="col-xl-8">
+                  <div class="ratio" style="--bs-aspect-ratio:62%;min-height:550px;">
+                    <iframe id="rinchi-tab1-ketcher" class="w-100" src="ketcher/index.html" onload="onKetcherLoaded('rinchi-tab1-ketcher', () => updateRinchiTab1())"></iframe>
+                  </div>
+                </div>
+                <div class="col-xl-4 mt-auto">
+                  <div class="mt-2">
+                    <label class="form-check-label mb-2" for="rinchi-tab1-rinchiversion">Select RInChI version</label>
+                    <select id="rinchi-tab1-rinchiversion" class="form-select" onchange="updateRinchiTab1()"></select>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">RInChI</small>
+                </div>
+                <pre id="rinchi-tab1-rinchi" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">Long-RInChIKey</small>
+                </div>
+                <pre id="rinchi-tab1-longrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">Short-RInChIKey</small>
+                </div>
+                <pre id="rinchi-tab1-shortrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">Web-RInChIKey</small>
+                </div>
+                <pre id="rinchi-tab1-webrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">RAuxInfo</small>
+                </div>
+                <pre id="rinchi-tab1-rauxinfo" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">Log</small>
+                </div>
+                <pre id="rinchi-tab1-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
+              </div>
+            </div>
+
+            <!-- Convert RXN file to RInChI -->
+            <div class="tab-pane fade" id="rinchi-tab2-pane" role="tabpanel" aria-labelledby="rinchi-tab2" tabindex="0">
+              TODO
+            </div>
+
+            <!-- Convert RInChI to reaction -->
+            <div class="tab-pane fade" id="rinchi-tab3-pane" role="tabpanel" aria-labelledby="rinchi-tab3" tabindex="0">
+              TODO
+            </div>
+
+            <!-- Convert RInChI to RXN file -->
+            <div class="tab-pane fade" id="rinchi-tab4-pane" role="tabpanel" aria-labelledby="rinchi-tab4" tabindex="0">
+              TODO
+            </div>
+
+          </div>
+
+        </div>
+
         <!-- About pill -->
         <div class="tab-pane fade" id="pills-about" role="tabpanel" aria-labelledby="pills-about-tab" tabindex="0">
 
@@ -301,6 +401,7 @@
     </template>
 
     <script src="inchi.js"></script>
+    <script src="rinchi.js"></script>
     <script src="index.js"></script>
   </body>
 </html>

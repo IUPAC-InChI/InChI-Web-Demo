@@ -5,17 +5,19 @@
  * - initialize user-selectable parameters
  */
 function onBodyLoad() {
-  addInchiVersionsToSelect("inchi-tab1-inchiversion");
+  addVersionsToSelect("inchi-tab1-inchiversion", availableInchiVersions);
   addInchiOptions("inchi-tab1-options", () => updateInchiTab1());
 
-  addInchiVersionsToSelect("inchi-tab2-inchiversion");
+  addVersionsToSelect("inchi-tab2-inchiversion", availableInchiVersions);
   addInchiOptions("inchi-tab2-options", () => updateInchiTab2());
 
-  addInchiVersionsToSelect("inchi-tab3-inchiversion");
+  addVersionsToSelect("inchi-tab3-inchiversion", availableInchiVersions);
+
+  addVersionsToSelect("rinchi-tab1-rinchiversion", availableRInchiVersions);
 }
 
-function addInchiVersionsToSelect(selectId) {
-  availableInchiVersions.forEach(v => {
+function addVersionsToSelect(selectId, versions) {
+  versions.forEach(v => {
     const option = document.createElement("option");
     option.innerHTML = v;
     option.value = v;
@@ -126,7 +128,7 @@ async function convertMolfileToInchiAndWriteResults(molfile, options, inchiVersi
     }
     writeResult(inchikeyResult.inchikey, inchikeyTextElementId);
 
-    if ((inchikeyResult == -1) && (inchikeyResult.message !== "")) {
+    if ((inchikeyResult.return_code == -1) && (inchikeyResult.message !== "")) {
       log.push(inchikeyResult.message);
     }
   }
@@ -194,6 +196,69 @@ async function updateInchiTab3() {
     log.push(molfileResult.log);
   }
   writeResult(log.join("\n"), logTextElementId);
+}
+
+async function updateRinchiTab1() {
+  // clear output fields
+  writeResult("", "rinchi-tab1-rinchi", "rinchi-tab1-longrinchikey", "rinchi-tab1-shortrinchikey", "rinchi-tab1-webrinchikey", "rinchi-tab1-rauxinfo", "rinchi-tab1-logs");
+
+  // collect user input
+  let rxnfile;
+  const ketcher = getKetcher("rinchi-tab1-ketcher");
+  if (ketcher.editor.struct().isBlank()) {
+    // no structure
+    return;
+  } else if (!ketcher.containsReaction()) {
+    writeResult("No reaction was drawn.", "rinchi-tab1-logs");
+    return;
+  } else {
+    rxnfile = await ketcher.getRxn();
+  }
+  const rinchiVersion = document.getElementById("rinchi-tab1-rinchiversion").value;
+
+  // run conversion
+  await convertRxnfileToRinchiAndWriteResults(rxnfile, rinchiVersion, "rinchi-tab1-rinchi", "rinchi-tab1-longrinchikey", "rinchi-tab1-shortrinchikey", "rinchi-tab1-webrinchikey", "rinchi-tab1-rauxinfo", "rinchi-tab1-logs");
+}
+
+async function convertRxnfileToRinchiAndWriteResults(rxnfile, rinchiVersion, rinchiTextElementId, longRinchikeyTextElementId, shortRinchikeyTextElementId, webRinchikeyTextElementId, rauxinfoTextElementId, logTextElementId) {
+  const log = [];
+
+  let rinchiResult;
+  try {
+    rinchiResult = await rinchiFromRxnfile(rxnfile, false, rinchiVersion);
+  } catch(e) {
+    writeResult(e, logTextElementId);
+    return;
+  }
+  writeResult(rinchiResult.rinchi, rinchiTextElementId);
+  writeResult(rinchiResult.rauxinfo, rauxinfoTextElementId);
+
+  if (rinchiResult.error !== "") {
+    log.push(rinchiResult.error);
+  }
+
+  if ((rinchiResult.return_code == 0) && (rinchiResult.rinchi !== "")) {
+    convertRinchiToRinchikeyAndWriteResult(rinchiResult.rinchi, rinchiVersion, "Long", "rinchi-tab1-longrinchikey", log);
+    convertRinchiToRinchikeyAndWriteResult(rinchiResult.rinchi, rinchiVersion, "Short", "rinchi-tab1-shortrinchikey", log);
+    convertRinchiToRinchikeyAndWriteResult(rinchiResult.rinchi, rinchiVersion, "Web", "rinchi-tab1-webrinchikey", log);
+  }
+
+  writeResult(log.join("\n"), logTextElementId);
+}
+
+async function convertRinchiToRinchikeyAndWriteResult(rinchi, rinchiVersion, keyType, rinchikeyTextElementId, log) {
+  let rinchikeyResult;
+  try {
+    rinchikeyResult = await rinchikeyFromRinchi(rinchi, keyType, rinchiVersion);
+  } catch(e) {
+    log.push(e);
+    return;
+  }
+  writeResult(rinchikeyResult.rinchikey, rinchikeyTextElementId);
+
+  if ((rinchikeyResult.return_code != 0) && (rinchikeyResult.error !== "")) {
+    log.push(inchikeyResult.error);
+  }
 }
 
 /*
