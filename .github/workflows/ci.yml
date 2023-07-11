@@ -87,6 +87,26 @@ jobs:
           make -j INCHI_WEB_NAME=inchi-web106 MODULE_NAME=inchiModule106
 
       #
+      # Build RInChI WASM module
+      #
+      - name: Checkout RInChI repository
+        uses: actions/checkout@v3
+        with:
+          path: './RInChI'
+          repository: 'IUPAC-InChI/RInChI'
+
+      - name: Patch RInChI project
+        run: |
+          cd $GITHUB_WORKSPACE/RInChI
+          git apply $GITHUB_WORKSPACE/InChI-Web-Demo/rinchi/rinchi.patch
+
+      - name: Compile RInChI WebAssembly module from rinchi_lib
+        # Creates librinchi-100.js and librinchi-100.wasm in $GITHUB_WORKSPACE/RInChI/src/rinchi_lib
+        run: |
+          cd $GITHUB_WORKSPACE/RInChI/src/rinchi_lib
+          make -j
+
+      #
       # Build Ketcher
       #
       - name: Setup Node.js
@@ -128,6 +148,8 @@ jobs:
           cd pages
           mkdir inchi
           cp $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_WEB/inchi-web106.* inchi
+          mkdir rinchi
+          cp $GITHUB_WORKSPACE/RInChI/src/rinchi_lib/librinchi-100.* rinchi
           mkdir ketcher
           cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/ketcher/react-app/build/* ketcher
           cp -R $GITHUB_WORKSPACE/bootstrap .

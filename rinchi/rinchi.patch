@@ -1,0 +1,54 @@
+diff --git a/src/lib/rinchi_platform.h b/src/lib/rinchi_platform.h
+index df89df6..2ee62d1 100644
+--- a/src/lib/rinchi_platform.h
++++ b/src/lib/rinchi_platform.h
+@@ -67,7 +67,7 @@
+ 	// writing this), we don't need to worry about it.
+ 	#define ON_LINUX
+ 	const char DIR_SEPARATOR = '/';
+-#elif defined(__APPLE__)
++#elif defined(__APPLE__) || defined(__EMSCRIPTEN__)
+ 	// #define ON_APPLE
+ 	#define ON_LINUX
+ 	const char DIR_SEPARATOR = '/';
+diff --git a/src/rinchi_lib/Makefile-32bit b/src/rinchi_lib/Makefile-32bit
+index 9b1fced..0b7c947 100644
+--- a/src/rinchi_lib/Makefile-32bit
++++ b/src/rinchi_lib/Makefile-32bit
+@@ -10,11 +10,11 @@ MAKEFILE      = Makefile-32bit
+ 
+ ####### Compiler, tools and options
+ 
+-CC            = gcc
+-CXX           = g++
++CC            = emcc
++CXX           = em++
+ DEFINES       = 
+ CFLAGS        = -m32 -pipe -fvisibility=hidden -O2 -Wall -W -fPIC $(DEFINES)
+-CXXFLAGS      = -m32 -pipe -fvisibility=hidden -O2 -Wall -W -fPIC $(DEFINES)
++CXXFLAGS      = -m32 -pipe -fvisibility=hidden -O2 -Wall -std=c++11 -W -fPIC $(DEFINES)
+ INCPATH       = -I. -I../lib -I../parsers -I../rinchi -I../writers -I../../INCHI-1-API/INCHI_API/inchi_dll -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-32
+ QMAKE         = /usr/lib/x86_64-linux-gnu/qt5/bin/qmake
+ DEL_FILE      = rm -f
+@@ -34,8 +34,10 @@ TAR           = tar -cf
+ COMPRESS      = gzip -9f
+ DISTNAME      = rinchi1.0.0
+ DISTDIR = /home/jhje/RInChI/src/rinchi_lib/.tmp/rinchi1.0.0
+-LINK          = g++
+-LFLAGS        = -m32 -Wl,-O1 -shared -Wl,-soname,librinchi.so.1
++LINK          = em++
++EXPORTED_FUNCTIONS = _rinchilib_latest_err_msg,_rinchilib_rinchi_from_file_text,_rinchilib_file_text_from_rinchi,_rinchilib_rinchikey_from_rinchi,_malloc,_free
++EXPORTED_RUNTIME_METHODS = ccall,cwrap,UTF8ToString,getValue
++LFLAGS        = -m32 -Wl,-O1 -sEXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS) -sEXPORTED_RUNTIME_METHODS=$(EXPORTED_RUNTIME_METHODS) -sEXPORT_NAME=rinchiModule100 -sMODULARIZE -sENVIRONMENT=web -sSTACK_SIZE=1048576
+ LIBS          = $(SUBLIBS)  
+ AR            = ar cqs
+ RANLIB        = 
+@@ -269,7 +271,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
+ 		../../INCHI-1-API/INCHI_API/inchi_dll/util.c
+ QMAKE_TARGET  = rinchi
+ DESTDIR       = 
+-TARGET        = librinchi.so.1.0.0
++TARGET        = librinchi-100.js
+ TARGETA       = librinchi.a
+ TARGET0       = librinchi.so
+ TARGETD       = librinchi.so.1.0.0
