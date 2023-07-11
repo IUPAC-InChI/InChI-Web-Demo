@@ -1,18 +1,6 @@
 "use strict";
 
 /*
- * WASM module(s) initialization
- *
- * Calling the factory function return a Promise which resolves to the module object.
- * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
- */
-const inchiModulePromises = {
-  "1.06": inchiModule106()
-};
-
-const availableInchiVersions = Object.keys(inchiModulePromises);
-
-/*
  * Page loaded:
  * - initialize user-selectable parameters
  */
@@ -73,41 +61,6 @@ function addInchiOptions(targetDivId, updateFunction) {
 }
 
 /*
- * Glue code to invoke the C functions in inchi_web.c
- *
- * Char pointers returned by inchi_from_molfile and inchikey_from_inchi need to be
- * freed here.
- * See https://github.com/emscripten-core/emscripten/issues/6484 (emscripten does
- * not do this on its own when using "string" as return type)
- */
-async function inchiFromMolfile(molfile, options, inchiVersion) {
-  const module = await inchiModulePromises[inchiVersion];
-  const ptr = module.ccall("inchi_from_molfile", "number", ["string", "string"], [molfile, options]);
-  const result = module.UTF8ToString(ptr);
-  module._free(ptr);
-
-  return JSON.parse(result);
-}
-
-async function inchikeyFromInchi(inchi, inchiVersion) {
-  const module = await inchiModulePromises[inchiVersion];
-  const ptr = module.ccall("inchikey_from_inchi", "number", ["string"], [inchi]);
-  const result = module.UTF8ToString(ptr);
-  module._free(ptr)
-
-  return JSON.parse(result);
-}
-
-async function molfileFromInchi(inchi, options, inchiVersion) {
-  const module = await inchiModulePromises[inchiVersion];
-  const ptr = module.ccall("molfile_from_inchi", "number", ["string", "string"], [inchi, options]);
-  const result = module.UTF8ToString(ptr);
-  module._free(ptr);
-
-  return JSON.parse(result);
-}
-
-/*
  * Update actions (when user changes inputs)
  */
 async function updateTab1() {
@@ -129,6 +82,7 @@ async function updateTab1() {
   const options = collectOptions("tab1-options");
   const inchiVersion = document.getElementById("tab1-inchiversion").value;
 
+  // run conversion
   await convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, "tab1-inchi", "tab1-inchikey", "tab1-auxinfo", "tab1-logs");
 }
 
@@ -141,6 +95,7 @@ async function updateTab2() {
   const options = collectOptions("tab2-options");
   const inchiVersion = document.getElementById("tab2-inchiversion").value;
 
+  // run conversion
   await convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, "tab2-inchi", "tab2-inchikey", "tab2-auxinfo", "tab2-logs");
 }
 
@@ -211,6 +166,7 @@ async function updateTab3() {
   const ketcher = getKetcher("tab3-ketcher");
   const logTextElementId = "tab3-logs";
 
+  // clear outputs
   ketcher.editor.clear()
   writeResult("", logTextElementId);
 
@@ -219,6 +175,7 @@ async function updateTab3() {
     return;
   }
 
+  // run conversion
   let molfileResult;
   try {
     molfileResult = await molfileFromInchi(inchi, "", inchiVersion);
