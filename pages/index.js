@@ -215,17 +215,30 @@ async function updateRinchiTab1() {
     rxnfile = await ketcher.getRxn();
   }
   const rinchiVersion = document.getElementById("rinchi-tab1-rinchiversion").value;
+  const equilibrium = hasEquilibriumReactionArrow(ketcher);
 
   // run conversion
-  await convertRxnfileToRinchiAndWriteResults(rxnfile, rinchiVersion, "rinchi-tab1-rinchi", "rinchi-tab1-longrinchikey", "rinchi-tab1-shortrinchikey", "rinchi-tab1-webrinchikey", "rinchi-tab1-rauxinfo", "rinchi-tab1-logs");
+  await convertRxnfileToRinchiAndWriteResults(rxnfile, equilibrium, rinchiVersion, "rinchi-tab1-rinchi", "rinchi-tab1-longrinchikey", "rinchi-tab1-shortrinchikey", "rinchi-tab1-webrinchikey", "rinchi-tab1-rauxinfo", "rinchi-tab1-logs");
 }
 
-async function convertRxnfileToRinchiAndWriteResults(rxnfile, rinchiVersion, rinchiTextElementId, longRinchikeyTextElementId, shortRinchikeyTextElementId, webRinchikeyTextElementId, rauxinfoTextElementId, logTextElementId) {
+function hasEquilibriumReactionArrow(ketcher) {
+  const rxnArrowsMap = ketcher.editor.struct().rxnArrows;
+  if (rxnArrowsMap.size > 0) {
+    /*
+     * See https://github.com/epam/ketcher/blob/master/packages/ketcher-core/src/domain/entities/rxnArrow.ts#L19
+     * for possible mode values.
+     */
+    return rxnArrowsMap.values().next().value.mode.startsWith("equilibrium");
+  }
+  return false;
+}
+
+async function convertRxnfileToRinchiAndWriteResults(rxnfile, forceEquilibrium, rinchiVersion, rinchiTextElementId, longRinchikeyTextElementId, shortRinchikeyTextElementId, webRinchikeyTextElementId, rauxinfoTextElementId, logTextElementId) {
   const log = [];
 
   let rinchiResult;
   try {
-    rinchiResult = await rinchiFromRxnfile(rxnfile, false, rinchiVersion);
+    rinchiResult = await rinchiFromRxnfile(rxnfile, forceEquilibrium, rinchiVersion);
   } catch(e) {
     writeResult(e, logTextElementId);
     return;
