@@ -301,7 +301,7 @@ function onTextareaDragover(event) {
   event.dataTransfer.dropEffect = 'copy';
 }
 
-async function onMolfileTextareaDrop(event) {
+async function onTextareaDrop(event, updateFunction) {
   event.stopPropagation();
   event.preventDefault();
 
@@ -310,8 +310,8 @@ async function onMolfileTextareaDrop(event) {
     return;
   }
 
-  document.getElementById("inchi-tab2-molfileTextarea").value = content;
-  await updateInchiTab2();
+  event.target.value = content;
+  await updateFunction();
 }
 
 async function extractContent(dataTransfer) {
