@@ -42,7 +42,7 @@ async function rinchiFromRxnfile(rxnfile, forceEquilibrium, rinchiVersion) {
   return {"rinchi": rinchi, "rauxinfo": rauxinfo, "return_code": res, "error": error};
 }
 
-async function rxnfileFromRinchi(rinchi, rinchiVersion) {
+async function fileTextFromRinchi(rinchi, rauxinfo, format, rinchiVersion) {
   const module = await rinchiModulePromises[rinchiVersion];
 
   const out_file_textPtr = module._malloc(4);
@@ -50,9 +50,9 @@ async function rxnfileFromRinchi(rinchi, rinchiVersion) {
     "rinchilib_file_text_from_rinchi",
     "number",
     ["string", "string", "string", "number"],
-    [rinchi, "", "RXN", out_file_textPtr]
+    [rinchi, rauxinfo, format, out_file_textPtr]
   );
-  const rxnfile = module.UTF8ToString(module.getValue(out_file_textPtr, "i32"));
+  const fileText = module.UTF8ToString(module.getValue(out_file_textPtr, "i32"));
   module._free(out_file_textPtr);
 
   let error = "";
@@ -60,7 +60,7 @@ async function rxnfileFromRinchi(rinchi, rinchiVersion) {
     error = module.ccall("rinchilib_latest_err_msg", "string", [], []);
   }
 
-  return {"rxnfile": rxnfile, "return_code": res, "error": error};
+  return {"fileText": fileText, "return_code": res, "error": error};
 }
 
 async function rinchikeyFromRinchi(rinchi, keyType, rinchiVersion) {

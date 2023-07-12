@@ -15,6 +15,7 @@ function onBodyLoad() {
 
   addVersionsToSelect("rinchi-tab1-rinchiversion", availableRInchiVersions);
   addVersionsToSelect("rinchi-tab2-rinchiversion", availableRInchiVersions);
+  addVersionsToSelect("rinchi-tab4-rinchiversion", availableRInchiVersions);
 }
 
 function addVersionsToSelect(selectId, versions) {
@@ -290,6 +291,49 @@ async function convertRinchiToRinchikeyAndWriteResult(rinchi, rinchiVersion, key
   if ((rinchikeyResult.return_code != 0) && (rinchikeyResult.error !== "")) {
     log.push(inchikeyResult.error);
   }
+}
+
+async function updateRinchiTab4() {
+  const rinchi = document.getElementById("rinchi-tab4-rinchiTextarea").value.trim();
+  const rauxinfo = document.getElementById("rinchi-tab4-rauxinfoTextarea").value.trim();
+  const format = document.getElementById("rinchi-tab4-outputformat").value;
+  const rinchiVersion = document.getElementById("rinchi-tab4-rinchiversion").value;
+  const logTextElementId = "rinchi-tab4-logs";
+  const outputTextElementId = "rinchi-tab4-rxnfile";
+
+  writeResult("", logTextElementId, outputTextElementId);
+
+  const fileText = await convertRinchiToTextfile(rinchi, rauxinfo, format, rinchiVersion, logTextElementId)
+  if (fileText) {
+    writeResult(fileText, outputTextElementId);
+  }
+}
+
+async function convertRinchiToTextfile(rinchi, rauxinfo, format, rinchiVersion, logTextElementId) {
+  if (!rinchi) {
+    return;
+  }
+  if ((rinchi !== "") && (!rinchi.startsWith("RInChI="))) {
+    writeResult("The RInChI string should start with \"RInChI=\".", logTextElementId);
+    return;
+  }
+  if ((rauxinfo !== "") && (!rauxinfo.startsWith("RAuxInfo="))) {
+    writeResult("The RAuxInfo string should start with \"RAuxInfo=\".", logTextElementId);
+    return;
+  }
+
+  let rinchiResult;
+  try {
+    rinchiResult = await fileTextFromRinchi(rinchi, rauxinfo, format, rinchiVersion);
+  } catch(e) {
+    writeResult(e, logTextElementId);
+    return;
+  }
+  if (rinchiResult.error !== "") {
+    writeResult(rinchiResult.error, logTextElementId);
+  }
+
+  return rinchiResult.fileText;
 }
 
 /*
