@@ -15,6 +15,7 @@ function onBodyLoad() {
 
   addVersionsToSelect("rinchi-tab1-rinchiversion", availableRInchiVersions);
   addVersionsToSelect("rinchi-tab2-rinchiversion", availableRInchiVersions);
+  addVersionsToSelect("rinchi-tab3-rinchiversion", availableRInchiVersions);
   addVersionsToSelect("rinchi-tab4-rinchiversion", availableRInchiVersions);
 }
 
@@ -290,6 +291,23 @@ async function convertRinchiToRinchikeyAndWriteResult(rinchi, rinchiVersion, key
 
   if ((rinchikeyResult.return_code != 0) && (rinchikeyResult.error !== "")) {
     log.push(inchikeyResult.error);
+  }
+}
+
+async function updateRinchiTab3() {
+  const rinchi = document.getElementById("rinchi-tab3-rinchiTextarea").value.trim();
+  const rauxinfo = document.getElementById("rinchi-tab3-rauxinfoTextarea").value.trim();
+  const rinchiVersion = document.getElementById("rinchi-tab3-rinchiversion").value;
+  const logTextElementId = "rinchi-tab3-logs";
+  const ketcher = getKetcher("rinchi-tab3-ketcher");
+
+  ketcher.editor.clear()
+  writeResult("", logTextElementId);
+
+  const fileText = await convertRinchiToTextfile(rinchi, rauxinfo, "RXN", rinchiVersion, logTextElementId)
+  if (fileText) {
+    await ketcher.setMolecule(fileText);
+    //await ketcher.layout();
   }
 }
 
