@@ -3,7 +3,7 @@
 /*
  * WASM module(s) initialization
  *
- * Calling the factory function return a Promise which resolves to the module object.
+ * Calling the factory function returns a Promise which resolves to the module object.
  * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
  */
 const rinchiModulePromises = {
@@ -27,7 +27,7 @@ async function rinchiFromRxnfile(rxnfile, forceEquilibrium, rinchiVersion) {
     "rinchilib_rinchi_from_file_text",
     "number",
     ["string", "string", "boolean", "number", "number"],
-    ["RXN", rxnfile, forceEquilibrium, out_rinchi_stringPtr, out_rinchi_auxinfoPtr]
+    ["AUTO", rxnfile, forceEquilibrium, out_rinchi_stringPtr, out_rinchi_auxinfoPtr]
   );
   const rinchi = module.UTF8ToString(module.getValue(out_rinchi_stringPtr, "i32"));
   const rauxinfo = module.UTF8ToString(module.getValue(out_rinchi_auxinfoPtr, "i32"));

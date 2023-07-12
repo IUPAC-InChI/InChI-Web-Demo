@@ -14,6 +14,7 @@ function onBodyLoad() {
   addVersionsToSelect("inchi-tab3-inchiversion", availableInchiVersions);
 
   addVersionsToSelect("rinchi-tab1-rinchiversion", availableRInchiVersions);
+  addVersionsToSelect("rinchi-tab2-rinchiversion", availableRInchiVersions);
 }
 
 function addVersionsToSelect(selectId, versions) {
@@ -233,7 +234,24 @@ function hasEquilibriumReactionArrow(ketcher) {
   return false;
 }
 
+async function updateRinchiTab2() {
+  // clear output fields
+  writeResult("", "rinchi-tab2-rinchi", "rinchi-tab2-longrinchikey", "rinchi-tab2-shortrinchikey", "rinchi-tab2-webrinchikey", "rinchi-tab2-rauxinfo", "rinchi-tab2-logs");
+
+  // collect user input
+  const rxnfile = document.getElementById("rinchi-tab2-rxnrdfileTextarea").value;
+  const rinchiVersion = document.getElementById("rinchi-tab2-rinchiversion").value;
+  const equilibrium = document.getElementById("rinchi-tab2-forceequilibrium").checked;
+
+  // run conversion
+  await convertRxnfileToRinchiAndWriteResults(rxnfile, equilibrium, rinchiVersion, "rinchi-tab2-rinchi", "rinchi-tab2-longrinchikey", "rinchi-tab2-shortrinchikey", "rinchi-tab2-webrinchikey", "rinchi-tab2-rauxinfo", "rinchi-tab2-logs");
+}
+
 async function convertRxnfileToRinchiAndWriteResults(rxnfile, forceEquilibrium, rinchiVersion, rinchiTextElementId, longRinchikeyTextElementId, shortRinchikeyTextElementId, webRinchikeyTextElementId, rauxinfoTextElementId, logTextElementId) {
+  if (!rxnfile) {
+    return;
+  }
+
   const log = [];
 
   let rinchiResult;
@@ -251,9 +269,9 @@ async function convertRxnfileToRinchiAndWriteResults(rxnfile, forceEquilibrium, 
   }
 
   if ((rinchiResult.return_code == 0) && (rinchiResult.rinchi !== "")) {
-    convertRinchiToRinchikeyAndWriteResult(rinchiResult.rinchi, rinchiVersion, "Long", "rinchi-tab1-longrinchikey", log);
-    convertRinchiToRinchikeyAndWriteResult(rinchiResult.rinchi, rinchiVersion, "Short", "rinchi-tab1-shortrinchikey", log);
-    convertRinchiToRinchikeyAndWriteResult(rinchiResult.rinchi, rinchiVersion, "Web", "rinchi-tab1-webrinchikey", log);
+    convertRinchiToRinchikeyAndWriteResult(rinchiResult.rinchi, rinchiVersion, "Long", longRinchikeyTextElementId, log);
+    convertRinchiToRinchikeyAndWriteResult(rinchiResult.rinchi, rinchiVersion, "Short", shortRinchikeyTextElementId, log);
+    convertRinchiToRinchikeyAndWriteResult(rinchiResult.rinchi, rinchiVersion, "Web", webRinchikeyTextElementId, log);
   }
 
   writeResult(log.join("\n"), logTextElementId);

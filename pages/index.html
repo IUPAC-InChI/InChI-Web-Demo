@@ -195,7 +195,7 @@
               <button class="nav-link active" id="rinchi-tab1" data-bs-toggle="tab" data-bs-target="#rinchi-tab1-pane" type="button" role="tab" aria-controls="rinchi-tab1-pane" aria-selected="true">Draw reaction and convert to RInChI</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="rinchi-tab2" data-bs-toggle="tab" data-bs-target="#rinchi-tab2-pane" type="button" role="tab" aria-controls="rinchi-tab2-pane" aria-selected="false">Convert RXN file to RInChI</button>
+              <button class="nav-link" id="rinchi-tab2" data-bs-toggle="tab" data-bs-target="#rinchi-tab2-pane" type="button" role="tab" aria-controls="rinchi-tab2-pane" aria-selected="false">Convert RXN/RD file to RInChI</button>
             </li>
             <li class="nav-item" role="presentation">
               <button class="nav-link" id="rinchi-tab3" data-bs-toggle="tab" data-bs-target="#rinchi-tab3-pane" type="button" role="tab" aria-controls="rinchi-tab3-pane" aria-selected="false">Convert RInChI to reaction</button>
@@ -261,9 +261,64 @@
               </div>
             </div>
 
-            <!-- Convert RXN file to RInChI -->
+            <!-- Convert RXN/RD file to RInChI -->
             <div class="tab-pane fade" id="rinchi-tab2-pane" role="tabpanel" aria-labelledby="rinchi-tab2" tabindex="0">
-              TODO
+              <div class="row mt-1">
+                <div class="col-xl-8">
+                  <div class="ratio" style="--bs-aspect-ratio:62%;min-height:450px;">
+                    <div class="w-100">
+                      <textarea id="rinchi-tab2-rxnrdfileTextarea" class="form-control pe-5 h-100" style="resize:none;" placeholder="Paste or drag-and-drop a RXN/RD file here" ondragover="onTextareaDragover(event)" ondrop="onTextareaDrop(event, () => updateRinchiTab2())" oninput="updateRinchiTab2()"></textarea>
+                      <button class="btn btn-outline-secondary border-0" style="position:absolute;top:10px;right:10px;" onclick="document.getElementById('rinchi-tab2-rxnrdfileTextarea').value = '';updateRinchiTab2()"><i class="bi bi-trash"></i></button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-4 mt-auto">
+                  <div>
+                    <input id="rinchi-tab2-forceequilibrium" class="form-check-input" type="checkbox" onchange="updateRinchiTab2()">
+                    <label class="form-check-label" for="rinchi-tab2-forceequilibrium">Force equilibrium</label>
+                  </div>
+                  <div class="mt-2">
+                    <label class="form-check-label mb-2" for="rinchi-tab2-rinchiversion">Select RInChI version</label>
+                    <select id="rinchi-tab2-rinchiversion" class="form-select" onchange="updateRinchiTab2()"></select>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">RInChI</small>
+                </div>
+                <pre id="rinchi-tab2-rinchi" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">Long-RInChIKey</small>
+                </div>
+                <pre id="rinchi-tab2-longrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">Short-RInChIKey</small>
+                </div>
+                <pre id="rinchi-tab2-shortrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">Web-RInChIKey</small>
+                </div>
+                <pre id="rinchi-tab2-webrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">RAuxInfo</small>
+                </div>
+                <pre id="rinchi-tab2-rauxinfo" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+              </div>
+              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+                <div class="border-bottom py-1 px-3">
+                  <small class="font-monospace">Log</small>
+                </div>
+                <pre id="rinchi-tab2-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
+              </div>
             </div>
 
             <!-- Convert RInChI to reaction -->
