@@ -111,7 +111,7 @@
                 <div class="col-xl-8">
                   <div class="ratio" style="--bs-aspect-ratio:62%;min-height:450px;">
                     <div class="w-100">
-                      <textarea id="inchi-tab2-molfileTextarea" class="form-control pe-5 h-100" style="resize:none;" placeholder="Paste or drag-and-drop a Molfile here" ondragover="onTextareaDragover(event)" ondrop="onTextareaDrop(event, () => updateInchiTab2())" oninput="updateInchiTab2()"></textarea>
+                      <textarea id="inchi-tab2-molfileTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste or drag-and-drop a Molfile here" ondragover="onTextareaDragover(event)" ondrop="onTextareaDrop(event, () => updateInchiTab2())" oninput="updateInchiTab2()"></textarea>
                       <button class="btn btn-outline-secondary border-0" style="position:absolute;top:10px;right:10px;" onclick="document.getElementById('inchi-tab2-molfileTextarea').value = '';updateInchiTab2()"><i class="bi bi-trash"></i></button>
                     </div>
                   </div>
@@ -156,7 +156,7 @@
                 <div class="col-xl-8">
                   <div class="ratio" style="height:100px;">
                     <div class="w-100">
-                      <textarea id="inchi-tab3-inchiTextarea" class="form-control pe-5 h-100" style="resize:none;" placeholder="Paste an InChI string here&#10;e.g. InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H" oninput="updateInchiTab3()"></textarea>
+                      <textarea id="inchi-tab3-inchiTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste an InChI string here&#10;e.g. InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H" oninput="updateInchiTab3()"></textarea>
                     </div>
                   </div>
                 </div>
@@ -267,7 +267,7 @@
                 <div class="col-xl-8">
                   <div class="ratio" style="--bs-aspect-ratio:62%;min-height:450px;">
                     <div class="w-100">
-                      <textarea id="rinchi-tab2-rxnrdfileTextarea" class="form-control pe-5 h-100" style="resize:none;" placeholder="Paste or drag-and-drop a RXN/RD file here" ondragover="onTextareaDragover(event)" ondrop="onTextareaDrop(event, () => updateRinchiTab2())" oninput="updateRinchiTab2()"></textarea>
+                      <textarea id="rinchi-tab2-rxnrdfileTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste or drag-and-drop a RXN/RD file here" ondragover="onTextareaDragover(event)" ondrop="onTextareaDrop(event, () => updateRinchiTab2())" oninput="updateRinchiTab2()"></textarea>
                       <button class="btn btn-outline-secondary border-0" style="position:absolute;top:10px;right:10px;" onclick="document.getElementById('rinchi-tab2-rxnrdfileTextarea').value = '';updateRinchiTab2()"><i class="bi bi-trash"></i></button>
                     </div>
                   </div>
@@ -327,12 +327,12 @@
                 <div class="col-xl-8">
                   <div class="ratio" style="height:100px;">
                     <div class="w-100">
-                      <textarea id="rinchi-tab3-rinchiTextarea" class="form-control pe-5 h-100" style="resize:none;" placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+" oninput="updateRinchiTab3()"></textarea>
+                      <textarea id="rinchi-tab3-rinchiTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+" oninput="updateRinchiTab3()"></textarea>
                     </div>
                   </div>
                   <div class="ratio mt-2" style="height:100px;">
                     <div class="w-100">
-                      <textarea id="rinchi-tab3-rauxinfoTextarea" class="form-control pe-5 h-100" style="resize:none;" placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..." oninput="updateRinchiTab3()"></textarea>
+                      <textarea id="rinchi-tab3-rauxinfoTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..." oninput="updateRinchiTab3()"></textarea>
                     </div>
                   </div>
                 </div>
@@ -367,12 +367,12 @@
                 <div class="col-xl-8">
                   <div class="ratio" style="height:100px;">
                     <div class="w-100">
-                      <textarea id="rinchi-tab4-rinchiTextarea" class="form-control pe-5 h-100" style="resize:none;" placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+" oninput="updateRinchiTab4()"></textarea>
+                      <textarea id="rinchi-tab4-rinchiTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+" oninput="updateRinchiTab4()"></textarea>
                     </div>
                   </div>
                   <div class="ratio mt-2" style="height:100px;">
                     <div class="w-100">
-                      <textarea id="rinchi-tab4-rauxinfoTextarea" class="form-control pe-5 h-100" style="resize:none;" placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..." oninput="updateRinchiTab4()"></textarea>
+                      <textarea id="rinchi-tab4-rauxinfoTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..." oninput="updateRinchiTab4()"></textarea>
                     </div>
                   </div>
                 </div>
