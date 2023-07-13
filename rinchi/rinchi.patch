@@ -12,7 +12,7 @@ index df89df6..2ee62d1 100644
  	#define ON_LINUX
  	const char DIR_SEPARATOR = '/';
 diff --git a/src/rinchi_lib/Makefile-32bit b/src/rinchi_lib/Makefile-32bit
-index 9b1fced..0b7c947 100644
+index 9b1fced..cabc143 100644
 --- a/src/rinchi_lib/Makefile-32bit
 +++ b/src/rinchi_lib/Makefile-32bit
 @@ -10,11 +10,11 @@ MAKEFILE      = Makefile-32bit
@@ -39,7 +39,7 @@ index 9b1fced..0b7c947 100644
 +LINK          = em++
 +EXPORTED_FUNCTIONS = _rinchilib_latest_err_msg,_rinchilib_rinchi_from_file_text,_rinchilib_file_text_from_rinchi,_rinchilib_rinchikey_from_rinchi,_malloc,_free
 +EXPORTED_RUNTIME_METHODS = ccall,cwrap,UTF8ToString,getValue
-+LFLAGS        = -m32 -Wl,-O1 -sEXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS) -sEXPORTED_RUNTIME_METHODS=$(EXPORTED_RUNTIME_METHODS) -sEXPORT_NAME=rinchiModule100 -sMODULARIZE -sENVIRONMENT=web -sSTACK_SIZE=1048576
++LFLAGS        = -m32 -Wl,-O1 -sNO_DISABLE_EXCEPTION_CATCHING -sEXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS) -sEXPORTED_RUNTIME_METHODS=$(EXPORTED_RUNTIME_METHODS) -sEXPORT_NAME=rinchiModule100 -sMODULARIZE -sENVIRONMENT=web -sSTACK_SIZE=1048576
  LIBS          = $(SUBLIBS)  
  AR            = ar cqs
  RANLIB        = 
