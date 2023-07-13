@@ -260,14 +260,14 @@ async function convertRxnfileToRinchiAndWriteResults(rxnfile, forceEquilibrium, 
   try {
     rinchiResult = await rinchiFromRxnfile(rxnfile, forceEquilibrium, rinchiVersion);
   } catch(e) {
-    writeResult(e, logTextElementId);
+    writeResult("Caught exception from rinchiFromRxnfile(): " + e, logTextElementId);
     return;
   }
   writeResult(rinchiResult.rinchi, rinchiTextElementId);
   writeResult(rinchiResult.rauxinfo, rauxinfoTextElementId);
 
   if (rinchiResult.error !== "") {
-    log.push(rinchiResult.error);
+    log.push("Error from rinchilib_file_text_from_rinchi() call: " + rinchiResult.error);
   }
 
   if ((rinchiResult.return_code == 0) && (rinchiResult.rinchi !== "")) {
@@ -284,13 +284,13 @@ async function convertRinchiToRinchikeyAndWriteResult(rinchi, rinchiVersion, key
   try {
     rinchikeyResult = await rinchikeyFromRinchi(rinchi, keyType, rinchiVersion);
   } catch(e) {
-    log.push(e);
+    log.push("Caught exception from rinchikeyFromRinchi(): " + e);
     return;
   }
   writeResult(rinchikeyResult.rinchikey, rinchikeyTextElementId);
 
   if ((rinchikeyResult.return_code != 0) && (rinchikeyResult.error !== "")) {
-    log.push(inchikeyResult.error);
+    log.push("Error from rinchilib_rinchikey_from_rinchi() call: " + inchikeyResult.error);
   }
 }
 
@@ -344,11 +344,11 @@ async function convertRinchiToTextfile(rinchi, rauxinfo, format, rinchiVersion, 
   try {
     rinchiResult = await fileTextFromRinchi(rinchi, rauxinfo, format, rinchiVersion);
   } catch(e) {
-    writeResult(e, logTextElementId);
+    writeResult("Caught exception from fileTextFromRinchi(): " + e, logTextElementId);
     return;
   }
   if (rinchiResult.error !== "") {
-    writeResult(rinchiResult.error, logTextElementId);
+    writeResult("Error from rinchilib_file_text_from_rinchi() call: " + rinchiResult.error, logTextElementId);
   }
 
   return rinchiResult.fileText;
