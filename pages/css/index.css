@@ -36,7 +36,8 @@ textarea.form-control:focus {
   white-space: pre-wrap;
 }
 
-.ratio.ketcher {
+.ketcher,
+.inputtextarea {
   --bs-aspect-ratio:62%;
   min-height:530px;
 }

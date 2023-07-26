@@ -109,7 +109,7 @@
             <div class="tab-pane fade" id="inchi-tab2-pane" role="tabpanel" aria-labelledby="inchi-tab2" tabindex="0">
               <div class="row mt-1">
                 <div class="col-xl-8">
-                  <div class="ratio" style="--bs-aspect-ratio:62%;min-height:450px;">
+                  <div class="ratio inputtextarea">
                     <div class="w-100">
                       <textarea id="inchi-tab2-molfileTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste or drag-and-drop a Molfile here" ondragover="onTextareaDragover(event)" ondrop="onTextareaDrop(event, () => updateInchiTab2())" oninput="updateInchiTab2()"></textarea>
                       <button class="btn btn-outline-secondary border-0" style="position:absolute;top:10px;right:10px;" onclick="document.getElementById('inchi-tab2-molfileTextarea').value = '';updateInchiTab2()"><i class="bi bi-trash"></i></button>
@@ -265,7 +265,7 @@
             <div class="tab-pane fade" id="rinchi-tab2-pane" role="tabpanel" aria-labelledby="rinchi-tab2" tabindex="0">
               <div class="row mt-1">
                 <div class="col-xl-8">
-                  <div class="ratio" style="--bs-aspect-ratio:62%;min-height:450px;">
+                  <div class="ratio inputtextarea">
                     <div class="w-100">
                       <textarea id="rinchi-tab2-rxnrdfileTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste or drag-and-drop a RXN/RD file here" ondragover="onTextareaDragover(event)" ondrop="onTextareaDrop(event, () => updateRinchiTab2())" oninput="updateRinchiTab2()"></textarea>
                       <button class="btn btn-outline-secondary border-0" style="position:absolute;top:10px;right:10px;" onclick="document.getElementById('rinchi-tab2-rxnrdfileTextarea').value = '';updateRinchiTab2()"><i class="bi bi-trash"></i></button>
