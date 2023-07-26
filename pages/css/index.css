@@ -35,3 +35,8 @@ textarea.form-control:focus {
 .inchi-log {
   white-space: pre-wrap;
 }
+
+.ratio.ketcher {
+  --bs-aspect-ratio:62%;
+  min-height:530px;
+}
