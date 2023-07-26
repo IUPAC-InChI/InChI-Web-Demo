@@ -314,7 +314,7 @@ async function updateRinchiTab3() {
 async function updateRinchiTab4() {
   const rinchi = document.getElementById("rinchi-tab4-rinchiTextarea").value.trim();
   const rauxinfo = document.getElementById("rinchi-tab4-rauxinfoTextarea").value.trim();
-  const format = document.getElementById("rinchi-tab4-outputformat").value;
+  const format = document.querySelector("input.form-check-input[type=\"radio\"][name=\"rinchioutputformatRadio\"]:checked").value;
   const rinchiVersion = document.getElementById("rinchi-tab4-rinchiversion").value;
   const logTextElementId = "rinchi-tab4-logs";
   const outputTextElementId = "rinchi-tab4-rxnfile";
