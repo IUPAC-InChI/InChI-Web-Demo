@@ -60,6 +60,14 @@ function addInchiOptions(targetDivId, updateFunction) {
   });
 
   /*
+   * Register an on-click event on the "Reset InChI Options" link.
+   */
+  clone.querySelector("a[data-reset-inchi-options]").addEventListener("click", function() {
+    resetInchiOptions(targetDivId);
+    updateFunction();
+  });
+
+  /*
    * Reassign ids of all <input> elements and change the target id of their
    * <label> element accordingly. Also register an on-change event to call
    * updateFunction.
@@ -73,6 +81,22 @@ function addInchiOptions(targetDivId, updateFunction) {
   });
 
   document.getElementById(targetDivId).appendChild(clone);
+}
+
+function resetInchiOptions(targetDivId) {
+  const targetDiv = document.getElementById(targetDivId);
+  targetDiv.querySelectorAll("input.form-check-input[data-default-checked]").forEach(input => {
+    input.checked = true;
+  });
+  targetDiv.querySelectorAll("input.form-check-input:not([data-default-checked])").forEach(input => {
+    input.checked = false;
+  });
+  targetDiv.querySelectorAll("input.form-check-input[data-default-disabled]").forEach(input => {
+    input.disabled = true;
+  });
+  targetDiv.querySelectorAll("input.form-check-input:not([data-default-disabled])").forEach(input => {
+    input.disabled = false;
+  });
 }
 
 /*
