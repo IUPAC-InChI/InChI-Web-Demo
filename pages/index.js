@@ -50,6 +50,16 @@ function addInchiOptions(targetDivId, updateFunction) {
   });
 
   /*
+   * Register an on-change event on the "Treat polymers" checkbox to switch the
+   * 'disabled' state of the inputs that cope with polymer options.
+   */
+  clone.getElementById("treatPolymers").addEventListener("change", function() {
+    document.getElementById(targetDivId).querySelectorAll("input.form-check-input[data-inchi-polymer-option]").forEach(input => {
+      input.disabled = !this.checked;
+    });
+  });
+
+  /*
    * Reassign ids of all <input> elements and change the target id of their
    * <label> element accordingly. Also register an on-change event to call
    * updateFunction.
