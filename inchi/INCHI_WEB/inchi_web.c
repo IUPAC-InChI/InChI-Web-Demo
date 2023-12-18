@@ -296,6 +296,7 @@ char* molfile_from_auxinfo(char* auxinfo, int bDoNotAddH, int bDiffUnkUndfStereo
 
   Free_inchi_Input(pInp);
   free(output);
+  free(pInp);
 
   // Caller should free this.
   return json;
