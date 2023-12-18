@@ -56,7 +56,7 @@
               <button class="nav-link" id="inchi-tab2" data-bs-toggle="tab" data-bs-target="#inchi-tab2-pane" type="button" role="tab" aria-controls="inchi-tab2-pane" aria-selected="false">Convert Molfile to InChI</button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="inchi-tab3" data-bs-toggle="tab" data-bs-target="#inchi-tab3-pane" type="button" role="tab" aria-controls="inchi-tab3-pane" aria-selected="false">Convert InChI to structure</button>
+              <button class="nav-link" id="inchi-tab3" data-bs-toggle="tab" data-bs-target="#inchi-tab3-pane" type="button" role="tab" aria-controls="inchi-tab3-pane" aria-selected="false">Convert InChI or AuxInfo to structure</button>
             </li>
           </ul>
 
@@ -150,13 +150,13 @@
               </div>
             </div>
 
-            <!-- Convert InChI to structure -->
+            <!-- Convert InChI or AuxInfo to structure -->
             <div class="tab-pane fade" id="inchi-tab3-pane" role="tabpanel" aria-labelledby="inchi-tab3" tabindex="0">
               <div class="row mt-1">
                 <div class="col-xl-8">
-                  <div class="ratio" style="height:100px;">
+                  <div class="ratio" style="height:115px;">
                     <div class="w-100">
-                      <textarea id="inchi-tab3-inchiTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste an InChI string here&#10;e.g. InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H" oninput="updateInchiTab3()"></textarea>
+                      <textarea id="inchi-tab3-inputTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste an InChI or AuxInfo string here&#10;e.g. InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H&#10;or AuxInfo=1/0/N:1,3,5,2,6,4/E:(1,2,3,4,5,6)/rA:6nCCCCCC/rB:;d1s2;d2;s1;s4d5;/rC:7.8848,-4.7251,0;9.6152,-4.7246,0;8.7516,-4.225,0;9.6152,-5.7255,0;7.8848,-5.73,0;8.7538,-6.225,0;" oninput="updateInchiTab3()"></textarea>
                     </div>
                   </div>
                 </div>

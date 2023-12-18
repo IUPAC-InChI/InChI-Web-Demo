@@ -21,7 +21,7 @@ endif
 P_INCL = -I$(P_BASE)
 C_COMPILER_OPTIONS = $(P_INCL) -ansi -DCOMPILE_ANSI_ONLY -DTARGET_EXE_STANDALONE -O3 -c
 
-EXPORTED_FUNCTIONS = _inchi_from_molfile,_inchikey_from_inchi,_molfile_from_inchi,_malloc,_free
+EXPORTED_FUNCTIONS = _inchi_from_molfile,_inchikey_from_inchi,_molfile_from_inchi,_molfile_from_auxinfo,_malloc,_free
 EXPORTED_RUNTIME_METHODS = ccall,cwrap,UTF8ToString,stringToUTF8,lengthBytesUTF8
 LINKER_OPTIONS = -sEXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS) -sEXPORTED_RUNTIME_METHODS=$(EXPORTED_RUNTIME_METHODS) -sEXPORT_NAME=$(MODULE_NAME) -sMODULARIZE -sENVIRONMENT=web -sSTACK_SIZE=1048576
 # TODO:

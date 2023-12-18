@@ -236,3 +236,67 @@ char* molfile_from_inchi(char* inchi, char* options) {
   // Caller should free this.
   return json;
 }
+
+/*
+ * Molfile from AuxInfo
+ * --------------------
+ */
+char* molfile_from_auxinfo(char* auxinfo, int bDoNotAddH, int bDiffUnkUndfStereo) {
+  int ret;
+  InchiInpData *output;
+  inchi_Input *pInp;
+  char *json;
+
+  output = malloc(sizeof(*output));
+  memset(output, 0, sizeof(*output));
+  pInp = malloc(sizeof(*pInp));
+  memset(pInp, 0, sizeof(*pInp));
+
+  output->pInp = pInp;
+
+  ret = Get_inchi_Input_FromAuxInfo(auxinfo, bDoNotAddH, bDiffUnkUndfStereo, output);
+
+  switch(ret) {
+    case inchi_Ret_OKAY: {
+      pInp->szOptions = "-OutputSDF";
+      inchi_Output inchi_output;
+
+      // TODO: Handle return value of this API call.
+      GetINCHI(pInp, &inchi_output);
+
+      json = to_json_molfile(0, inchi_output.szInChI, "", "");
+      FreeINCHI(&inchi_output);
+
+      break;
+    }
+    case inchi_Ret_WARNING: {
+      pInp->szOptions = "-OutputSDF";
+      inchi_Output inchi_output;
+
+      // TODO: Handle return value of this API call.
+      GetINCHI(pInp, &inchi_output);
+
+      json = to_json_molfile(1, inchi_output.szInChI, output->szErrMsg, "");
+      FreeINCHI(&inchi_output);
+
+      break;
+    }
+    case inchi_Ret_ERROR:
+    case inchi_Ret_FATAL:
+    case inchi_Ret_UNKNOWN:
+    case inchi_Ret_BUSY:
+    case inchi_Ret_EOF:
+    case inchi_Ret_SKIP: {
+      json = to_json_molfile(-1, "", output->szErrMsg, "");
+      break;
+    }
+    default:
+      json = to_json_molfile(-1, "", "", "Get_inchi_Input_FromAuxInfo: Unknown return code");
+  }
+
+  Free_inchi_Input(pInp);
+  free(output);
+
+  // Caller should free this.
+  return json;
+}

@@ -200,7 +200,7 @@ function writeResult(text, ...ids) {
 }
 
 async function updateInchiTab3() {
-  const inchi = document.getElementById("inchi-tab3-inchiTextarea").value.trim();
+  const input = document.getElementById("inchi-tab3-inputTextarea").value.trim();
   const inchiVersion = document.getElementById("inchi-tab3-inchiversion").value;
   const ketcher = getKetcher("inchi-tab3-ketcher");
   const logTextElementId = "inchi-tab3-logs";
@@ -209,15 +209,23 @@ async function updateInchiTab3() {
   ketcher.editor.clear()
   writeResult("", logTextElementId);
 
-  if ((inchi !== "") && (!inchi.startsWith("InChI="))) {
-    writeResult("The InChI string should start with \"InChI=\".", logTextElementId);
+  // input validation
+  if (!input) {
+    return;
+  }
+  if (!input.startsWith("InChI=") && !input.startsWith("AuxInfo=")) {
+    writeResult("The input string should start with \"InChI=\" or \"AuxInfo=\".", logTextElementId);
     return;
   }
 
   // run conversion
   let molfileResult;
   try {
-    molfileResult = await molfileFromInchi(inchi, "", inchiVersion);
+    if (input.startsWith("InChI=")) {
+      molfileResult = await molfileFromInchi(input, "", inchiVersion);
+    } else if (input.startsWith("AuxInfo=")) {
+      molfileResult = await molfileFromAuxinfo(input, 0, 0, inchiVersion);
+    }
   } catch(e) {
     writeResult(e, logTextElementId);
     return;
@@ -225,12 +233,17 @@ async function updateInchiTab3() {
   const molfile = molfileResult.molfile;
   if (molfile !== "") {
     await ketcher.setMolecule(molfile);
-    await ketcher.layout();
+    if (input.startsWith("InChI=")) {
+      await ketcher.layout();
+    }
   }
 
   const log = [];
   if (molfileResult.log !== "") {
     log.push(molfileResult.log);
+  }
+  if (molfileResult.message !== "") {
+    log.push(molfileResult.message);
   }
   writeResult(log.join("\n"), logTextElementId);
 }
