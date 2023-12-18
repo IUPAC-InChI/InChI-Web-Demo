@@ -195,7 +195,7 @@ function collectInchiOptions(tabOptionsId) {
 
 function writeResult(text, ...ids) {
   for (let id of ids) {
-    document.getElementById(id).innerHTML = text;
+    document.getElementById(id).textContent = text;
   }
 }
 
