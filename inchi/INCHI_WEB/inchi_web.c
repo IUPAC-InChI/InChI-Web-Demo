@@ -256,9 +256,28 @@ char* molfile_from_auxinfo(char* auxinfo, int bDoNotAddH, int bDiffUnkUndfStereo
 
   ret = Get_inchi_Input_FromAuxInfo(auxinfo, bDoNotAddH, bDiffUnkUndfStereo, output);
 
+  /*
+   * Handling of the MDL chiral flag, see
+   * https://github.com/IUPAC-InChI/RInChI/blob/0e14efe8ca7509262fe7b7aecd8c900ef00ffd9f/src/lib/inchi_generator.cpp#L316-L347
+   */
+  int output_chiral_flag = output->bChiral;
+  char *options;
+  switch(output_chiral_flag) {
+    case 1: {
+      options = "-OutputSDF -SUCF -ChiralFlagON";
+      break;
+    }
+    case 2: {
+      options = "-OutputSDF -SUCF -ChiralFlagOFF";
+      break;
+    }
+    default:
+      options = "-OutputSDF";
+  }
+
   switch(ret) {
     case inchi_Ret_OKAY: {
-      pInp->szOptions = "-OutputSDF";
+      pInp->szOptions = options;
       inchi_Output inchi_output;
 
       // TODO: Handle return value of this API call.
@@ -270,7 +289,7 @@ char* molfile_from_auxinfo(char* auxinfo, int bDoNotAddH, int bDiffUnkUndfStereo
       break;
     }
     case inchi_Ret_WARNING: {
-      pInp->szOptions = "-OutputSDF";
+      pInp->szOptions = options;
       inchi_Output inchi_output;
 
       // TODO: Handle return value of this API call.
