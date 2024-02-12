@@ -43,11 +43,12 @@ jobs:
         with:
           path: './InChI-Web-Demo'
 
-      - name: Checkout InChI 1.0.6 repository
+      - name: Checkout v1.06 from InChI repository
         uses: actions/checkout@v4
         with:
           path: './InChI_1_06'
-          repository: 'IUPAC-InChI/InChI_1_06'
+          repository: 'IUPAC-InChI/InChI'
+          ref: 'v1.06'
 
       - name: Patch InChI_1_06's util.c
         run: |
