@@ -25,7 +25,7 @@ jobs:
       # Compile INCHI_EXE and run the test suite
       #
       - name: Setup emsdk
-        uses: mymindstorm/setup-emsdk@v14
+        uses: mymindstorm/setup-emsdk@v13
         with:
           version: 3.1.43
           actions-cache-folder: 'emsdk-cache'
