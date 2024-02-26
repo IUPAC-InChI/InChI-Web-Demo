@@ -2,7 +2,7 @@
 
 ## Traps
 
-### `__isascii` (InChI v1.06 only)
+### `__isascii` (until InChI v1.06)
 The `__isascii` function used in *INCHI-1-SRC/INCHI_BASE/src/util.c* needs to be provided by *ichicomp.h*. Fixed by [util.c.patch](util.c.patch). This problem [was previously identified in Richard Apodaca's Depth-First blog](https://depth-first.com/articles/2019/05/15/compiling-inchi-to-webassembly-part-1/). `__isascii` and `isascii` have never been part of the C standard and some implementations of the C standard library support it, for instance [the GNU C Library (glibc)](https://sourceware.org/glibc/manual/latest/html_node/Classification-of-Characters.html#index-isascii). On the other hand, Emscripten uses *musl* as its implementation of the C standard library that never adopted them.
 
 ### Emscripten's file system
