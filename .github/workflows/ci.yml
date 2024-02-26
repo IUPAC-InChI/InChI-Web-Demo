@@ -21,9 +21,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      #
-      # Compile INCHI_EXE and run the test suite
-      #
       - name: Setup emsdk
         uses: mymindstorm/setup-emsdk@v13
         with:
@@ -50,6 +47,9 @@ jobs:
           repository: 'IUPAC-InChI/InChI'
           ref: 'v1.06'
 
+      #
+      # Compile v1.06's INCHI_EXE and run the test suite
+      #
       - name: Patch InChI_1_06's util.c
         run: |
           cd $GITHUB_WORKSPACE/InChI_1_06
@@ -77,7 +77,7 @@ jobs:
           diff -q --strip-trailing-cr test-results/ expected-test-results/ && echo "Tests are OK!"
 
       #
-      # Build InChI WASM module
+      # Build InChI v1.06 WASM module
       #
       - name: Compile InChI_1_06 WebAssembly module (INCHI_WEB)
         # Creates inchi-web106.js and inchi-web106.wasm in $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_WEB
@@ -85,7 +85,7 @@ jobs:
           cd $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC
           cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/inchi/INCHI_WEB .
           cd INCHI_WEB
-          make -j INCHI_WEB_NAME=inchi-web106 MODULE_NAME=inchiModule106
+          make -j -f makefile_InChI_1.06 INCHI_WEB_NAME=inchi-web106 MODULE_NAME=inchiModule106
 
       #
       # Build RInChI WASM module
