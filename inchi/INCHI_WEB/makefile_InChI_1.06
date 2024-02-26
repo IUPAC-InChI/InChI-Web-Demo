@@ -28,59 +28,6 @@ LINKER_OPTIONS = -sEXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS) -sEXPORTED_RUNTIME_M
 # closure ...
 # optimize ...
 
-INCHI_SRCS = $(P_BASE)/ichi_bns.c	\
-$(P_BASE)/ichi_io.c	\
-$(P_BASE)/ichican2.c	\
-$(P_BASE)/ichicano.c	\
-$(P_BASE)/ichicans.c	\
-$(P_BASE)/ichierr.c	\
-$(P_BASE)/ichiprt3.c	\
-$(P_BASE)/ichiisot.c	\
-$(P_BASE)/ichimake.c	\
-$(P_BASE)/ichiqueu.c	\
-$(P_BASE)/ichiring.c	\
-$(P_BASE)/ichierr.c	\
-$(P_BASE)/ichimap1.c	\
-$(P_BASE)/ichimap2.c	\
-$(P_BASE)/ichimap4.c	\
-$(P_BASE)/ichimak2.c	\
-$(P_BASE)/ichinorm.c	\
-$(P_BASE)/ichiparm.c	\
-$(P_BASE)/ichiprt1.c	\
-$(P_BASE)/ichiprt2.c	\
-$(P_BASE)/ichirvr1.c	\
-$(P_BASE)/ichirvr2.c	\
-$(P_BASE)/ichirvr3.c	\
-$(P_BASE)/ichirvr4.c	\
-$(P_BASE)/ichirvr5.c	\
-$(P_BASE)/ichirvr6.c	\
-$(P_BASE)/ichirvr7.c	\
-$(P_BASE)/ichisort.c	\
-$(P_BASE)/ichister.c	\
-$(P_BASE)/ichitaut.c	\
-$(P_BASE)/ikey_base26.c	\
-$(P_BASE)/ikey_dll.c	\
-$(P_BASE)/mol_fmt1.c	\
-$(P_BASE)/mol_fmt2.c	\
-$(P_BASE)/mol_fmt3.c	\
-$(P_BASE)/mol_fmt4.c	\
-$(P_BASE)/readinch.c	\
-$(P_BASE)/runichi.c	\
-$(P_BASE)/runichi2.c	\
-$(P_BASE)/runichi3.c	\
-$(P_BASE)/runichi4.c	\
-$(P_BASE)/sha2.c	\
-$(P_BASE)/strutil.c	\
-$(P_BASE)/util.c	\
-$(P_BASE)/mol2atom.c	\
-$(P_API)/ichilnct.c	\
-$(P_API)/inchi_dll.c	\
-$(P_API)/inchi_dll_a.c	\
-$(P_API)/inchi_dll_a2.c	\
-$(P_API)/inchi_dll_b.c	\
-$(P_API)/inchi_dll_main.c	\
-inchi_web.c
-
 INCHI_OBJS = ichi_bns.o	\
 ichi_io.o	\
 ichicano.o	\
