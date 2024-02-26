@@ -47,6 +47,13 @@ jobs:
           repository: 'IUPAC-InChI/InChI'
           ref: 'v1.06'
 
+      - name: Checkout v1.07-beta.3 from InChI repository
+        uses: actions/checkout@v4
+        with:
+          path: './InChI_1_07'
+          repository: 'IUPAC-InChI/InChI'
+          ref: 'v1.07-beta.3'
+
       #
       # Compile v1.06's INCHI_EXE and run the test suite
       #
@@ -85,7 +92,18 @@ jobs:
           cd $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC
           cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/inchi/INCHI_WEB .
           cd INCHI_WEB
-          make -j -f makefile_InChI_1.06 INCHI_WEB_NAME=inchi-web106 MODULE_NAME=inchiModule106
+          make -j -f makefile INCHI_WEB_NAME=inchi-web106 MODULE_NAME=inchiModule106
+
+      #
+      # Build InChI v1.07 WASM module
+      #
+      - name: Compile InChI_1_07 WebAssembly module (INCHI_WEB)
+        # Creates inchi-web107.js and inchi-web107.wasm in $GITHUB_WORKSPACE/InChI_1_07/INCHI-1-SRC/INCHI_WEB
+        run: |
+          cd $GITHUB_WORKSPACE/InChI_1_07/INCHI-1-SRC
+          cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/inchi/INCHI_WEB .
+          cd INCHI_WEB
+          make -j -f makefile INCHI_WEB_NAME=inchi-web107 MODULE_NAME=inchiModule107
 
       #
       # Build RInChI WASM module
@@ -149,6 +167,7 @@ jobs:
           cd pages
           mkdir inchi
           cp $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_WEB/inchi-web106.* inchi
+          cp $GITHUB_WORKSPACE/InChI_1_07/INCHI-1-SRC/INCHI_WEB/inchi-web107.* inchi
           mkdir rinchi
           cp $GITHUB_WORKSPACE/RInChI/src/rinchi_lib/librinchi-100.* rinchi
           mkdir ketcher

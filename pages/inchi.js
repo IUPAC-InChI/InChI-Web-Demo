@@ -7,7 +7,8 @@
  * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
  */
 const inchiModulePromises = {
-  "1.06": inchiModule106()
+  "1.06": inchiModule106(),
+  "1.07-beta3": inchiModule107()
 };
 
 const availableInchiVersions = Object.keys(inchiModulePromises);
