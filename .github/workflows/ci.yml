@@ -47,12 +47,12 @@ jobs:
           repository: 'IUPAC-InChI/InChI'
           ref: 'v1.06'
 
-      - name: Checkout v1.07-beta.3 from InChI repository
+      - name: Checkout v1.07-beta from InChI repository
         uses: actions/checkout@v4
         with:
           path: './InChI_1_07'
           repository: 'IUPAC-InChI/InChI'
-          ref: 'v1.07-beta.3'
+          ref: '51814b5be1addc091e814aae2a6cdbc0fa94df56'
 
       #
       # Compile v1.06's INCHI_EXE and run the test suite
