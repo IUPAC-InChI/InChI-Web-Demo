@@ -122,9 +122,7 @@ function collectInchiOptions(tabId) {
 }
 
 function getVersion(tabId) {
-  const version = document.getElementById(tabId).querySelector("select[data-version]").value;
-  console.log("version:" + version);
-  return version;
+  return document.getElementById(tabId).querySelector("select[data-version]").value;
 }
 
 /*
