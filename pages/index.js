@@ -43,7 +43,7 @@ function addInchiOptions(targetDivId, updateFunction) {
    * Register an on-change event on the "Include Stereo" checkbox to switch the
    * 'disabled' state of the inputs that cope with stereo options.
    */
-  clone.getElementById("includeStereo").addEventListener("change", function() {
+  clone.querySelector("input.form-check-input[data-id=\"includeStereo\"]").addEventListener("change", function() {
     document.getElementById(targetDivId).querySelectorAll("input.form-check-input[data-inchi-stereo-option]").forEach(input => {
       input.disabled = !this.checked;
     });
@@ -53,7 +53,7 @@ function addInchiOptions(targetDivId, updateFunction) {
    * Register an on-change event on the "Treat polymers" checkbox to switch the
    * 'disabled' state of the inputs that cope with polymer options.
    */
-  clone.getElementById("treatPolymers").addEventListener("change", function() {
+  clone.querySelector("input.form-check-input[data-id=\"treatPolymers\"]").addEventListener("change", function() {
     document.getElementById(targetDivId).querySelectorAll("input.form-check-input[data-inchi-polymer-option]").forEach(input => {
       input.disabled = !this.checked;
     });
@@ -68,14 +68,13 @@ function addInchiOptions(targetDivId, updateFunction) {
   });
 
   /*
-   * Reassign ids of all <input> elements and change the target id of their
+   * Assign ids to all <input> elements and assign the target id of their
    * <label> element accordingly. Also register an on-change event to call
    * updateFunction.
    */
   clone.querySelectorAll("input.form-check-input").forEach(input => {
-    const newId = input.id + "-" + targetDivId;
-    input.id = newId;
-    input.nextElementSibling.htmlFor = newId;
+    input.id = input.dataset.id + "-" + targetDivId;
+    input.nextElementSibling.htmlFor = input.id;
 
     input.addEventListener("change", updateFunction);
   });
