@@ -158,6 +158,23 @@ jobs:
           unzip bootstrap-icons-1.10.3.zip -d bootstrap-icons
 
       #
+      # Bootstrap Multiselect
+      #
+      - name: Download Bootstrap Multiselect
+        run: |
+          cd $GITHUB_WORKSPACE
+          wget -O bootstrap-multiselect.zip https://github.com/davidstutz/bootstrap-multiselect/archive/refs/tags/v1.1.2.zip
+          unzip bootstrap-multiselect.zip -d bootstrap-multiselect
+
+      #
+      # JQuery
+      #
+      - name: Download JQuery
+        run: |
+          cd $GITHUB_WORKSPACE
+          wget -P jquery https://code.jquery.com/jquery-3.7.1.min.js
+
+      #
       # GitHub pages deployment
       #
       - name: Collect artifacts for deployment
@@ -174,6 +191,8 @@ jobs:
           cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/ketcher/react-app/build/* ketcher
           cp -R $GITHUB_WORKSPACE/bootstrap .
           cp -R $GITHUB_WORKSPACE/bootstrap-icons .
+          cp -R $GITHUB_WORKSPACE/bootstrap-multiselect/bootstrap-multiselect-*/dist bootstrap-multiselect
+          cp -R $GITHUB_WORKSPACE/jquery .
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
