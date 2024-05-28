@@ -83,6 +83,22 @@ function addInchiOptionsForm(tabDivId, updateFunction) {
     input.addEventListener("change", updateFunction);
   });
 
+  /*
+   * Initialize the Bootstrap Multiselect widget for tautomer options if it exists.
+   */
+  $(clone).find("select[data-tautomer-multiselect]").multiselect({
+    includeSelectAllOption: true,
+    nonSelectedText: "Tautomer options",
+    numberDisplayed: 1,
+    onChange: () => updateFunction(),
+    onDeselectAll: () => updateFunction(),
+    onSelectAll: () => updateFunction(),
+    // Workaround for Bootstrap 5
+    templates: {
+      button: '<button type="button" class="form-select multiselect dropdown-toggle" data-bs-toggle="dropdown"><span class="multiselect-selected-text"></span></button>'
+    },
+  });
+
   // Attach to target element
   targetDiv.innerHTML = "";
   targetDiv.appendChild(clone);
@@ -114,6 +130,11 @@ function getInchiOptions(tabId) {
 
   tabDiv.querySelectorAll("input.form-check-input:enabled[data-inchi-option-off]:not(:checked)").forEach(input => {
     options.push(input.dataset.inchiOptionOff);
+  });
+
+  // Bootstrap Multiselect widget for tautomer options
+  tabDiv.querySelectorAll("select[data-tautomer-multiselect] option[data-inchi-option-on]:checked").forEach(input => {
+    options.push(input.dataset.inchiOptionOn);
   });
 
   return options;
