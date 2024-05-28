@@ -6,10 +6,10 @@
  */
 function onBodyLoad() {
   addVersions("inchi-tab1-pane", availableInchiVersions);
-  addInchiOptions("inchi-tab1-pane", () => updateInchiTab1());
+  addInchiOptionsForm("inchi-tab1-pane", () => updateInchiTab1());
 
   addVersions("inchi-tab2-pane", availableInchiVersions);
-  addInchiOptions("inchi-tab2-pane", () => updateInchiTab2());
+  addInchiOptionsForm("inchi-tab2-pane", () => updateInchiTab2());
 
   addVersions("inchi-tab3-pane", availableInchiVersions);
 
@@ -29,9 +29,11 @@ function addVersions(tabDivId, versions) {
   });
 }
 
-function addInchiOptions(tabDivId, updateFunction) {
+function addInchiOptionsForm(tabDivId, updateFunction) {
+  const inchiVersion = getVersion(tabDivId);
+  const template = document.querySelector(`template[data-inchi-options-template-version="${inchiVersion}"]`);
+
   const targetDiv = document.getElementById(tabDivId).querySelector("div[data-inchi-options]");
-  const template = document.getElementById("inchiOptionsTemplate");
   const clone = template.content.cloneNode(true);
 
   /*
@@ -46,7 +48,7 @@ function addInchiOptions(tabDivId, updateFunction) {
    * 'disabled' state of the inputs that cope with stereo options.
    */
   clone.querySelector("input.form-check-input[data-id=\"includeStereo\"]").addEventListener("change", function() {
-    document.getElementById(targetDivId).querySelectorAll("input.form-check-input[data-inchi-stereo-option]").forEach(input => {
+    document.getElementById(tabDivId).querySelectorAll("input.form-check-input[data-inchi-stereo-option]").forEach(input => {
       input.disabled = !this.checked;
     });
   });
@@ -56,7 +58,7 @@ function addInchiOptions(tabDivId, updateFunction) {
    * 'disabled' state of the inputs that cope with polymer options.
    */
   clone.querySelector("input.form-check-input[data-id=\"treatPolymers\"]").addEventListener("change", function() {
-    document.getElementById(targetDivId).querySelectorAll("input.form-check-input[data-inchi-polymer-option]").forEach(input => {
+    document.getElementById(tabDivId).querySelectorAll("input.form-check-input[data-inchi-polymer-option]").forEach(input => {
       input.disabled = !this.checked;
     });
   });
@@ -125,8 +127,31 @@ function getVersion(tabId) {
   return document.getElementById(tabId).querySelector("select[data-version]").value;
 }
 
+function getInchiOptionsState(tabDivId) {
+  const inchiOptionsDiv = document.getElementById(tabDivId).querySelector("div[data-inchi-options]");
+
+  const optionsState = {};
+  inchiOptionsDiv.querySelectorAll("input[data-id]").forEach(input => {
+    optionsState[input.dataset.id] = [ input.checked, input.disabled ];
+  });
+
+  return optionsState
+}
+
+function applyInchiOptionsState(tabDivId, optionsState) {
+  const inchiOptionsDiv = document.getElementById(tabDivId).querySelector("div[data-inchi-options]");
+
+  Object.entries(optionsState).forEach(([k, v]) => {
+    const input = inchiOptionsDiv.querySelector(`input[data-id="${k}"]`);
+    if (input) {
+      input.checked = v[0];
+      input.disabled = v[1];
+    }
+  });
+}
+
 /*
- * Update actions (when user changes inputs)
+ * Update actions (when user changes inputs/options/(R)InChI version)
  */
 async function updateInchiTab1() {
   // clear output fields
@@ -151,6 +176,18 @@ async function updateInchiTab1() {
   await convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, "inchi-tab1-inchi", "inchi-tab1-inchikey", "inchi-tab1-auxinfo", "inchi-tab1-logs");
 }
 
+async function onChangeInChIVersionTab1() {
+  await onChangeInChIVersion("inchi-tab1-pane", () => updateInchiTab1())
+}
+
+async function onChangeInChIVersion(tabDivId, updateFunction) {
+  const optionsState = getInchiOptionsState(tabDivId);
+  addInchiOptionsForm(tabDivId, () => updateFunction());
+  applyInchiOptionsState(tabDivId, optionsState);
+
+  await updateFunction();
+}
+
 async function updateInchiTab2() {
   // clear output fields
   writeResult("", "inchi-tab2-inchi", "inchi-tab2-inchikey", "inchi-tab2-auxinfo", "inchi-tab2-logs");
@@ -162,6 +199,10 @@ async function updateInchiTab2() {
 
   // run conversion
   await convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, "inchi-tab2-inchi", "inchi-tab2-inchikey", "inchi-tab2-auxinfo", "inchi-tab2-logs");
+}
+
+async function onChangeInChIVersionTab2() {
+  await onChangeInChIVersion("inchi-tab2-pane", () => updateInchiTab2())
 }
 
 async function convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, inchiTextElementId, inchikeyTextElementId, auxinfoTextElementId, logTextElementId) {

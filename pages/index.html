@@ -76,7 +76,7 @@
                   <div data-inchi-options></div>
                   <div class="mt-2">
                     <label class="form-check-label mb-2" for="inchi-tab1-inchiversion">Select InChI version</label>
-                    <select id="inchi-tab1-inchiversion" class="form-select" data-version onchange="updateInchiTab1()"></select>
+                    <select id="inchi-tab1-inchiversion" class="form-select" data-version onchange="onChangeInChIVersionTab1()"></select>
                   </div>
                 </div>
               </div>
@@ -121,7 +121,7 @@
                   <div data-inchi-options></div>
                   <div class="mt-2">
                     <label class="form-check-label mb-2" for="inchi-tab2-inchiversion">Select InChI version</label>
-                    <select id="inchi-tab2-inchiversion" class="form-select" data-version onchange="updateInchiTab2()"></select>
+                    <select id="inchi-tab2-inchiversion" class="form-select" data-version onchange="onChangeInChIVersionTab2()"></select>
                   </div>
                 </div>
               </div>
@@ -475,8 +475,89 @@
 
     </div>
 
-    <!-- Template for InChI options -->
-    <template id="inchiOptionsTemplate">
+    <!-- Template for InChI 1.06 options -->
+    <template data-inchi-options-template-version="1.06">
+      <div class="form-check">
+        <input data-id="mobileH" class="form-check-input" type="checkbox" data-inchi-option-off="DoNotAddH" data-default-checked checked>
+        <label class="form-check-label">Mobile H Perception</label>
+      </div>
+      <div class="row row-cols-auto">
+        <div class="col">
+          <div class="form-check">
+            <input data-id="includeStereo" class="form-check-input" type="checkbox" data-inchi-option-off="SNon" data-default-checked checked>
+            <label class="form-check-label">Include Stereo:</label>
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-check ms-xl-0 ms-lg-4">
+            <input data-id="SAbs" class="form-check-input" type="radio" name="stereoRadio" data-inchi-stereo-option data-default-checked checked>
+            <label class="form-check-label">Absolute</label>
+          </div>
+          <div class="form-check ms-xl-0 ms-lg-4">
+            <input data-id="SRel" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRel" data-inchi-stereo-option>
+            <label class="form-check-label">Relative</label>
+          </div>
+          <div class="form-check ms-xl-0 ms-lg-4">
+            <input data-id="SRac" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRac" data-inchi-stereo-option>
+            <label class="form-check-label">Racemic</label>
+          </div>
+          <div class="form-check ms-xl-0 ms-lg-4">
+            <input data-id="SUCF" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SUCF" data-inchi-stereo-option>
+            <label class="form-check-label">From chiral flag</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="SUU" class="form-check-input" type="checkbox" data-inchi-option-on="SUU" data-inchi-stereo-option>
+        <label class="form-check-label">Always include omitted/undefined stereo</label>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="SLUUD" class="form-check-input" type="checkbox" data-inchi-option-on="SLUUD" data-inchi-stereo-option>
+        <label class="form-check-label">Different marks for unknown/undefined stereo</label>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="NEWPSOFF" class="form-check-input" type="checkbox" data-inchi-option-on="NEWPSOFF" data-inchi-stereo-option>
+        <label class="form-check-label">Both ends of wedge point to stereocenters</label>
+      </div>
+      <div class="form-check">
+        <input data-id="RecMet" class="form-check-input" type="checkbox" data-inchi-option-on="RecMet">
+        <label class="form-check-label">Include Bonds to Metal</label>
+      </div>
+      <div class="form-check">
+        <input data-id="KET" class="form-check-input" type="checkbox" data-inchi-option-on="KET">
+        <label class="form-check-label">Keto-enol Tautomerism</label>
+      </div>
+      <div class="form-check">
+        <input data-id="15T" class="form-check-input" type="checkbox" data-inchi-option-on="15T">
+        <label class="form-check-label">1,5-tautomerism</label>
+      </div>
+      <div class="form-check">
+        <input data-id="treatPolymers" class="form-check-input" type="checkbox" data-inchi-option-on="Polymers">
+        <label class="form-check-label">Treat polymers:</label>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="NoEdits" class="form-check-input" type="checkbox" data-inchi-option-on="NoEdits" data-inchi-polymer-option data-default-disabled disabled>
+        <label class="form-check-label">No pre-edits of original polymer structure</label>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="FoldCRU" class="form-check-input" type="checkbox" data-inchi-option-on="FoldCRU" data-inchi-polymer-option data-default-disabled disabled>
+        <label class="form-check-label">Enable CRU folding</label>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="NoFrameShift" class="form-check-input" type="checkbox" data-inchi-option-on="NoFrameShift" data-inchi-polymer-option data-default-disabled disabled>
+        <label class="form-check-label">Disable CRU frame shift</label>
+      </div>
+      <div class="form-check">
+        <input data-id="NPZz" class="form-check-input" type="checkbox" data-inchi-option-on="NPZz">
+        <label class="form-check-label">Allow non-polymer Zz pseudoatoms</label>
+      </div>
+      <div class="mt-2">
+        <a style="text-decoration:none;" role="button" data-reset-inchi-options><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a>
+      </div>
+    </template>
+
+    <!-- Template for InChI 1.07 options -->
+    <template data-inchi-options-template-version="1.07-RC1">
       <div class="form-check">
         <input data-id="mobileH" class="form-check-input" type="checkbox" data-inchi-option-off="DoNotAddH" data-default-checked checked>
         <label class="form-check-label">Mobile H Perception</label>
