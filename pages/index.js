@@ -124,7 +124,7 @@ function resetInchiOptions(targetDivId) {
   });
 
   // Bootstrap Multiselect widget for tautomer options
-  $(targetDiv).find("select[data-tautomer-multiselect]").multiselect('deselectAll', false);
+  $(targetDiv).find("select[data-tautomer-multiselect]").multiselect("deselectAll", false);
 }
 
 function getInchiOptions(tabId) {
@@ -157,10 +157,15 @@ function getVersion(tabId) {
 
 function getInchiOptionsState(tabDivId) {
   const inchiOptionsDiv = document.getElementById(tabDivId).querySelector("div[data-inchi-options]");
-
   const optionsState = {};
+
   inchiOptionsDiv.querySelectorAll("input[data-id]").forEach(input => {
     optionsState[input.dataset.id] = [ input.checked, input.disabled ];
+  });
+
+  // Bootstrap Multiselect widget for tautomer options
+  inchiOptionsDiv.querySelectorAll("select[data-tautomer-multiselect] option[data-id]").forEach(optionElement => {
+    optionsState[optionElement.dataset.id] = [ optionElement.selected, optionElement.disabled ];
   });
 
   return optionsState
@@ -174,6 +179,12 @@ function applyInchiOptionsState(tabDivId, optionsState) {
     if (input) {
       input.checked = v[0];
       input.disabled = v[1];
+      return;
+    }
+
+    // Bootstrap Multiselect widget for tautomer options
+    if (v[0]) {
+      $(inchiOptionsDiv).find("select[data-tautomer-multiselect]").multiselect("select", k);
     }
   });
 }
