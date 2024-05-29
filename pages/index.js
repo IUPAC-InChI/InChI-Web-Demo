@@ -106,18 +106,25 @@ function addInchiOptionsForm(tabDivId, updateFunction) {
 
 function resetInchiOptions(targetDivId) {
   const targetDiv = document.getElementById(targetDivId);
+
   targetDiv.querySelectorAll("input.form-check-input[data-default-checked]").forEach(input => {
     input.checked = true;
   });
+
   targetDiv.querySelectorAll("input.form-check-input:not([data-default-checked])").forEach(input => {
     input.checked = false;
   });
+
   targetDiv.querySelectorAll("input.form-check-input[data-default-disabled]").forEach(input => {
     input.disabled = true;
   });
+
   targetDiv.querySelectorAll("input.form-check-input:not([data-default-disabled])").forEach(input => {
     input.disabled = false;
   });
+
+  // Bootstrap Multiselect widget for tautomer options
+  $(targetDiv).find("select[data-tautomer-multiselect]").multiselect('deselectAll', false);
 }
 
 function getInchiOptions(tabId) {
@@ -133,8 +140,8 @@ function getInchiOptions(tabId) {
   });
 
   // Bootstrap Multiselect widget for tautomer options
-  tabDiv.querySelectorAll("select[data-tautomer-multiselect] option[data-inchi-option-on]:checked").forEach(input => {
-    options.push(input.dataset.inchiOptionOn);
+  tabDiv.querySelectorAll("select[data-tautomer-multiselect] option[data-inchi-option-on]:checked").forEach(optionElement => {
+    options.push(optionElement.dataset.inchiOptionOn);
   });
 
   return options;
