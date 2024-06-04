@@ -87,6 +87,7 @@ function addInchiOptionsForm(tabDivId, updateFunction) {
    * Initialize the Bootstrap Multiselect widget for tautomer options if it exists.
    */
   $(clone).find("select[data-tautomer-multiselect]").multiselect({
+    buttonContainer: '<div class="btn-group mw-100"></div>',
     includeSelectAllOption: true,
     nonSelectedText: "Tautomer options",
     numberDisplayed: 1,
