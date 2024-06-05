@@ -14,8 +14,12 @@
 
     <link href="css/index.css" rel="stylesheet">
     <link href="bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <!-- Only bootstrap-multiselect needs jQuery. -->
+    <script src="jquery/jquery-3.7.1.min.js" integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs" crossorigin="anonymous"></script>
     <script src="bootstrap/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
     <link href="bootstrap-icons/bootstrap-icons-1.10.3/bootstrap-icons.css" rel="stylesheet" integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e" crossorigin="anonymous">
+    <script src="bootstrap-multiselect/js/bootstrap-multiselect.min.js" integrity="sha384-0bKqY/QpXas8sskCT4hKi1EsfrCHXH7kZYNMr05pTeUbEdxf5xdjxEy1fjdU861x" crossorigin="anonymous"></script>
+    <link href="bootstrap-multiselect/css/bootstrap-multiselect.min.css" rel="stylesheet" integrity="sha384-sRRK8QIx/nQdgIMFawlqpzKW5yaVcx63vbU82I9nuHAdsQN/blJQNrf6GORupDMI" crossorigin="anonymous">
   </head>
   <body onload="onBodyLoad()">
     <div class="container-md" style="margin-bottom: 2rem;">
@@ -73,10 +77,10 @@
                   </div>
                 </div>
                 <div class="col-xl-4 mt-auto">
-                  <div id="inchi-tab1-options"></div>
+                  <div data-inchi-options></div>
                   <div class="mt-2">
                     <label class="form-check-label mb-2" for="inchi-tab1-inchiversion">Select InChI version</label>
-                    <select id="inchi-tab1-inchiversion" class="form-select" onchange="updateInchiTab1()"></select>
+                    <select id="inchi-tab1-inchiversion" class="form-select" data-version onchange="onChangeInChIVersionTab1()"></select>
                   </div>
                 </div>
               </div>
@@ -118,10 +122,10 @@
                   </div>
                 </div>
                 <div class="col-xl-4 mt-auto">
-                  <div id="inchi-tab2-options"></div>
+                  <div data-inchi-options></div>
                   <div class="mt-2">
                     <label class="form-check-label mb-2" for="inchi-tab2-inchiversion">Select InChI version</label>
-                    <select id="inchi-tab2-inchiversion" class="form-select" onchange="updateInchiTab2()"></select>
+                    <select id="inchi-tab2-inchiversion" class="form-select" data-version onchange="onChangeInChIVersionTab2()"></select>
                   </div>
                 </div>
               </div>
@@ -164,7 +168,7 @@
                 <div class="col-xl-4 mt-auto">
                   <div class="mt-2">
                     <label class="form-check-label mb-2" for="inchi-tab3-inchiversion">Select InChI version</label>
-                    <select id="inchi-tab3-inchiversion" class="form-select" onchange="updateInchiTab3()"></select>
+                    <select id="inchi-tab3-inchiversion" class="form-select" data-version onchange="updateInchiTab3()"></select>
                   </div>
                 </div>
               </div>
@@ -220,7 +224,7 @@
                 <div class="col-xl-4 mt-auto">
                   <div class="mt-2">
                     <label class="form-check-label mb-2" for="rinchi-tab1-rinchiversion">Select RInChI version</label>
-                    <select id="rinchi-tab1-rinchiversion" class="form-select" onchange="updateRinchiTab1()"></select>
+                    <select id="rinchi-tab1-rinchiversion" class="form-select" data-version onchange="updateRinchiTab1()"></select>
                   </div>
                 </div>
               </div>
@@ -280,7 +284,7 @@
                   </div>
                   <div class="mt-2">
                     <label class="form-check-label mb-2" for="rinchi-tab2-rinchiversion">Select RInChI version</label>
-                    <select id="rinchi-tab2-rinchiversion" class="form-select" onchange="updateRinchiTab2()"></select>
+                    <select id="rinchi-tab2-rinchiversion" class="form-select" data-version onchange="updateRinchiTab2()"></select>
                   </div>
                 </div>
               </div>
@@ -340,7 +344,7 @@
                 <div class="col-xl-4 mt-auto">
                   <div class="mt-4">
                     <label class="form-check-label mb-2" for="rinchi-tab3-rinchiversion">Select RInChI version</label>
-                    <select id="rinchi-tab3-rinchiversion" class="form-select" onchange="updateRinchiTab3()"></select>
+                    <select id="rinchi-tab3-rinchiversion" class="form-select" data-version onchange="updateRinchiTab3()"></select>
                   </div>
                 </div>
               </div>
@@ -391,7 +395,7 @@
                   </div>
                   <div class="mt-4">
                     <label class="form-check-label mb-2" for="rinchi-tab4-rinchiversion">Select RInChI version</label>
-                    <select id="rinchi-tab4-rinchiversion" class="form-select" onchange="updateRinchiTab4()"></select>
+                    <select id="rinchi-tab4-rinchiversion" class="form-select" data-version onchange="updateRinchiTab4()"></select>
                   </div>
                 </div>
               </div>
@@ -475,81 +479,167 @@
 
     </div>
 
-    <!-- Template for InChI options -->
-    <template id="inchiOptionsTemplate">
+    <!-- Template for InChI 1.06 options -->
+    <template data-inchi-options-template-version="1.06">
       <div class="form-check">
-        <input id="mobileH" class="form-check-input" type="checkbox" data-inchi-option-off="DoNotAddH" data-default-checked checked>
-        <label class="form-check-label" for="mobileH">Mobile H Perception</label>
+        <input data-id="mobileH" class="form-check-input" type="checkbox" data-inchi-option-off="DoNotAddH" data-default-checked checked>
+        <label class="form-check-label">Mobile H Perception</label>
       </div>
       <div class="row row-cols-auto">
         <div class="col">
           <div class="form-check">
-            <input id="includeStereo" class="form-check-input" type="checkbox" data-inchi-option-off="SNon" data-default-checked checked>
-            <label class="form-check-label" for="includeStereo">Include Stereo:</label>
+            <input data-id="includeStereo" class="form-check-input" type="checkbox" data-inchi-option-off="SNon" data-default-checked checked>
+            <label class="form-check-label">Include Stereo:</label>
           </div>
         </div>
         <div class="col">
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input id="SAbs" class="form-check-input" type="radio" name="stereoRadio" data-inchi-stereo-option data-default-checked checked>
-            <label class="form-check-label" for="SAbs">Absolute</label>
+            <input data-id="SAbs" class="form-check-input" type="radio" name="stereoRadio" data-inchi-stereo-option data-default-checked checked>
+            <label class="form-check-label">Absolute</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input id="SRel" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRel" data-inchi-stereo-option>
-            <label class="form-check-label" for="SRel">Relative</label>
+            <input data-id="SRel" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRel" data-inchi-stereo-option>
+            <label class="form-check-label">Relative</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input id="SRac" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRac" data-inchi-stereo-option>
-            <label class="form-check-label" for="SRac">Racemic</label>
+            <input data-id="SRac" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRac" data-inchi-stereo-option>
+            <label class="form-check-label">Racemic</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input id="SUCF" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SUCF" data-inchi-stereo-option>
-            <label class="form-check-label" for="SUCF">From chiral flag</label>
+            <input data-id="SUCF" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SUCF" data-inchi-stereo-option>
+            <label class="form-check-label">From chiral flag</label>
           </div>
         </div>
       </div>
       <div class="form-check ms-4">
-        <input id="SUU" class="form-check-input" type="checkbox" data-inchi-option-on="SUU" data-inchi-stereo-option>
-        <label class="form-check-label" for="SUU">Always include omitted/undefined stereo</label>
+        <input data-id="SUU" class="form-check-input" type="checkbox" data-inchi-option-on="SUU" data-inchi-stereo-option>
+        <label class="form-check-label">Always include omitted/undefined stereo</label>
       </div>
       <div class="form-check ms-4">
-        <input id="SLUUD" class="form-check-input" type="checkbox" data-inchi-option-on="SLUUD" data-inchi-stereo-option>
-        <label class="form-check-label" for="SLUUD">Different marks for unknown/undefined stereo</label>
+        <input data-id="SLUUD" class="form-check-input" type="checkbox" data-inchi-option-on="SLUUD" data-inchi-stereo-option>
+        <label class="form-check-label">Different marks for unknown/undefined stereo</label>
       </div>
       <div class="form-check ms-4">
-        <input id="NEWPSOFF" class="form-check-input" type="checkbox" data-inchi-option-on="NEWPSOFF" data-inchi-stereo-option>
-        <label class="form-check-label" for="NEWPSOFF">Both ends of wedge point to stereocenters</label>
+        <input data-id="NEWPSOFF" class="form-check-input" type="checkbox" data-inchi-option-on="NEWPSOFF" data-inchi-stereo-option>
+        <label class="form-check-label">Both ends of wedge point to stereocenters</label>
       </div>
       <div class="form-check">
-        <input id="RecMet" class="form-check-input" type="checkbox" data-inchi-option-on="RecMet">
-        <label class="form-check-label" for="RecMet">Include Bonds to Metal</label>
+        <input data-id="RecMet" class="form-check-input" type="checkbox" data-inchi-option-on="RecMet">
+        <label class="form-check-label">Include Bonds to Metal</label>
       </div>
       <div class="form-check">
-        <input id="KET" class="form-check-input" type="checkbox" data-inchi-option-on="KET">
-        <label class="form-check-label" for="KET">Keto-enol Tautomerism</label>
+        <input data-id="KET" class="form-check-input" type="checkbox" data-inchi-option-on="KET">
+        <label class="form-check-label">Keto-enol Tautomerism</label>
       </div>
       <div class="form-check">
-        <input id="15T" class="form-check-input" type="checkbox" data-inchi-option-on="15T">
-        <label class="form-check-label" for="15T">1,5-tautomerism</label>
+        <input data-id="15T" class="form-check-input" type="checkbox" data-inchi-option-on="15T">
+        <label class="form-check-label">1,5-tautomerism</label>
       </div>
       <div class="form-check">
-        <input id="treatPolymers" class="form-check-input" type="checkbox" data-inchi-option-on="Polymers">
-        <label class="form-check-label" for="treatPolymers">Treat polymers:</label>
+        <input data-id="treatPolymers" class="form-check-input" type="checkbox" data-inchi-option-on="Polymers">
+        <label class="form-check-label">Treat polymers:</label>
       </div>
       <div class="form-check ms-4">
-        <input id="NoEdits" class="form-check-input" type="checkbox" data-inchi-option-on="NoEdits" data-inchi-polymer-option data-default-disabled disabled>
-        <label class="form-check-label" for="NoEdits">No pre-edits of original polymer structure</label>
+        <input data-id="NoEdits" class="form-check-input" type="checkbox" data-inchi-option-on="NoEdits" data-inchi-polymer-option data-default-disabled disabled>
+        <label class="form-check-label">No pre-edits of original polymer structure</label>
       </div>
       <div class="form-check ms-4">
-        <input id="FoldCRU" class="form-check-input" type="checkbox" data-inchi-option-on="FoldCRU" data-inchi-polymer-option data-default-disabled disabled>
-        <label class="form-check-label" for="FoldCRU">Enable CRU folding</label>
+        <input data-id="FoldCRU" class="form-check-input" type="checkbox" data-inchi-option-on="FoldCRU" data-inchi-polymer-option data-default-disabled disabled>
+        <label class="form-check-label">Enable CRU folding</label>
       </div>
       <div class="form-check ms-4">
-        <input id="NoFrameShift" class="form-check-input" type="checkbox" data-inchi-option-on="NoFrameShift" data-inchi-polymer-option data-default-disabled disabled>
-        <label class="form-check-label" for="NoFrameShift">Disable CRU frame shift</label>
+        <input data-id="NoFrameShift" class="form-check-input" type="checkbox" data-inchi-option-on="NoFrameShift" data-inchi-polymer-option data-default-disabled disabled>
+        <label class="form-check-label">Disable CRU frame shift</label>
       </div>
       <div class="form-check">
-        <input id="NPZz" class="form-check-input" type="checkbox" data-inchi-option-on="NPZz">
-        <label class="form-check-label" for="NPZz">Allow non-polymer Zz pseudoatoms</label>
+        <input data-id="NPZz" class="form-check-input" type="checkbox" data-inchi-option-on="NPZz">
+        <label class="form-check-label">Allow non-polymer Zz pseudoatoms</label>
+      </div>
+      <div class="mt-2">
+        <a style="text-decoration:none;" role="button" data-reset-inchi-options><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a>
+      </div>
+    </template>
+
+    <!-- Template for InChI 1.07 options -->
+    <template data-inchi-options-template-version="1.07-RC2">
+      <div class="form-check">
+        <input data-id="mobileH" class="form-check-input" type="checkbox" data-inchi-option-off="DoNotAddH" data-default-checked checked>
+        <label class="form-check-label">Mobile H Perception</label>
+      </div>
+      <div class="row row-cols-auto">
+        <div class="col">
+          <div class="form-check">
+            <input data-id="includeStereo" class="form-check-input" type="checkbox" data-inchi-option-off="SNon" data-default-checked checked>
+            <label class="form-check-label">Include Stereo:</label>
+          </div>
+        </div>
+        <div class="col">
+          <div class="form-check ms-xl-0 ms-lg-4">
+            <input data-id="SAbs" class="form-check-input" type="radio" name="stereoRadio" data-inchi-stereo-option data-default-checked checked>
+            <label class="form-check-label">Absolute</label>
+          </div>
+          <div class="form-check ms-xl-0 ms-lg-4">
+            <input data-id="SRel" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRel" data-inchi-stereo-option>
+            <label class="form-check-label">Relative</label>
+          </div>
+          <div class="form-check ms-xl-0 ms-lg-4">
+            <input data-id="SRac" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRac" data-inchi-stereo-option>
+            <label class="form-check-label">Racemic</label>
+          </div>
+          <div class="form-check ms-xl-0 ms-lg-4">
+            <input data-id="SUCF" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SUCF" data-inchi-stereo-option>
+            <label class="form-check-label">From chiral flag</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="SUU" class="form-check-input" type="checkbox" data-inchi-option-on="SUU" data-inchi-stereo-option>
+        <label class="form-check-label">Always include omitted/undefined stereo</label>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="SLUUD" class="form-check-input" type="checkbox" data-inchi-option-on="SLUUD" data-inchi-stereo-option>
+        <label class="form-check-label">Different marks for unknown/undefined stereo</label>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="NEWPSOFF" class="form-check-input" type="checkbox" data-inchi-option-on="NEWPSOFF" data-inchi-stereo-option>
+        <label class="form-check-label">Both ends of wedge point to stereocenters</label>
+      </div>
+      <div class="form-check">
+        <input data-id="RecMet" class="form-check-input" type="checkbox" data-inchi-option-on="RecMet">
+        <label class="form-check-label">Include Bonds to Metal</label>
+      </div>
+      <div class="form-check">
+      <select data-tautomer-multiselect multiple="multiple">
+        <option data-role="divider"></option>
+        <option data-id="KET" data-inchi-option-on="KET" value="KET">KET - Keto-enol Tautomerism</option>
+        <option data-id="15T" data-inchi-option-on="15T" value="15T">15T - 1,5-tautomerism</option>
+        <option data-id="PT_06_00" data-inchi-option-on="PT_06_00" value="PT_06_00">PT_06_00 - 1,3 heteroatom H-shift</option>
+        <option data-id="PT_13_00" data-inchi-option-on="PT_13_00" value="PT_13_00">PT_13_00 - keten-inol exchange</option>
+        <option data-id="PT_16_00" data-inchi-option-on="PT_16_00" value="PT_16_00">PT_16_00 - nitroso/oxime</option>
+        <option data-id="PT_18_00" data-inchi-option-on="PT_18_00" value="PT_18_00">PT_18_00 - cyanic/iso-cyanic acids</option>
+        <option data-id="PT_22_00" data-inchi-option-on="PT_22_00" value="PT_22_00">PT_22_00 - imine/imine</option>
+        <option data-id="PT_39_00" data-inchi-option-on="PT_39_00" value="PT_39_00">PT_39_00 - nitrone/azoxy or Behrend rearrangement</option>
+      </select>
+      </div>
+      <div class="form-check">
+        <input data-id="treatPolymers" class="form-check-input" type="checkbox" data-inchi-option-on="Polymers">
+        <label class="form-check-label">Treat polymers:</label>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="NoEdits" class="form-check-input" type="checkbox" data-inchi-option-on="NoEdits" data-inchi-polymer-option data-default-disabled disabled>
+        <label class="form-check-label">No pre-edits of original polymer structure</label>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="FoldCRU" class="form-check-input" type="checkbox" data-inchi-option-on="FoldCRU" data-inchi-polymer-option data-default-disabled disabled>
+        <label class="form-check-label">Enable CRU folding</label>
+      </div>
+      <div class="form-check ms-4">
+        <input data-id="NoFrameShift" class="form-check-input" type="checkbox" data-inchi-option-on="NoFrameShift" data-inchi-polymer-option data-default-disabled disabled>
+        <label class="form-check-label">Disable CRU frame shift</label>
+      </div>
+      <div class="form-check">
+        <input data-id="NPZz" class="form-check-input" type="checkbox" data-inchi-option-on="NPZz">
+        <label class="form-check-label">Allow non-polymer Zz pseudoatoms</label>
       </div>
       <div class="mt-2">
         <a style="text-decoration:none;" role="button" data-reset-inchi-options><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a>

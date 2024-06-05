@@ -20,9 +20,20 @@ input.form-check-input:is([type="checkbox"], [type="radio"]):checked {
   border-color: #00612c;
 }
 
+/*
+ * Used when at least one item is selected in Bootstrap Multiselect.
+ * Background image is a copy from Bootstrap with altered color ("stroke").
+ */
+button.form-select.multiselect:has(~ div.multiselect-container > button.active)  {
+  color: #ffffff;
+  background-color: #00612c;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
 input.form-check-input:is([type="checkbox"], [type="radio"]):focus,
 select.form-select:focus,
-textarea.form-control:focus {
+textarea.form-control:focus,
+button.form-select.multiselect:focus {
   border-color: #7e9849;
   box-shadow: 0 0 0 0.25rem rgba(126, 152, 73, 0.25);
 }

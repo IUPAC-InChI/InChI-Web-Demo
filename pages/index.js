@@ -5,46 +5,50 @@
  * - initialize user-selectable parameters
  */
 function onBodyLoad() {
-  addVersionsToSelect("inchi-tab1-inchiversion", availableInchiVersions);
-  addInchiOptions("inchi-tab1-options", () => updateInchiTab1());
+  addVersions("inchi-tab1-pane", availableInchiVersions);
+  addInchiOptionsForm("inchi-tab1-pane", () => updateInchiTab1());
 
-  addVersionsToSelect("inchi-tab2-inchiversion", availableInchiVersions);
-  addInchiOptions("inchi-tab2-options", () => updateInchiTab2());
+  addVersions("inchi-tab2-pane", availableInchiVersions);
+  addInchiOptionsForm("inchi-tab2-pane", () => updateInchiTab2());
 
-  addVersionsToSelect("inchi-tab3-inchiversion", availableInchiVersions);
+  addVersions("inchi-tab3-pane", availableInchiVersions);
 
-  addVersionsToSelect("rinchi-tab1-rinchiversion", availableRInchiVersions);
-  addVersionsToSelect("rinchi-tab2-rinchiversion", availableRInchiVersions);
-  addVersionsToSelect("rinchi-tab3-rinchiversion", availableRInchiVersions);
-  addVersionsToSelect("rinchi-tab4-rinchiversion", availableRInchiVersions);
+  addVersions("rinchi-tab1-pane", availableRInchiVersions);
+  addVersions("rinchi-tab2-pane", availableRInchiVersions);
+  addVersions("rinchi-tab3-pane", availableRInchiVersions);
+  addVersions("rinchi-tab4-pane", availableRInchiVersions);
 }
 
-function addVersionsToSelect(selectId, versions) {
+function addVersions(tabDivId, versions) {
+  const targetSelect = document.getElementById(tabDivId).querySelector("select[data-version]");
   versions.forEach(v => {
     const option = document.createElement("option");
     option.innerHTML = v;
     option.value = v;
-    document.getElementById(selectId).appendChild(option);
+    targetSelect.appendChild(option);
   });
 }
 
-function addInchiOptions(targetDivId, updateFunction) {
-  const template = document.getElementById("inchiOptionsTemplate");
+function addInchiOptionsForm(tabDivId, updateFunction) {
+  const inchiVersion = getVersion(tabDivId);
+  const template = document.querySelector(`template[data-inchi-options-template-version="${inchiVersion}"]`);
+
+  const targetDiv = document.getElementById(tabDivId).querySelector("div[data-inchi-options]");
   const clone = template.content.cloneNode(true);
 
   /*
    * Reassign the name of the "stereoRadio" radio button group.
    */
   clone.querySelectorAll("input.form-check-input[type=\"radio\"][name=\"stereoRadio\"]").forEach(input => {
-    input.name = "stereoRadio-" + targetDivId;
+    input.name = "stereoRadio-" + tabDivId;
   });
 
   /*
    * Register an on-change event on the "Include Stereo" checkbox to switch the
    * 'disabled' state of the inputs that cope with stereo options.
    */
-  clone.getElementById("includeStereo").addEventListener("change", function() {
-    document.getElementById(targetDivId).querySelectorAll("input.form-check-input[data-inchi-stereo-option]").forEach(input => {
+  clone.querySelector("input.form-check-input[data-id=\"includeStereo\"]").addEventListener("change", function() {
+    document.getElementById(tabDivId).querySelectorAll("input.form-check-input[data-inchi-stereo-option]").forEach(input => {
       input.disabled = !this.checked;
     });
   });
@@ -53,8 +57,8 @@ function addInchiOptions(targetDivId, updateFunction) {
    * Register an on-change event on the "Treat polymers" checkbox to switch the
    * 'disabled' state of the inputs that cope with polymer options.
    */
-  clone.getElementById("treatPolymers").addEventListener("change", function() {
-    document.getElementById(targetDivId).querySelectorAll("input.form-check-input[data-inchi-polymer-option]").forEach(input => {
+  clone.querySelector("input.form-check-input[data-id=\"treatPolymers\"]").addEventListener("change", function() {
+    document.getElementById(tabDivId).querySelectorAll("input.form-check-input[data-inchi-polymer-option]").forEach(input => {
       input.disabled = !this.checked;
     });
   });
@@ -63,44 +67,131 @@ function addInchiOptions(targetDivId, updateFunction) {
    * Register an on-click event on the "Reset InChI Options" link.
    */
   clone.querySelector("a[data-reset-inchi-options]").addEventListener("click", function() {
-    resetInchiOptions(targetDivId);
+    resetInchiOptions(tabDivId);
     updateFunction();
   });
 
   /*
-   * Reassign ids of all <input> elements and change the target id of their
+   * Assign ids to all <input> elements and assign the target id of their
    * <label> element accordingly. Also register an on-change event to call
    * updateFunction.
    */
   clone.querySelectorAll("input.form-check-input").forEach(input => {
-    const newId = input.id + "-" + targetDivId;
-    input.id = newId;
-    input.nextElementSibling.htmlFor = newId;
+    input.id = input.dataset.id + "-" + tabDivId;
+    input.nextElementSibling.htmlFor = input.id;
 
     input.addEventListener("change", updateFunction);
   });
 
-  document.getElementById(targetDivId).appendChild(clone);
+  /*
+   * Initialize the Bootstrap Multiselect widget for tautomer options if it exists.
+   */
+  $(clone).find("select[data-tautomer-multiselect]").multiselect({
+    buttonContainer: '<div class="btn-group mw-100"></div>',
+    includeSelectAllOption: true,
+    nonSelectedText: "Tautomer options",
+    numberDisplayed: 1,
+    onChange: () => updateFunction(),
+    onDeselectAll: () => updateFunction(),
+    onSelectAll: () => updateFunction(),
+    // Workaround for Bootstrap 5
+    templates: {
+      button: '<button type="button" class="form-select multiselect dropdown-toggle" data-bs-toggle="dropdown"><span class="multiselect-selected-text"></span></button>'
+    },
+  });
+
+  // Attach to target element
+  targetDiv.innerHTML = "";
+  targetDiv.appendChild(clone);
 }
 
 function resetInchiOptions(targetDivId) {
   const targetDiv = document.getElementById(targetDivId);
+
   targetDiv.querySelectorAll("input.form-check-input[data-default-checked]").forEach(input => {
     input.checked = true;
   });
+
   targetDiv.querySelectorAll("input.form-check-input:not([data-default-checked])").forEach(input => {
     input.checked = false;
   });
+
   targetDiv.querySelectorAll("input.form-check-input[data-default-disabled]").forEach(input => {
     input.disabled = true;
   });
+
   targetDiv.querySelectorAll("input.form-check-input:not([data-default-disabled])").forEach(input => {
     input.disabled = false;
+  });
+
+  // Bootstrap Multiselect widget for tautomer options
+  $(targetDiv).find("select[data-tautomer-multiselect]").multiselect("deselectAll", false);
+}
+
+function getInchiOptions(tabId) {
+  const options = [];
+  const tabDiv = document.getElementById(tabId);
+
+  tabDiv.querySelectorAll("input.form-check-input:enabled[data-inchi-option-on]:checked").forEach(input => {
+    options.push(input.dataset.inchiOptionOn);
+  });
+
+  tabDiv.querySelectorAll("input.form-check-input:enabled[data-inchi-option-off]:not(:checked)").forEach(input => {
+    options.push(input.dataset.inchiOptionOff);
+  });
+
+  // Bootstrap Multiselect widget for tautomer options
+  tabDiv.querySelectorAll("select[data-tautomer-multiselect] option[data-inchi-option-on]:checked").forEach(optionElement => {
+    options.push(optionElement.dataset.inchiOptionOn);
+  });
+
+  return options;
+}
+
+function collectInchiOptions(tabId) {
+  return getInchiOptions(tabId).map(o => "-" + o).join(" ");
+}
+
+function getVersion(tabId) {
+  return document.getElementById(tabId).querySelector("select[data-version]").value;
+}
+
+function getInchiOptionsState(tabDivId) {
+  const inchiOptionsDiv = document.getElementById(tabDivId).querySelector("div[data-inchi-options]");
+  const optionsState = {};
+
+  inchiOptionsDiv.querySelectorAll("input[data-id]").forEach(input => {
+    optionsState[input.dataset.id] = [ input.checked, input.disabled ];
+  });
+
+  // Bootstrap Multiselect widget for tautomer options
+  inchiOptionsDiv.querySelectorAll("select[data-tautomer-multiselect] option[data-id]").forEach(optionElement => {
+    optionsState[optionElement.dataset.id] = [ optionElement.selected, optionElement.disabled ];
+  });
+
+  return optionsState
+}
+
+function applyInchiOptionsState(tabDivId, optionsState) {
+  const inchiOptionsDiv = document.getElementById(tabDivId).querySelector("div[data-inchi-options]");
+
+  Object.entries(optionsState).forEach(([k, v]) => {
+    const input = inchiOptionsDiv.querySelector(`input[data-id="${k}"]`);
+    if (input) {
+      input.checked = v[0];
+      input.disabled = v[1];
+      return;
+    }
+
+    // Bootstrap Multiselect widget for tautomer options
+    if (v[0]) {
+      $(inchiOptionsDiv).find("select[data-tautomer-multiselect]").multiselect("select", k);
+    }
   });
 }
 
 /*
- * Update actions (when user changes inputs)
+ * Update actions (when user changes inputs/options/(R)InChI version)
  */
 async function updateInchiTab1() {
   // clear output fields
@@ -118,11 +209,23 @@ async function updateInchiTab1() {
   } else {
     molfile = await ketcher.getMolfile();
   }
-  const options = collectInchiOptions("inchi-tab1-options");
-  const inchiVersion = document.getElementById("inchi-tab1-inchiversion").value;
+  const options = collectInchiOptions("inchi-tab1-pane");
+  const inchiVersion = getVersion("inchi-tab1-pane");
 
   // run conversion
   await convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, "inchi-tab1-inchi", "inchi-tab1-inchikey", "inchi-tab1-auxinfo", "inchi-tab1-logs");
+}
+
+async function onChangeInChIVersionTab1() {
+  await onChangeInChIVersion("inchi-tab1-pane", () => updateInchiTab1())
+}
+
+async function onChangeInChIVersion(tabDivId, updateFunction) {
+  const optionsState = getInchiOptionsState(tabDivId);
+  addInchiOptionsForm(tabDivId, () => updateFunction());
+  applyInchiOptionsState(tabDivId, optionsState);
+
+  await updateFunction();
 }
 
 async function updateInchiTab2() {
@@ -131,11 +234,15 @@ async function updateInchiTab2() {
 
   // collect user input
   const molfile = document.getElementById("inchi-tab2-molfileTextarea").value;
-  const options = collectInchiOptions("inchi-tab2-options");
-  const inchiVersion = document.getElementById("inchi-tab2-inchiversion").value;
+  const options = collectInchiOptions("inchi-tab2-pane");
+  const inchiVersion = getVersion("inchi-tab2-pane");
 
   // run conversion
   await convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, "inchi-tab2-inchi", "inchi-tab2-inchikey", "inchi-tab2-auxinfo", "inchi-tab2-logs");
+}
+
+async function onChangeInChIVersionTab2() {
+  await onChangeInChIVersion("inchi-tab2-pane", () => updateInchiTab2())
 }
 
 async function convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, inchiTextElementId, inchikeyTextElementId, auxinfoTextElementId, logTextElementId) {
@@ -173,26 +280,6 @@ async function convertMolfileToInchiAndWriteResults(molfile, options, inchiVersi
   writeResult(log.join("\n"), logTextElementId);
 }
 
-function collectInchiOptions(tabOptionsId) {
-  const options = [];
-
-  document.getElementById(tabOptionsId)
-    .querySelectorAll("input.form-check-input:enabled[data-inchi-option-on]:checked")
-    .forEach(input => {
-      options.push(input.dataset.inchiOptionOn);
-    }
-  );
-
-  document.getElementById(tabOptionsId)
-    .querySelectorAll("input.form-check-input:enabled[data-inchi-option-off]:not(:checked)")
-    .forEach(input => {
-      options.push(input.dataset.inchiOptionOff);
-    }
-  );
-
-  return options.map(o => "-" + o).join(" ");
-}
-
 function writeResult(text, ...ids) {
   for (let id of ids) {
     document.getElementById(id).textContent = text;
@@ -201,7 +288,7 @@ function writeResult(text, ...ids) {
 
 async function updateInchiTab3() {
   const input = document.getElementById("inchi-tab3-inputTextarea").value.trim();
-  const inchiVersion = document.getElementById("inchi-tab3-inchiversion").value;
+  const inchiVersion = getVersion("inchi-tab3-pane");
   const ketcher = getKetcher("inchi-tab3-ketcher");
   const logTextElementId = "inchi-tab3-logs";
 
@@ -264,7 +351,7 @@ async function updateRinchiTab1() {
   } else {
     rxnfile = await ketcher.getRxn();
   }
-  const rinchiVersion = document.getElementById("rinchi-tab1-rinchiversion").value;
+  const rinchiVersion = getVersion("rinchi-tab1-pane");
   const equilibrium = hasEquilibriumReactionArrow(ketcher);
 
   // run conversion
@@ -289,7 +376,7 @@ async function updateRinchiTab2() {
 
   // collect user input
   const rxnfile = document.getElementById("rinchi-tab2-rxnrdfileTextarea").value;
-  const rinchiVersion = document.getElementById("rinchi-tab2-rinchiversion").value;
+  const rinchiVersion = getVersion("rinchi-tab2-pane");
   const equilibrium = document.getElementById("rinchi-tab2-forceequilibrium").checked;
 
   // run conversion
@@ -344,7 +431,7 @@ async function convertRinchiToRinchikeyAndWriteResult(rinchi, rinchiVersion, key
 async function updateRinchiTab3() {
   const rinchi = document.getElementById("rinchi-tab3-rinchiTextarea").value.trim();
   const rauxinfo = document.getElementById("rinchi-tab3-rauxinfoTextarea").value.trim();
-  const rinchiVersion = document.getElementById("rinchi-tab3-rinchiversion").value;
+  const rinchiVersion = getVersion("rinchi-tab3-pane");
   const logTextElementId = "rinchi-tab3-logs";
   const ketcher = getKetcher("rinchi-tab3-ketcher");
 
@@ -362,7 +449,7 @@ async function updateRinchiTab4() {
   const rinchi = document.getElementById("rinchi-tab4-rinchiTextarea").value.trim();
   const rauxinfo = document.getElementById("rinchi-tab4-rauxinfoTextarea").value.trim();
   const format = document.querySelector("input.form-check-input[type=\"radio\"][name=\"rinchioutputformatRadio\"]:checked").value;
-  const rinchiVersion = document.getElementById("rinchi-tab4-rinchiversion").value;
+  const rinchiVersion = getVersion("rinchi-tab4-pane");
   const logTextElementId = "rinchi-tab4-logs";
   const outputTextElementId = "rinchi-tab4-rxnfile";
 
