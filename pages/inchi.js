@@ -8,7 +8,7 @@
  */
 const inchiModulePromises = {
   "1.06": inchiModule106(),
-  "1.07-RC2": inchiModule107()
+  "1.07-RC3": inchiModule107()
 };
 
 const availableInchiVersions = Object.keys(inchiModulePromises);
