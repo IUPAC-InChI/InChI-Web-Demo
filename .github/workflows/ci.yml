@@ -52,7 +52,7 @@ jobs:
         with:
           path: './InChI_1_07'
           repository: 'IUPAC-InChI/InChI'
-          ref: 'v1.07-RC4'
+          ref: 'v1.07.0'
 
       #
       # Compile v1.06's INCHI_EXE and run the test suite

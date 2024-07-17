@@ -11,7 +11,7 @@ const availableInchiVersions = {
     "module": inchiModule106(),
     "default": true
   },
-  "1.07-RC4": {
+  "1.07.0": {
     "module": inchiModule107()
   }
 };
