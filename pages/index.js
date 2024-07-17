@@ -21,12 +21,13 @@ function onBodyLoad() {
 
 function addVersions(tabDivId, versions) {
   const targetSelect = document.getElementById(tabDivId).querySelector("select[data-version]");
-  versions.forEach(v => {
+  for (const [versionString, versionObject] of Object.entries(versions)) {
     const option = document.createElement("option");
-    option.innerHTML = v;
-    option.value = v;
+    option.innerHTML = versionString;
+    option.value = versionString;
+    option.selected = Boolean(versionObject.default);
     targetSelect.appendChild(option);
-  });
+  };
 }
 
 function addInchiOptionsForm(tabDivId, updateFunction) {

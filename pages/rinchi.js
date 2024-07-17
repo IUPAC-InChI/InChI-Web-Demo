@@ -6,11 +6,12 @@
  * Calling the factory function returns a Promise which resolves to the module object.
  * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
  */
-const rinchiModulePromises = {
-  "1.00": rinchiModule100()
+const availableRInchiVersions = {
+  "1.00": {
+    "module": rinchiModule100(),
+    "default": true
+  }
 };
-
-const availableRInchiVersions = Object.keys(rinchiModulePromises);
 
 /*
  * Glue code to invoke rinchi_lib's C functions.
@@ -19,7 +20,7 @@ const availableRInchiVersions = Object.keys(rinchiModulePromises);
  * on how to cope with char** arguments.
  */
 async function rinchiFromRxnfile(rxnfile, forceEquilibrium, rinchiVersion) {
-  const module = await rinchiModulePromises[rinchiVersion];
+  const module = await availableRInchiVersions[rinchiVersion].module;
 
   const out_rinchi_stringPtr = module._malloc(4);
   const out_rinchi_auxinfoPtr = module._malloc(4);
@@ -43,7 +44,7 @@ async function rinchiFromRxnfile(rxnfile, forceEquilibrium, rinchiVersion) {
 }
 
 async function fileTextFromRinchi(rinchi, rauxinfo, format, rinchiVersion) {
-  const module = await rinchiModulePromises[rinchiVersion];
+  const module = await availableRInchiVersions[rinchiVersion].module;
 
   const out_file_textPtr = module._malloc(4);
   const res = module.ccall(
@@ -64,7 +65,7 @@ async function fileTextFromRinchi(rinchi, rauxinfo, format, rinchiVersion) {
 }
 
 async function rinchikeyFromRinchi(rinchi, keyType, rinchiVersion) {
-  const module = await rinchiModulePromises[rinchiVersion];
+  const module = await availableRInchiVersions[rinchiVersion].module;
 
   const out_rinchi_keyPtr = module._malloc(4);
   const res = module.ccall(

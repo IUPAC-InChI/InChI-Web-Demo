@@ -6,12 +6,15 @@
  * Calling the factory function returns a Promise which resolves to the module object.
  * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
  */
-const inchiModulePromises = {
-  "1.06": inchiModule106(),
-  "1.07-RC4": inchiModule107()
+const availableInchiVersions = {
+  "1.06": {
+    "module": inchiModule106(),
+    "default": true
+  },
+  "1.07-RC4": {
+    "module": inchiModule107()
+  }
 };
-
-const availableInchiVersions = Object.keys(inchiModulePromises);
 
 /*
  * Glue code to invoke the C functions in inchi_web.c
@@ -22,7 +25,7 @@ const availableInchiVersions = Object.keys(inchiModulePromises);
  * not do this on its own when using "string" as return type.)
  */
 async function inchiFromMolfile(molfile, options, inchiVersion) {
-  const module = await inchiModulePromises[inchiVersion];
+  const module = await availableInchiVersions[inchiVersion].module;
   const ptr = module.ccall("inchi_from_molfile", "number", ["string", "string"], [molfile, options]);
   const result = module.UTF8ToString(ptr);
   module._free(ptr);
@@ -31,7 +34,7 @@ async function inchiFromMolfile(molfile, options, inchiVersion) {
 }
 
 async function inchikeyFromInchi(inchi, inchiVersion) {
-  const module = await inchiModulePromises[inchiVersion];
+  const module = await availableInchiVersions[inchiVersion].module;
   const ptr = module.ccall("inchikey_from_inchi", "number", ["string"], [inchi]);
   const result = module.UTF8ToString(ptr);
   module._free(ptr)
@@ -40,7 +43,7 @@ async function inchikeyFromInchi(inchi, inchiVersion) {
 }
 
 async function molfileFromInchi(inchi, options, inchiVersion) {
-  const module = await inchiModulePromises[inchiVersion];
+  const module = await availableInchiVersions[inchiVersion].module;
   const ptr = module.ccall("molfile_from_inchi", "number", ["string", "string"], [inchi, options]);
   const result = module.UTF8ToString(ptr);
   module._free(ptr);
@@ -49,7 +52,7 @@ async function molfileFromInchi(inchi, options, inchiVersion) {
 }
 
 async function molfileFromAuxinfo(auxinfo, bDoNotAddH, bDiffUnkUndfStereo, inchiVersion) {
-  const module = await inchiModulePromises[inchiVersion];
+  const module = await availableInchiVersions[inchiVersion].module;
   const ptr = module.ccall("molfile_from_auxinfo", "number", ["string", "number", "number"], [auxinfo, bDoNotAddH, bDiffUnkUndfStereo]);
   const result = module.UTF8ToString(ptr);
   module._free(ptr);
