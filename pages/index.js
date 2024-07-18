@@ -32,7 +32,8 @@ function addVersions(tabDivId, versions) {
 
 function addInchiOptionsForm(tabDivId, updateFunction) {
   const inchiVersion = getVersion(tabDivId);
-  const template = document.querySelector(`template[data-inchi-options-template-version="${inchiVersion}"]`);
+  const templateId = availableInchiVersions[inchiVersion].optionsTemplateId;
+  const template = document.getElementById(templateId);
 
   const targetDiv = document.getElementById(tabDivId).querySelector("div[data-inchi-options]");
   const clone = template.content.cloneNode(true);
