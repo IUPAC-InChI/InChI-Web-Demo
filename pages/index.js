@@ -256,6 +256,7 @@ async function convertMolfileToInchiAndWriteResults(molfile, options, inchiVersi
     inchiResult = await inchiFromMolfile(molfile, options, inchiVersion);
   } catch(e) {
     writeResult(`Caught exception from inchiFromMolfile(): ${e}`, logTextElementId);
+    console.error(e);
     return;
   }
   writeResult(inchiResult.inchi, inchiTextElementId);
@@ -271,6 +272,7 @@ async function convertMolfileToInchiAndWriteResults(molfile, options, inchiVersi
       inchikeyResult = await inchikeyFromInchi(inchiResult.inchi, inchiVersion);
     } catch(e) {
       log.push(`Caught exception from inchikeyFromInchi(): ${e}`);
+      console.error(e);
     }
     writeResult(inchikeyResult.inchikey, inchikeyTextElementId);
 
@@ -314,6 +316,7 @@ async function updateInchiTab3() {
       molfileResult = await molfileFromInchi(input, "", inchiVersion);
     } catch(e) {
       writeResult(`Caught exception from molfileFromInchi(): ${e}`, logTextElementId);
+      console.error(e);
       return;
     }
   } else if (input.startsWith("AuxInfo=")) {
@@ -321,6 +324,7 @@ async function updateInchiTab3() {
       molfileResult = await molfileFromAuxinfo(input, 0, 0, inchiVersion);
     } catch(e) {
       writeResult(`Caught exception from molfileFromAuxinfo(): ${e}`, logTextElementId);
+      console.error(e);
       return;
     }
   }
@@ -402,6 +406,7 @@ async function convertRxnfileToRinchiAndWriteResults(rxnfile, forceEquilibrium, 
     rinchiResult = await rinchiFromRxnfile(rxnfile, forceEquilibrium, rinchiVersion);
   } catch(e) {
     writeResult(`Caught exception from rinchiFromRxnfile(): ${e}`, logTextElementId);
+    console.error(e);
     return;
   }
   writeResult(rinchiResult.rinchi, rinchiTextElementId);
@@ -426,6 +431,7 @@ async function convertRinchiToRinchikeyAndWriteResult(rinchi, rinchiVersion, key
     rinchikeyResult = await rinchikeyFromRinchi(rinchi, keyType, rinchiVersion);
   } catch(e) {
     log.push(`Caught exception from rinchikeyFromRinchi(): ${e}`);
+    console.error(e);
     return;
   }
   writeResult(rinchikeyResult.rinchikey, rinchikeyTextElementId);
@@ -486,6 +492,7 @@ async function convertRinchiToTextfile(rinchi, rauxinfo, format, rinchiVersion, 
     rinchiResult = await fileTextFromRinchi(rinchi, rauxinfo, format, rinchiVersion);
   } catch(e) {
     writeResult(`Caught exception from fileTextFromRinchi(): ${e}`, logTextElementId);
+    console.error(e);
     return;
   }
   if (rinchiResult.error !== "") {
