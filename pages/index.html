@@ -80,7 +80,7 @@
                   <div data-inchi-options></div>
                   <div class="mt-2">
                     <label class="form-check-label mb-2" for="inchi-tab1-inchiversion">Select InChI version</label>
-                    <select id="inchi-tab1-inchiversion" class="form-select" data-version onchange="onChangeInChIVersionTab1()"></select>
+                    <select id="inchi-tab1-inchiversion" class="form-select" data-version onchange="onChangeInChIVersionTab1(); initTooltips();"></select>
                   </div>
                 </div>
               </div>
@@ -125,7 +125,7 @@
                   <div data-inchi-options></div>
                   <div class="mt-2">
                     <label class="form-check-label mb-2" for="inchi-tab2-inchiversion">Select InChI version</label>
-                    <select id="inchi-tab2-inchiversion" class="form-select" data-version onchange="onChangeInChIVersionTab2()"></select>
+                    <select id="inchi-tab2-inchiversion" class="form-select" data-version onchange="onChangeInChIVersionTab2(); initTooltips();"></select>
                   </div>
                 </div>
               </div>
@@ -553,7 +553,7 @@
       </div>
       <div class="form-check">
         <input data-id="NPZz" class="form-check-input" type="checkbox" data-inchi-option-on="NPZz">
-        <label class="form-check-label">Allow non-polymer Zz pseudoatoms</label>
+        <label class="form-check-label">Allow non-polymer Zz pseudoatoms <i class="bi bi-question-circle-fill colored-icon" data-bs-toggle="tooltip" data-bs-custom-class="npzz-tooltip" data-bs-html="true" data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />The drawing of "Zz" or "*" pseudoatoms is not possible within the Ketcher structure editor. Please use the "R" pseudoatom instead (hotkey "R" when having an atom selected or when hovering over an atom). Upon transformation with the <i>NPZz</i> option the InChI Web Demo will rename all "R" atoms to "Zz".'></i></label>
       </div>
       <div class="mt-2">
         <a style="text-decoration:none;" role="button" data-reset-inchi-options><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a>
@@ -639,7 +639,7 @@
       </div>
       <div class="form-check">
         <input data-id="NPZz" class="form-check-input" type="checkbox" data-inchi-option-on="NPZz">
-        <label class="form-check-label">Allow non-polymer Zz pseudoatoms</label>
+        <label class="form-check-label">Allow non-polymer Zz pseudoatoms <i class="bi bi-question-circle-fill colored-icon" data-bs-toggle="tooltip" data-bs-custom-class="npzz-tooltip" data-bs-html="true" data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />The drawing of "Zz" or "*" pseudoatoms is not possible within the Ketcher structure editor. Please use the "R" pseudoatom instead (hotkey "R" when having an atom selected or when hovering over an atom). Upon transformation with the <i>NPZz</i> option the InChI Web Demo will rename all "R" atoms to "Zz".'></i></label>
       </div>
       <div class="mt-2">
         <a style="text-decoration:none;" role="button" data-reset-inchi-options><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a>

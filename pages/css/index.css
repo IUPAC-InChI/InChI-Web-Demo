@@ -52,3 +52,12 @@ button.form-select.multiselect:focus {
   --bs-aspect-ratio:62%;
   min-height:530px;
 }
+
+.colored-icon {
+  color: #00612c;
+}
+
+.npzz-tooltip .tooltip-inner {
+  max-width: 500px !important;
+  text-align: left !important;
+}
