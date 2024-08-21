@@ -1,7 +1,25 @@
 import 'ketcher-react/dist/index.css'
 import { StandaloneStructServiceProvider } from 'ketcher-standalone'
-import { Editor } from 'ketcher-react'
+import { config, Editor } from 'ketcher-react'
+import { Generics } from 'ketcher-core'
 
+// Register the "*" hotkey to draw a "star" pseudoatom.
+config['atom-*'] = {
+  title: 'Atom *',
+  shortcut: '*',
+  action: {
+    tool: 'atom',
+    opts: {
+      label: '*'
+    }
+  }
+}
+
+// Add the "star" pseudoatom to the extended table.
+Generics['special-nodes'].itemSets[0].items.push({
+  label: '*',
+  description: 'Star Atom'
+});
 
 const structServiceProvider = new StandaloneStructServiceProvider();
 

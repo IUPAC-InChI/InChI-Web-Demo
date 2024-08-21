@@ -1,0 +1,11 @@
+diff --git a/node_modules/ketcher-react/dist/index.modern.js b/node_modules/ketcher-react/dist/index.modern.js
+index 7b45534..c5a2ce8 100644
+--- a/node_modules/ketcher-react/dist/index.modern.js
++++ b/node_modules/ketcher-react/dist/index.modern.js
+@@ -24720,5 +24720,5 @@ function Editor(props) {
+   });
+ }
+ 
+-export { Editor, KETCHER_INIT_EVENT_NAME, KETCHER_SAVED_SETTINGS_KEY, MODES, STRUCT_TYPE };
++export { Editor, KETCHER_INIT_EVENT_NAME, KETCHER_SAVED_SETTINGS_KEY, MODES, STRUCT_TYPE, config };
+ //# sourceMappingURL=index.modern.js.map
