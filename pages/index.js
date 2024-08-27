@@ -221,42 +221,11 @@ async function updateInchiTab1() {
     // no structure
     return;
   } else {
-    molfile = await getMolfileFromKetcher(ketcher, options.includes("-NPZz"))
+    molfile = await ketcher.getMolfile();
   }
 
   // run conversion
   await convertMolfileToInchiAndWriteResults(molfile, options, inchiVersion, "inchi-tab1-inchi", "inchi-tab1-inchikey", "inchi-tab1-auxinfo", "inchi-tab1-logs");
-}
-
-async function getMolfileFromKetcher(ketcher, rewriteRAtomsToZz = false) {
-  if (!rewriteRAtomsToZz) {
-    return await ketcher.getMolfile();
-  }
-
-  const atomsInKetcher = ketcher.editor.struct().atoms;
-
-  // temporarily rename all "R" atoms to "Zz"
-  atomsInKetcher.forEach(atom => {
-    if (atom.label == "R") {
-      atom.inchiOldLabel = atom.label;
-      atom.label = "Zz";
-    }
-  });
-
-  const molfile = await ketcher.getMolfile(); // This also triggers a redrawing of Ketcher's canvas. :(
-
-  // undo rename
-  atomsInKetcher.forEach(atom => {
-    if ((atom.label == "Zz") && atom.inchiOldLabel) {
-      atom.label = atom.inchiOldLabel;
-      delete atom.inchiOldLabel;
-    }
-  });
-
-  // workaround: trigger a redrawing of Ketcher's canvas
-  ketcher.editor.update(true);
-
-  return molfile;
 }
 
 async function onChangeInChIVersionTab1() {
