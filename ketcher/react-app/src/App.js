@@ -16,9 +16,10 @@ config['atom-*'] = {
 }
 
 // Add the "star" pseudoatom to the extended table.
-Generics['special-nodes'].itemSets[0].items.push({
-  label: '*',
-  description: 'Star Atom'
+Generics['special-nodes'].itemSets.push({
+  items: [
+    { label: '*', description: 'Star Atom' },
+  ]
 });
 
 const structServiceProvider = new StandaloneStructServiceProvider();
