@@ -113,6 +113,7 @@ jobs:
         with:
           path: './RInChI'
           repository: 'IUPAC-InChI/RInChI'
+          ref: '0e14efe8ca7509262fe7b7aecd8c900ef00ffd9f'
 
       - name: Patch RInChI project
         run: |
