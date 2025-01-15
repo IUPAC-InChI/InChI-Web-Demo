@@ -111,19 +111,26 @@ jobs:
       - name: Checkout RInChI repository
         uses: actions/checkout@v4
         with:
-          path: './RInChI'
+          path: './RInChI/RInChI'
           repository: 'IUPAC-InChI/RInChI'
-          ref: '0e14efe8ca7509262fe7b7aecd8c900ef00ffd9f'
+          ref: 'd122a78457c592b9728906f3c0b565a2c2c5d6dd'
+
+      - name: Checkout v1.07 from InChI repository
+        uses: actions/checkout@v4
+        with:
+          path: './RInChI/InChI'
+          repository: 'IUPAC-InChI/InChI'
+          ref: 'v1.07.1'
 
       - name: Patch RInChI project
         run: |
-          cd $GITHUB_WORKSPACE/RInChI
+          cd $GITHUB_WORKSPACE/RInChI/RInChI
           git apply $GITHUB_WORKSPACE/InChI-Web-Demo/rinchi/rinchi.patch
 
       - name: Compile RInChI WebAssembly module from rinchi_lib
-        # Creates librinchi-100.js and librinchi-100.wasm in $GITHUB_WORKSPACE/RInChI/src/rinchi_lib
+        # Creates librinchi-1.1.js and librinchi-1.1.wasm in $GITHUB_WORKSPACE/RInChI/RInChI/src/rinchi_lib
         run: |
-          cd $GITHUB_WORKSPACE/RInChI/src/rinchi_lib
+          cd $GITHUB_WORKSPACE/RInChI/RInChI/src/rinchi_lib
           make -j -f Makefile-32bit
 
       #
@@ -187,7 +194,7 @@ jobs:
           cp $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_WEB/inchi-web106.* inchi
           cp $GITHUB_WORKSPACE/InChI_1_07/INCHI-1-SRC/INCHI_WEB/inchi-web107.* inchi
           mkdir rinchi
-          cp $GITHUB_WORKSPACE/RInChI/src/rinchi_lib/librinchi-100.* rinchi
+          cp $GITHUB_WORKSPACE/RInChI/RInChI/src/rinchi_lib/librinchi-1.1.* rinchi
           mkdir ketcher
           cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/ketcher/react-app/build/* ketcher
           cp -R $GITHUB_WORKSPACE/bootstrap .
