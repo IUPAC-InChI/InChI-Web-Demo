@@ -11,7 +11,7 @@ const availableInchiVersions = {
     "module": inchiModule106(),
     "optionsTemplateId": "inchiOptionsTemplate106"
   },
-  "1.07.1": {
+  "1.07.2": {
     "module": inchiModule107(),
     "optionsTemplateId": "inchiOptionsTemplate107",
     "default": true

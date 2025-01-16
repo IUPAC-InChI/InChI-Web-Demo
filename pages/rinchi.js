@@ -7,7 +7,7 @@
  * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
  */
 const availableRInchiVersions = {
-  "1.1-dev with InChI 1.07.1": {
+  "1.1-dev with InChI 1.07.2": {
     "module": rinchiModule11(),
     "default": true
   }
