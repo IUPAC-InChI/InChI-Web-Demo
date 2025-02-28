@@ -34,7 +34,7 @@ EM_JS(char*, to_json_inchi, (int return_code, char *inchi, char *auxinfo, char *
     "auxinfo": Module.UTF8ToString(auxinfo),
     "message": Module.UTF8ToString(message),
     "log": Module.UTF8ToString(log),
-    "ver": Module.UTF8ToString(ver)
+    "version": Module.UTF8ToString(ver)
   });
 
   const byteCount = Module.lengthBytesUTF8(json) + 1;
@@ -142,7 +142,7 @@ EM_JS(char*, to_json_inchikey, (int return_code, char *inchikey, char *message, 
     "return_code": return_code,
     "inchikey": Module.UTF8ToString(inchikey),
     "message": Module.UTF8ToString(message),
-    "ver": Module.UTF8ToString(ver)
+    "version": Module.UTF8ToString(ver)
   });
 
   const byteCount = Module.lengthBytesUTF8(json) + 1;
@@ -207,7 +207,7 @@ EM_JS(char*, to_json_molfile, (int return_code, char *molfile, char *message, ch
     "molfile": Module.UTF8ToString(molfile),
     "message": Module.UTF8ToString(message),
     "log": Module.UTF8ToString(log),
-    "ver": Module.UTF8ToString(ver)
+    "version": Module.UTF8ToString(ver)
   });
 
   const byteCount = Module.lengthBytesUTF8(json) + 1;
@@ -441,7 +441,7 @@ EM_JS(char*, to_json_model, (int return_code, char *model, char *message, char *
 	 "model": Module.UTF8ToString(model),
 	 "message": Module.UTF8ToString(message),
 	 "log": Module.UTF8ToString(log),
-     "ver": Module.UTF8ToString(ver)
+     "version": Module.UTF8ToString(ver)
 	});
 	const byteCount = Module.lengthBytesUTF8(json) + 1;
 	const jsonPtr = Module._malloc(byteCount);
