@@ -111,7 +111,7 @@ jobs:
       - name: Checkout v1.07-orgmet from InChI repository
         uses: actions/checkout@v4
         with:
-          path: '$GITHUB_WORKSPACE/InChI_1_07-orgmet'
+          path: '${{github.workspace}}/InChI_1_07-orgmet'
           repository: 'IUPAC-InChI/InChI'
           ref: '94ac451735ca38f439af41e2ce50b2b26eaa2bbc'
 
