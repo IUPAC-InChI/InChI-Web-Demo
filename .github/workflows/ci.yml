@@ -113,7 +113,7 @@ jobs:
         with:
           path: '${{github.workspace}}/InChI_1_07-orgmet'
           repository: 'IUPAC-InChI/InChI'
-          ref: '94ac451735ca38f439af41e2ce50b2b26eaa2bbc'
+          ref: '7a23ec0fc6a01a06181642c314f0762302b103f2'
 
       - name: Compile InChI_1_07-orgmet WebAssembly module (INCHI_WEB)
         # Creates inchi-web107-orgmet.js and inchi-web107-orgmet.wasm in $GITHUB_WORKSPACE/InChI_1_07-orgmet/INCHI-1-SRC/INCHI_WEB
