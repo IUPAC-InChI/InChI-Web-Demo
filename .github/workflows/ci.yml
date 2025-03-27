@@ -40,6 +40,9 @@ jobs:
         with:
           path: './InChI-Web-Demo'
 
+      #
+      # Compile v1.06's INCHI_EXE and run the test suite
+      #
       - name: Checkout v1.06 from InChI repository
         uses: actions/checkout@v4
         with:
@@ -47,16 +50,6 @@ jobs:
           repository: 'IUPAC-InChI/InChI'
           ref: 'v1.06'
 
-      - name: Checkout v1.07 from InChI repository
-        uses: actions/checkout@v4
-        with:
-          path: './InChI_1_07'
-          repository: 'IUPAC-InChI/InChI'
-          ref: 'v1.07.3'
-
-      #
-      # Compile v1.06's INCHI_EXE and run the test suite
-      #
       - name: Patch InChI_1_06's util.c
         run: |
           cd $GITHUB_WORKSPACE/InChI_1_06
@@ -97,6 +90,13 @@ jobs:
       #
       # Build InChI v1.07 WASM module
       #
+      - name: Checkout v1.07 from InChI repository
+        uses: actions/checkout@v4
+        with:
+          path: './InChI_1_07'
+          repository: 'IUPAC-InChI/InChI'
+          ref: 'v1.07.3'
+
       - name: Compile InChI_1_07 WebAssembly module (INCHI_WEB)
         # Creates inchi-web107.js and inchi-web107.wasm in $GITHUB_WORKSPACE/InChI_1_07/INCHI-1-SRC/INCHI_WEB
         run: |
