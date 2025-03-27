@@ -221,6 +221,12 @@ jobs:
           cp -R $GITHUB_WORKSPACE/bootstrap-multiselect/bootstrap-multiselect-*/dist bootstrap-multiselect
           cp -R $GITHUB_WORKSPACE/jquery .
 
+      - name: Zip pages directory and add it to the deployment
+        run: |
+          cd $GITHUB_WORKSPACE
+          zip -r InChI-Web-Demo_pages.zip pages
+          mv $GITHUB_WORKSPACE/InChI-Web-Demo_pages.zip pages
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
