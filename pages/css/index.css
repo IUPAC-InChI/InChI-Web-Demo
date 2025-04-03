@@ -57,7 +57,7 @@ button.form-select.multiselect:focus {
   color: #00612c;
 }
 
-.npzz-tooltip .tooltip-inner {
+.custom-tooltip .tooltip-inner {
   max-width: 500px !important;
   text-align: left !important;
 }
