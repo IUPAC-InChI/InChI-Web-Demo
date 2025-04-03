@@ -16,7 +16,7 @@ const availableInchiVersions = {
     "optionsTemplateId": "inchiOptionsTemplate107",
     "default": true
   },
-  "1.07.3 with Organometallics": {
+  "1.07.3 with Molecular inorganics": {
     "module": inchiModule107OrgMet(),
     "optionsTemplateId": "inchiOptionsTemplate107OrgMet"
   }
