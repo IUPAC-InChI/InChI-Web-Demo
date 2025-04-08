@@ -1,0 +1,54 @@
+// https://containers.dev/implementors/json_reference/
+// https://hub.docker.com/r/emscripten/emsdk
+{
+    "name": "InChI-Web-Demo",
+    "image": "emscripten/emsdk:4.0.6",
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": true,
+            "configureZshAsDefaultShell": true,
+            "installOhMyZsh": true,
+            "installOhMyZshConfig": true,
+            "upgradePackages": true,
+            "username": "automatic",
+            "userUid": "automatic",
+            "userGid": "automatic"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "editor.formatOnSave": true,
+                "editor.codeActionsOnSave": {
+                    "source.fixAll.shellcheck": "explicit"
+                },
+                "files.associations": {
+                    "*.yml": "github-actions-workflow"
+                },
+                "[js][yml][json][html][css]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[c]": {
+                    "editor.defaultFormatter": "ms-vscode.cpptools"
+                },
+                "[markdown]": {
+                    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+                },
+                "[shell]": {
+                    "editor.defaultFormatter": "timonwong.shellcheck"
+                }
+            },
+            "extensions": [
+                "eamodio.gitlens",
+                "streetsidesoftware.code-spell-checker",
+                "GitHub.vscode-github-actions",
+                "GitHub.copilot",
+                "DavidAnson.vscode-markdownlint",
+                "esbenp.prettier-vscode",
+                "ms-vscode.cpptools",
+                "ms-vscode.makefile-tools",
+                "timonwong.shellcheck"
+            ]
+        }
+    }
+}
