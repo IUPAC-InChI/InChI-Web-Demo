@@ -7,19 +7,19 @@
  * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
  */
 const availableInchiVersions = {
-  "1.06": {
-    "module": inchiModule106(),
-    "optionsTemplateId": "inchiOptionsTemplate106"
+  1.06: {
+    module: inchiModule106(),
+    optionsTemplateId: "inchiOptionsTemplate106",
   },
   "1.07.3": {
-    "module": inchiModule107(),
-    "optionsTemplateId": "inchiOptionsTemplate107",
-    "default": true
+    module: inchiModule107(),
+    optionsTemplateId: "inchiOptionsTemplate107",
+    default: true,
   },
   "1.07.3 with Molecular inorganics": {
-    "module": inchiModule107OrgMet(),
-    "optionsTemplateId": "inchiOptionsTemplate107OrgMet"
-  }
+    module: inchiModule107OrgMet(),
+    optionsTemplateId: "inchiOptionsTemplate107OrgMet",
+  },
 };
 
 /*
@@ -32,7 +32,12 @@ const availableInchiVersions = {
  */
 async function inchiFromMolfile(molfile, options, inchiVersion) {
   const module = await availableInchiVersions[inchiVersion].module;
-  const ptr = module.ccall("inchi_from_molfile", "number", ["string", "string"], [molfile, options]);
+  const ptr = module.ccall(
+    "inchi_from_molfile",
+    "number",
+    ["string", "string"],
+    [molfile, options]
+  );
   const result = module.UTF8ToString(ptr);
   module._free(ptr);
 
@@ -41,25 +46,45 @@ async function inchiFromMolfile(molfile, options, inchiVersion) {
 
 async function inchikeyFromInchi(inchi, inchiVersion) {
   const module = await availableInchiVersions[inchiVersion].module;
-  const ptr = module.ccall("inchikey_from_inchi", "number", ["string"], [inchi]);
-  const result = module.UTF8ToString(ptr);
-  module._free(ptr)
-
-  return JSON.parse(result);
-}
-
-async function molfileFromInchi(inchi, options, inchiVersion) {
-  const module = await availableInchiVersions[inchiVersion].module;
-  const ptr = module.ccall("molfile_from_inchi", "number", ["string", "string"], [inchi, options]);
+  const ptr = module.ccall(
+    "inchikey_from_inchi",
+    "number",
+    ["string"],
+    [inchi]
+  );
   const result = module.UTF8ToString(ptr);
   module._free(ptr);
 
   return JSON.parse(result);
 }
 
-async function molfileFromAuxinfo(auxinfo, bDoNotAddH, bDiffUnkUndfStereo, inchiVersion) {
+async function molfileFromInchi(inchi, options, inchiVersion) {
   const module = await availableInchiVersions[inchiVersion].module;
-  const ptr = module.ccall("molfile_from_auxinfo", "number", ["string", "number", "number"], [auxinfo, bDoNotAddH, bDiffUnkUndfStereo]);
+  const ptr = module.ccall(
+    "molfile_from_inchi",
+    "number",
+    ["string", "string"],
+    [inchi, options]
+  );
+  const result = module.UTF8ToString(ptr);
+  module._free(ptr);
+
+  return JSON.parse(result);
+}
+
+async function molfileFromAuxinfo(
+  auxinfo,
+  bDoNotAddH,
+  bDiffUnkUndfStereo,
+  inchiVersion
+) {
+  const module = await availableInchiVersions[inchiVersion].module;
+  const ptr = module.ccall(
+    "molfile_from_auxinfo",
+    "number",
+    ["string", "number", "number"],
+    [auxinfo, bDoNotAddH, bDiffUnkUndfStereo]
+  );
   const result = module.UTF8ToString(ptr);
   module._free(ptr);
 

@@ -8,9 +8,9 @@
  */
 const availableRInchiVersions = {
   "1.1-dev with InChI 1.07.3": {
-    "module": rinchiModule11(),
-    "default": true
-  }
+    module: rinchiModule11(),
+    default: true,
+  },
 };
 
 /*
@@ -28,10 +28,20 @@ async function rinchiFromRxnfile(rxnfile, forceEquilibrium, rinchiVersion) {
     "rinchilib_rinchi_from_file_text",
     "number",
     ["string", "string", "boolean", "number", "number"],
-    ["AUTO", rxnfile, forceEquilibrium, out_rinchi_stringPtr, out_rinchi_auxinfoPtr]
+    [
+      "AUTO",
+      rxnfile,
+      forceEquilibrium,
+      out_rinchi_stringPtr,
+      out_rinchi_auxinfoPtr,
+    ]
   );
-  const rinchi = module.UTF8ToString(module.getValue(out_rinchi_stringPtr, "i32"));
-  const rauxinfo = module.UTF8ToString(module.getValue(out_rinchi_auxinfoPtr, "i32"));
+  const rinchi = module.UTF8ToString(
+    module.getValue(out_rinchi_stringPtr, "i32")
+  );
+  const rauxinfo = module.UTF8ToString(
+    module.getValue(out_rinchi_auxinfoPtr, "i32")
+  );
   module._free(out_rinchi_stringPtr);
   module._free(out_rinchi_auxinfoPtr);
 
@@ -40,7 +50,7 @@ async function rinchiFromRxnfile(rxnfile, forceEquilibrium, rinchiVersion) {
     error = module.ccall("rinchilib_latest_err_msg", "string", [], []);
   }
 
-  return {"rinchi": rinchi, "rauxinfo": rauxinfo, "return_code": res, "error": error};
+  return { rinchi: rinchi, rauxinfo: rauxinfo, return_code: res, error: error };
 }
 
 async function fileTextFromRinchi(rinchi, rauxinfo, format, rinchiVersion) {
@@ -53,7 +63,9 @@ async function fileTextFromRinchi(rinchi, rauxinfo, format, rinchiVersion) {
     ["string", "string", "string", "number"],
     [rinchi, rauxinfo, format, out_file_textPtr]
   );
-  const fileText = module.UTF8ToString(module.getValue(out_file_textPtr, "i32"));
+  const fileText = module.UTF8ToString(
+    module.getValue(out_file_textPtr, "i32")
+  );
   module._free(out_file_textPtr);
 
   let error = "";
@@ -61,7 +73,7 @@ async function fileTextFromRinchi(rinchi, rauxinfo, format, rinchiVersion) {
     error = module.ccall("rinchilib_latest_err_msg", "string", [], []);
   }
 
-  return {"fileText": fileText, "return_code": res, "error": error};
+  return { fileText: fileText, return_code: res, error: error };
 }
 
 async function rinchikeyFromRinchi(rinchi, keyType, rinchiVersion) {
@@ -74,7 +86,9 @@ async function rinchikeyFromRinchi(rinchi, keyType, rinchiVersion) {
     ["string", "string", "number"],
     [rinchi, keyType, out_rinchi_keyPtr]
   );
-  const rinchikey = module.UTF8ToString(module.getValue(out_rinchi_keyPtr, "i32"));
+  const rinchikey = module.UTF8ToString(
+    module.getValue(out_rinchi_keyPtr, "i32")
+  );
   module._free(out_rinchi_keyPtr);
 
   let error = "";
@@ -82,5 +96,5 @@ async function rinchikeyFromRinchi(rinchi, keyType, rinchiVersion) {
     error = module.ccall("rinchilib_latest_err_msg", "string", [], []);
   }
 
-  return {"rinchikey": rinchikey, "return_code": res, "error": error};
+  return { rinchikey: rinchikey, return_code: res, error: error };
 }

@@ -1,25 +1,23 @@
-import 'ketcher-react/dist/index.css'
-import { StandaloneStructServiceProvider } from 'ketcher-standalone'
-import { config, Editor } from 'ketcher-react'
-import { Generics } from 'ketcher-core'
+import "ketcher-react/dist/index.css";
+import { StandaloneStructServiceProvider } from "ketcher-standalone";
+import { config, Editor } from "ketcher-react";
+import { Generics } from "ketcher-core";
 
 // Register the "*" hotkey to draw a "star" pseudoatom.
-config['atom-*'] = {
-  title: 'Atom *',
-  shortcut: '*',
+config["atom-*"] = {
+  title: "Atom *",
+  shortcut: "*",
   action: {
-    tool: 'atom',
+    tool: "atom",
     opts: {
-      label: '*'
-    }
-  }
-}
+      label: "*",
+    },
+  },
+};
 
 // Add the "star" pseudoatom to the extended table.
-Generics['special-nodes'].itemSets.push({
-  items: [
-    { label: '*', description: 'Star Atom' },
-  ]
+Generics["special-nodes"].itemSets.push({
+  items: [{ label: "*", description: "Star Atom" }],
 });
 
 const structServiceProvider = new StandaloneStructServiceProvider();
@@ -31,7 +29,7 @@ function App() {
       structServiceProvider={structServiceProvider}
       onInit={(ketcher) => {
         window.ketcher = ketcher;
-        window.parent.postMessage({ eventType: 'init' }, '*');
+        window.parent.postMessage({ eventType: "init" }, "*");
       }}
     />
   );

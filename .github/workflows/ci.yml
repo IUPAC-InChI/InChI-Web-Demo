@@ -25,7 +25,7 @@ jobs:
         uses: mymindstorm/setup-emsdk@v13
         with:
           version: 3.1.43
-          actions-cache-folder: 'emsdk-cache'
+          actions-cache-folder: "emsdk-cache"
 
       - name: Verify emsdk
         run: |
@@ -38,7 +38,7 @@ jobs:
       - name: Checkout this repository
         uses: actions/checkout@v4
         with:
-          path: './InChI-Web-Demo'
+          path: "./InChI-Web-Demo"
 
       #
       # Compile v1.06's INCHI_EXE and run the test suite
@@ -46,9 +46,9 @@ jobs:
       - name: Checkout v1.06 from InChI repository
         uses: actions/checkout@v4
         with:
-          path: './InChI_1_06'
-          repository: 'IUPAC-InChI/InChI'
-          ref: 'v1.06'
+          path: "./InChI_1_06"
+          repository: "IUPAC-InChI/InChI"
+          ref: "v1.06"
 
       - name: Patch InChI_1_06's util.c
         run: |
@@ -93,9 +93,9 @@ jobs:
       - name: Checkout v1.07 from InChI repository
         uses: actions/checkout@v4
         with:
-          path: './InChI_1_07'
-          repository: 'IUPAC-InChI/InChI'
-          ref: 'v1.07.3'
+          path: "./InChI_1_07"
+          repository: "IUPAC-InChI/InChI"
+          ref: "v1.07.3"
 
       - name: Compile InChI_1_07 WebAssembly module (INCHI_WEB)
         # Creates inchi-web107.js and inchi-web107.wasm in $GITHUB_WORKSPACE/InChI_1_07/INCHI-1-SRC/INCHI_WEB
@@ -111,9 +111,9 @@ jobs:
       - name: Checkout v1.07-orgmet from InChI repository
         uses: actions/checkout@v4
         with:
-          path: '${{github.workspace}}/InChI_1_07-orgmet'
-          repository: 'IUPAC-InChI/InChI'
-          ref: '5c17c7eed490712984d526ec0fd5599a0601016e'
+          path: "${{github.workspace}}/InChI_1_07-orgmet"
+          repository: "IUPAC-InChI/InChI"
+          ref: "5c17c7eed490712984d526ec0fd5599a0601016e"
 
       - name: Compile InChI_1_07-orgmet WebAssembly module (INCHI_WEB)
         # Creates inchi-web107-orgmet.js and inchi-web107-orgmet.wasm in $GITHUB_WORKSPACE/InChI_1_07-orgmet/INCHI-1-SRC/INCHI_WEB
@@ -129,16 +129,16 @@ jobs:
       - name: Checkout RInChI repository
         uses: actions/checkout@v4
         with:
-          path: './RInChI/RInChI'
-          repository: 'IUPAC-InChI/RInChI'
-          ref: 'd122a78457c592b9728906f3c0b565a2c2c5d6dd'
+          path: "./RInChI/RInChI"
+          repository: "IUPAC-InChI/RInChI"
+          ref: "d122a78457c592b9728906f3c0b565a2c2c5d6dd"
 
       - name: Checkout v1.07 from InChI repository
         uses: actions/checkout@v4
         with:
-          path: './RInChI/InChI'
-          repository: 'IUPAC-InChI/InChI'
-          ref: 'v1.07.3'
+          path: "./RInChI/InChI"
+          repository: "IUPAC-InChI/InChI"
+          ref: "v1.07.3"
 
       - name: Patch RInChI project
         run: |
@@ -158,7 +158,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'yarn'
+          cache: "yarn"
           cache-dependency-path: ${{github.workspace}}/InChI-Web-Demo/ketcher/react-app/yarn.lock
 
       - name: Verify Node.js version

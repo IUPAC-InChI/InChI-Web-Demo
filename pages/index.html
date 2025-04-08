@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>InChI Web Demo</title>
 
     <!-- InChI modules -->
@@ -13,22 +13,52 @@
     <!-- RInChI modules -->
     <script type="text/javascript" src="rinchi/librinchi-1.1.js"></script>
 
-    <link href="css/index.css" rel="stylesheet">
-    <link href="bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link href="css/index.css" rel="stylesheet" />
+    <link
+      href="bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+      crossorigin="anonymous"
+    />
     <!-- Only bootstrap-multiselect needs jQuery. -->
-    <script src="jquery/jquery-3.7.1.min.js" integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs" crossorigin="anonymous"></script>
-    <script src="bootstrap/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
-    <link href="bootstrap-icons/bootstrap-icons-1.10.3/bootstrap-icons.css" rel="stylesheet" integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e" crossorigin="anonymous">
-    <script src="bootstrap-multiselect/js/bootstrap-multiselect.min.js" integrity="sha384-0bKqY/QpXas8sskCT4hKi1EsfrCHXH7kZYNMr05pTeUbEdxf5xdjxEy1fjdU861x" crossorigin="anonymous"></script>
-    <link href="bootstrap-multiselect/css/bootstrap-multiselect.min.css" rel="stylesheet" integrity="sha384-sRRK8QIx/nQdgIMFawlqpzKW5yaVcx63vbU82I9nuHAdsQN/blJQNrf6GORupDMI" crossorigin="anonymous">
+    <script
+      src="jquery/jquery-3.7.1.min.js"
+      integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="bootstrap/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      href="bootstrap-icons/bootstrap-icons-1.10.3/bootstrap-icons.css"
+      rel="stylesheet"
+      integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e"
+      crossorigin="anonymous"
+    />
+    <script
+      src="bootstrap-multiselect/js/bootstrap-multiselect.min.js"
+      integrity="sha384-0bKqY/QpXas8sskCT4hKi1EsfrCHXH7kZYNMr05pTeUbEdxf5xdjxEy1fjdU861x"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      href="bootstrap-multiselect/css/bootstrap-multiselect.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRRK8QIx/nQdgIMFawlqpzKW5yaVcx63vbU82I9nuHAdsQN/blJQNrf6GORupDMI"
+      crossorigin="anonymous"
+    />
   </head>
   <body onload="onBodyLoad()">
-    <div class="container-md" style="margin-bottom: 2rem;">
-
+    <div class="container-md" style="margin-bottom: 2rem">
       <div class="row mt-1">
         <div class="col-md-3">
           <a href="https://www.inchi-trust.org/" target="_blank">
-            <img style="height:80px;width:auto;" src="img/InChI-logo2.png" alt="InChI Trust Logo">
+            <img
+              style="height: 80px; width: auto"
+              src="img/InChI-logo2.png"
+              alt="InChI Trust Logo"
+            />
           </a>
         </div>
         <h1 class="col-md-9 mt-auto">InChI Web Demo</h1>
@@ -37,706 +67,1701 @@
 
       <ul class="nav nav-pills mt-1" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="pills-inchi-tab" data-bs-toggle="pill" data-bs-target="#pills-inchi" type="button" role="tab" aria-controls="pills-inchi" aria-selected="true">InChI</button>
+          <button
+            class="nav-link active"
+            id="pills-inchi-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-inchi"
+            type="button"
+            role="tab"
+            aria-controls="pills-inchi"
+            aria-selected="true"
+          >
+            InChI
+          </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="pills-rinchi-tab" data-bs-toggle="pill" data-bs-target="#pills-rinchi" type="button" role="tab" aria-controls="pills-rinchi" aria-selected="false">RInChI</button>
+          <button
+            class="nav-link"
+            id="pills-rinchi-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-rinchi"
+            type="button"
+            role="tab"
+            aria-controls="pills-rinchi"
+            aria-selected="false"
+          >
+            RInChI
+          </button>
         </li>
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="pills-about-tab" data-bs-toggle="pill" data-bs-target="#pills-about" type="button" role="tab" aria-controls="pills-about" aria-selected="false">Funding</button>
+          <button
+            class="nav-link"
+            id="pills-about-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#pills-about"
+            type="button"
+            role="tab"
+            aria-controls="pills-about"
+            aria-selected="false"
+          >
+            Funding
+          </button>
         </li>
       </ul>
 
       <!-- Contents of pills -->
       <div class="tab-content">
-
         <!-- InChI pill -->
-        <div class="tab-pane fade show active" id="pills-inchi" role="tabpanel" aria-labelledby="pills-inchi-tab" tabindex="0">
-
+        <div
+          class="tab-pane fade show active"
+          id="pills-inchi"
+          role="tabpanel"
+          aria-labelledby="pills-inchi-tab"
+          tabindex="0"
+        >
           <!-- InChI tabs -->
           <ul class="nav nav-tabs mt-1" role="tablist">
             <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="inchi-tab1" data-bs-toggle="tab" data-bs-target="#inchi-tab1-pane" type="button" role="tab" aria-controls="inchi-tab1-pane" aria-selected="true">Draw structure and convert to InChI</button>
+              <button
+                class="nav-link active"
+                id="inchi-tab1"
+                data-bs-toggle="tab"
+                data-bs-target="#inchi-tab1-pane"
+                type="button"
+                role="tab"
+                aria-controls="inchi-tab1-pane"
+                aria-selected="true"
+              >
+                Draw structure and convert to InChI
+              </button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="inchi-tab2" data-bs-toggle="tab" data-bs-target="#inchi-tab2-pane" type="button" role="tab" aria-controls="inchi-tab2-pane" aria-selected="false">Convert Molfile to InChI</button>
+              <button
+                class="nav-link"
+                id="inchi-tab2"
+                data-bs-toggle="tab"
+                data-bs-target="#inchi-tab2-pane"
+                type="button"
+                role="tab"
+                aria-controls="inchi-tab2-pane"
+                aria-selected="false"
+              >
+                Convert Molfile to InChI
+              </button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="inchi-tab3" data-bs-toggle="tab" data-bs-target="#inchi-tab3-pane" type="button" role="tab" aria-controls="inchi-tab3-pane" aria-selected="false">Convert InChI or AuxInfo to structure</button>
+              <button
+                class="nav-link"
+                id="inchi-tab3"
+                data-bs-toggle="tab"
+                data-bs-target="#inchi-tab3-pane"
+                type="button"
+                role="tab"
+                aria-controls="inchi-tab3-pane"
+                aria-selected="false"
+              >
+                Convert InChI or AuxInfo to structure
+              </button>
             </li>
           </ul>
 
           <!-- Contents of InChI tabs -->
           <div class="tab-content">
-
             <!-- Draw structure and convert to InChI -->
-            <div class="tab-pane fade show active" id="inchi-tab1-pane" role="tabpanel" aria-labelledby="inchi-tab1" tabindex="0">
+            <div
+              class="tab-pane fade show active"
+              id="inchi-tab1-pane"
+              role="tabpanel"
+              aria-labelledby="inchi-tab1"
+              tabindex="0"
+            >
               <div class="row mt-1">
                 <div class="col-xl-8">
                   <div class="ratio ketcher">
-                    <iframe id="inchi-tab1-ketcher" class="w-100" src="ketcher/index.html" onload="onKetcherLoaded('inchi-tab1-ketcher', () => updateInchiTab1())"></iframe>
+                    <iframe
+                      id="inchi-tab1-ketcher"
+                      class="w-100"
+                      src="ketcher/index.html"
+                      onload="onKetcherLoaded('inchi-tab1-ketcher', () => updateInchiTab1())"
+                    ></iframe>
                   </div>
                 </div>
                 <div class="col-xl-4 mt-auto">
                   <div data-inchi-options></div>
                   <div class="mt-2">
-                    <label class="form-check-label mb-2" for="inchi-tab1-inchiversion">Select InChI version</label>
-                    <select id="inchi-tab1-inchiversion" class="form-select" data-version onchange="onChangeInChIVersionTab1(); initTooltips();"></select>
+                    <label
+                      class="form-check-label mb-2"
+                      for="inchi-tab1-inchiversion"
+                      >Select InChI version</label
+                    >
+                    <select
+                      id="inchi-tab1-inchiversion"
+                      class="form-select"
+                      data-version
+                      onchange="onChangeInChIVersionTab1(); initTooltips();"
+                    ></select>
                   </div>
                 </div>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">InChI</small>
                 </div>
-                <pre id="inchi-tab1-inchi" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="inchi-tab1-inchi"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">InChIKey</small>
                 </div>
-                <pre id="inchi-tab1-inchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="inchi-tab1-inchikey"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">AuxInfo</small>
                 </div>
-                <pre id="inchi-tab1-auxinfo" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="inchi-tab1-auxinfo"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Log</small>
                 </div>
-                <pre id="inchi-tab1-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
+                <pre
+                  id="inchi-tab1-logs"
+                  class="py-1 px-3 mb-0 inchi-log"
+                ></pre>
               </div>
             </div>
 
             <!-- Convert Molfile to InChI -->
-            <div class="tab-pane fade" id="inchi-tab2-pane" role="tabpanel" aria-labelledby="inchi-tab2" tabindex="0">
+            <div
+              class="tab-pane fade"
+              id="inchi-tab2-pane"
+              role="tabpanel"
+              aria-labelledby="inchi-tab2"
+              tabindex="0"
+            >
               <div class="row mt-1">
                 <div class="col-xl-8">
                   <div class="ratio inputtextarea">
                     <div class="w-100">
-                      <textarea id="inchi-tab2-molfileTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste or drag-and-drop a Molfile here" ondragover="onTextareaDragover(event)" ondrop="onTextareaDrop(event, () => updateInchiTab2())" oninput="updateInchiTab2()"></textarea>
-                      <button class="btn btn-outline-secondary border-0" style="position:absolute;top:10px;right:10px;" onclick="document.getElementById('inchi-tab2-molfileTextarea').value = '';updateInchiTab2()"><i class="bi bi-trash"></i></button>
+                      <textarea
+                        id="inchi-tab2-molfileTextarea"
+                        class="form-control pe-5 h-100"
+                        style="resize: none"
+                        autocomplete="off"
+                        placeholder="Paste or drag-and-drop a Molfile here"
+                        ondragover="onTextareaDragover(event)"
+                        ondrop="onTextareaDrop(event, () => updateInchiTab2())"
+                        oninput="updateInchiTab2()"
+                      ></textarea>
+                      <button
+                        class="btn btn-outline-secondary border-0"
+                        style="position: absolute; top: 10px; right: 10px"
+                        onclick="document.getElementById('inchi-tab2-molfileTextarea').value = '';updateInchiTab2()"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
                     </div>
                   </div>
                 </div>
                 <div class="col-xl-4 mt-auto">
                   <div data-inchi-options></div>
                   <div class="mt-2">
-                    <label class="form-check-label mb-2" for="inchi-tab2-inchiversion">Select InChI version</label>
-                    <select id="inchi-tab2-inchiversion" class="form-select" data-version onchange="onChangeInChIVersionTab2(); initTooltips();"></select>
+                    <label
+                      class="form-check-label mb-2"
+                      for="inchi-tab2-inchiversion"
+                      >Select InChI version</label
+                    >
+                    <select
+                      id="inchi-tab2-inchiversion"
+                      class="form-select"
+                      data-version
+                      onchange="onChangeInChIVersionTab2(); initTooltips();"
+                    ></select>
                   </div>
                 </div>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">InChI</small>
                 </div>
-                <pre id="inchi-tab2-inchi" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="inchi-tab2-inchi"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">InChIKey</small>
                 </div>
-                <pre id="inchi-tab2-inchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="inchi-tab2-inchikey"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">AuxInfo</small>
                 </div>
-                <pre id="inchi-tab2-auxinfo" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="inchi-tab2-auxinfo"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Log</small>
                 </div>
-                <pre id="inchi-tab2-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
+                <pre
+                  id="inchi-tab2-logs"
+                  class="py-1 px-3 mb-0 inchi-log"
+                ></pre>
               </div>
             </div>
 
             <!-- Convert InChI or AuxInfo to structure -->
-            <div class="tab-pane fade" id="inchi-tab3-pane" role="tabpanel" aria-labelledby="inchi-tab3" tabindex="0">
+            <div
+              class="tab-pane fade"
+              id="inchi-tab3-pane"
+              role="tabpanel"
+              aria-labelledby="inchi-tab3"
+              tabindex="0"
+            >
               <div class="row mt-1">
                 <div class="col-xl-8">
-                  <div class="ratio" style="height:115px;">
+                  <div class="ratio" style="height: 115px">
                     <div class="w-100">
-                      <textarea id="inchi-tab3-inputTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste an InChI or AuxInfo string here&#10;e.g. InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H&#10;or AuxInfo=1/0/N:1,3,5,2,6,4/E:(1,2,3,4,5,6)/rA:6nCCCCCC/rB:;d1s2;d2;s1;s4d5;/rC:7.8848,-4.7251,0;9.6152,-4.7246,0;8.7516,-4.225,0;9.6152,-5.7255,0;7.8848,-5.73,0;8.7538,-6.225,0;" oninput="updateInchiTab3()"></textarea>
+                      <textarea
+                        id="inchi-tab3-inputTextarea"
+                        class="form-control pe-5 h-100"
+                        style="resize: none"
+                        autocomplete="off"
+                        placeholder="Paste an InChI or AuxInfo string here&#10;e.g. InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H&#10;or AuxInfo=1/0/N:1,3,5,2,6,4/E:(1,2,3,4,5,6)/rA:6nCCCCCC/rB:;d1s2;d2;s1;s4d5;/rC:7.8848,-4.7251,0;9.6152,-4.7246,0;8.7516,-4.225,0;9.6152,-5.7255,0;7.8848,-5.73,0;8.7538,-6.225,0;"
+                        oninput="updateInchiTab3()"
+                      ></textarea>
                     </div>
                   </div>
                 </div>
                 <div class="col-xl-4 mt-auto">
                   <div class="mt-2">
-                    <label class="form-check-label mb-2" for="inchi-tab3-inchiversion">Select InChI version</label>
-                    <select id="inchi-tab3-inchiversion" class="form-select" data-version onchange="updateInchiTab3()"></select>
+                    <label
+                      class="form-check-label mb-2"
+                      for="inchi-tab3-inchiversion"
+                      >Select InChI version</label
+                    >
+                    <select
+                      id="inchi-tab3-inchiversion"
+                      class="form-select"
+                      data-version
+                      onchange="updateInchiTab3()"
+                    ></select>
                   </div>
                 </div>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Log</small>
                 </div>
-                <pre id="inchi-tab3-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
+                <pre
+                  id="inchi-tab3-logs"
+                  class="py-1 px-3 mb-0 inchi-log"
+                ></pre>
               </div>
               <div class="mt-1">
                 <div class="col-xl-8">
                   <div class="ratio ketcher">
-                    <iframe id="inchi-tab3-ketcher" class="w-100" src="ketcher/index.html"></iframe>
+                    <iframe
+                      id="inchi-tab3-ketcher"
+                      class="w-100"
+                      src="ketcher/index.html"
+                    ></iframe>
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
-
         </div>
 
         <!-- RInChI pill -->
-        <div class="tab-pane fade" id="pills-rinchi" role="tabpanel" aria-labelledby="pills-rinchi-tab" tabindex="0">
-
+        <div
+          class="tab-pane fade"
+          id="pills-rinchi"
+          role="tabpanel"
+          aria-labelledby="pills-rinchi-tab"
+          tabindex="0"
+        >
           <!-- RInChI tabs -->
           <ul class="nav nav-tabs mt-1" role="tablist">
             <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="rinchi-tab1" data-bs-toggle="tab" data-bs-target="#rinchi-tab1-pane" type="button" role="tab" aria-controls="rinchi-tab1-pane" aria-selected="true">Draw reaction and convert to RInChI</button>
+              <button
+                class="nav-link active"
+                id="rinchi-tab1"
+                data-bs-toggle="tab"
+                data-bs-target="#rinchi-tab1-pane"
+                type="button"
+                role="tab"
+                aria-controls="rinchi-tab1-pane"
+                aria-selected="true"
+              >
+                Draw reaction and convert to RInChI
+              </button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="rinchi-tab2" data-bs-toggle="tab" data-bs-target="#rinchi-tab2-pane" type="button" role="tab" aria-controls="rinchi-tab2-pane" aria-selected="false">Convert RXN/RD file to RInChI</button>
+              <button
+                class="nav-link"
+                id="rinchi-tab2"
+                data-bs-toggle="tab"
+                data-bs-target="#rinchi-tab2-pane"
+                type="button"
+                role="tab"
+                aria-controls="rinchi-tab2-pane"
+                aria-selected="false"
+              >
+                Convert RXN/RD file to RInChI
+              </button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="rinchi-tab3" data-bs-toggle="tab" data-bs-target="#rinchi-tab3-pane" type="button" role="tab" aria-controls="rinchi-tab3-pane" aria-selected="false">Convert RInChI to reaction</button>
+              <button
+                class="nav-link"
+                id="rinchi-tab3"
+                data-bs-toggle="tab"
+                data-bs-target="#rinchi-tab3-pane"
+                type="button"
+                role="tab"
+                aria-controls="rinchi-tab3-pane"
+                aria-selected="false"
+              >
+                Convert RInChI to reaction
+              </button>
             </li>
             <li class="nav-item" role="presentation">
-              <button class="nav-link" id="rinchi-tab4" data-bs-toggle="tab" data-bs-target="#rinchi-tab4-pane" type="button" role="tab" aria-controls="rinchi-tab4-pane" aria-selected="false">Convert RInChI to RXN/RD file</button>
+              <button
+                class="nav-link"
+                id="rinchi-tab4"
+                data-bs-toggle="tab"
+                data-bs-target="#rinchi-tab4-pane"
+                type="button"
+                role="tab"
+                aria-controls="rinchi-tab4-pane"
+                aria-selected="false"
+              >
+                Convert RInChI to RXN/RD file
+              </button>
             </li>
           </ul>
 
           <!-- Contents of RInChI tabs -->
           <div class="tab-content">
-
             <!-- Draw reaction and convert to RInChI -->
-            <div class="tab-pane fade show active" id="rinchi-tab1-pane" role="tabpanel" aria-labelledby="rinchi-tab1" tabindex="0">
+            <div
+              class="tab-pane fade show active"
+              id="rinchi-tab1-pane"
+              role="tabpanel"
+              aria-labelledby="rinchi-tab1"
+              tabindex="0"
+            >
               <div class="row mt-1">
                 <div class="col-xl-8">
                   <div class="ratio ketcher">
-                    <iframe id="rinchi-tab1-ketcher" class="w-100" src="ketcher/index.html" onload="onKetcherLoaded('rinchi-tab1-ketcher', () => updateRinchiTab1())"></iframe>
+                    <iframe
+                      id="rinchi-tab1-ketcher"
+                      class="w-100"
+                      src="ketcher/index.html"
+                      onload="onKetcherLoaded('rinchi-tab1-ketcher', () => updateRinchiTab1())"
+                    ></iframe>
                   </div>
                 </div>
                 <div class="col-xl-4 mt-auto">
                   <div class="mt-2">
-                    <label class="form-check-label mb-2" for="rinchi-tab1-rinchiversion">Select RInChI version</label>
-                    <select id="rinchi-tab1-rinchiversion" class="form-select" data-version onchange="updateRinchiTab1()"></select>
+                    <label
+                      class="form-check-label mb-2"
+                      for="rinchi-tab1-rinchiversion"
+                      >Select RInChI version</label
+                    >
+                    <select
+                      id="rinchi-tab1-rinchiversion"
+                      class="form-select"
+                      data-version
+                      onchange="updateRinchiTab1()"
+                    ></select>
                   </div>
                 </div>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">RInChI</small>
                 </div>
-                <pre id="rinchi-tab1-rinchi" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="rinchi-tab1-rinchi"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Long-RInChIKey</small>
                 </div>
-                <pre id="rinchi-tab1-longrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="rinchi-tab1-longrinchikey"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Short-RInChIKey</small>
                 </div>
-                <pre id="rinchi-tab1-shortrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="rinchi-tab1-shortrinchikey"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Web-RInChIKey</small>
                 </div>
-                <pre id="rinchi-tab1-webrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="rinchi-tab1-webrinchikey"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">RAuxInfo</small>
                 </div>
-                <pre id="rinchi-tab1-rauxinfo" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="rinchi-tab1-rauxinfo"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Log</small>
                 </div>
-                <pre id="rinchi-tab1-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
+                <pre
+                  id="rinchi-tab1-logs"
+                  class="py-1 px-3 mb-0 inchi-log"
+                ></pre>
               </div>
             </div>
 
             <!-- Convert RXN/RD file to RInChI -->
-            <div class="tab-pane fade" id="rinchi-tab2-pane" role="tabpanel" aria-labelledby="rinchi-tab2" tabindex="0">
+            <div
+              class="tab-pane fade"
+              id="rinchi-tab2-pane"
+              role="tabpanel"
+              aria-labelledby="rinchi-tab2"
+              tabindex="0"
+            >
               <div class="row mt-1">
                 <div class="col-xl-8">
                   <div class="ratio inputtextarea">
                     <div class="w-100">
-                      <textarea id="rinchi-tab2-rxnrdfileTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste or drag-and-drop a RXN/RD file here" ondragover="onTextareaDragover(event)" ondrop="onTextareaDrop(event, () => updateRinchiTab2())" oninput="updateRinchiTab2()"></textarea>
-                      <button class="btn btn-outline-secondary border-0" style="position:absolute;top:10px;right:10px;" onclick="document.getElementById('rinchi-tab2-rxnrdfileTextarea').value = '';updateRinchiTab2()"><i class="bi bi-trash"></i></button>
+                      <textarea
+                        id="rinchi-tab2-rxnrdfileTextarea"
+                        class="form-control pe-5 h-100"
+                        style="resize: none"
+                        autocomplete="off"
+                        placeholder="Paste or drag-and-drop a RXN/RD file here"
+                        ondragover="onTextareaDragover(event)"
+                        ondrop="onTextareaDrop(event, () => updateRinchiTab2())"
+                        oninput="updateRinchiTab2()"
+                      ></textarea>
+                      <button
+                        class="btn btn-outline-secondary border-0"
+                        style="position: absolute; top: 10px; right: 10px"
+                        onclick="document.getElementById('rinchi-tab2-rxnrdfileTextarea').value = '';updateRinchiTab2()"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
                     </div>
                   </div>
                 </div>
                 <div class="col-xl-4 mt-auto">
                   <div>
-                    <input id="rinchi-tab2-forceequilibrium" class="form-check-input" type="checkbox" onchange="updateRinchiTab2()">
-                    <label class="form-check-label" for="rinchi-tab2-forceequilibrium">Force equilibrium</label>
+                    <input
+                      id="rinchi-tab2-forceequilibrium"
+                      class="form-check-input"
+                      type="checkbox"
+                      onchange="updateRinchiTab2()"
+                    />
+                    <label
+                      class="form-check-label"
+                      for="rinchi-tab2-forceequilibrium"
+                      >Force equilibrium</label
+                    >
                   </div>
                   <div class="mt-2">
-                    <label class="form-check-label mb-2" for="rinchi-tab2-rinchiversion">Select RInChI version</label>
-                    <select id="rinchi-tab2-rinchiversion" class="form-select" data-version onchange="updateRinchiTab2()"></select>
+                    <label
+                      class="form-check-label mb-2"
+                      for="rinchi-tab2-rinchiversion"
+                      >Select RInChI version</label
+                    >
+                    <select
+                      id="rinchi-tab2-rinchiversion"
+                      class="form-select"
+                      data-version
+                      onchange="updateRinchiTab2()"
+                    ></select>
                   </div>
                 </div>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">RInChI</small>
                 </div>
-                <pre id="rinchi-tab2-rinchi" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="rinchi-tab2-rinchi"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Long-RInChIKey</small>
                 </div>
-                <pre id="rinchi-tab2-longrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="rinchi-tab2-longrinchikey"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Short-RInChIKey</small>
                 </div>
-                <pre id="rinchi-tab2-shortrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="rinchi-tab2-shortrinchikey"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Web-RInChIKey</small>
                 </div>
-                <pre id="rinchi-tab2-webrinchikey" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="rinchi-tab2-webrinchikey"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">RAuxInfo</small>
                 </div>
-                <pre id="rinchi-tab2-rauxinfo" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+                <pre
+                  id="rinchi-tab2-rauxinfo"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Log</small>
                 </div>
-                <pre id="rinchi-tab2-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
+                <pre
+                  id="rinchi-tab2-logs"
+                  class="py-1 px-3 mb-0 inchi-log"
+                ></pre>
               </div>
             </div>
 
             <!-- Convert RInChI to reaction -->
-            <div class="tab-pane fade" id="rinchi-tab3-pane" role="tabpanel" aria-labelledby="rinchi-tab3" tabindex="0">
+            <div
+              class="tab-pane fade"
+              id="rinchi-tab3-pane"
+              role="tabpanel"
+              aria-labelledby="rinchi-tab3"
+              tabindex="0"
+            >
               <div class="row mt-1">
                 <div class="col-xl-8">
-                  <div class="ratio" style="height:100px;">
+                  <div class="ratio" style="height: 100px">
                     <div class="w-100">
-                      <textarea id="rinchi-tab3-rinchiTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+" oninput="updateRinchiTab3()"></textarea>
+                      <textarea
+                        id="rinchi-tab3-rinchiTextarea"
+                        class="form-control pe-5 h-100"
+                        style="resize: none"
+                        autocomplete="off"
+                        placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+"
+                        oninput="updateRinchiTab3()"
+                      ></textarea>
                     </div>
                   </div>
-                  <div class="ratio mt-2" style="height:100px;">
+                  <div class="ratio mt-2" style="height: 100px">
                     <div class="w-100">
-                      <textarea id="rinchi-tab3-rauxinfoTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..." oninput="updateRinchiTab3()"></textarea>
+                      <textarea
+                        id="rinchi-tab3-rauxinfoTextarea"
+                        class="form-control pe-5 h-100"
+                        style="resize: none"
+                        autocomplete="off"
+                        placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..."
+                        oninput="updateRinchiTab3()"
+                      ></textarea>
                     </div>
                   </div>
                 </div>
                 <div class="col-xl-4 mt-auto">
                   <div class="mt-4">
-                    <label class="form-check-label mb-2" for="rinchi-tab3-rinchiversion">Select RInChI version</label>
-                    <select id="rinchi-tab3-rinchiversion" class="form-select" data-version onchange="updateRinchiTab3()"></select>
+                    <label
+                      class="form-check-label mb-2"
+                      for="rinchi-tab3-rinchiversion"
+                      >Select RInChI version</label
+                    >
+                    <select
+                      id="rinchi-tab3-rinchiversion"
+                      class="form-select"
+                      data-version
+                      onchange="updateRinchiTab3()"
+                    ></select>
                   </div>
                 </div>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Log</small>
                 </div>
-                <pre id="rinchi-tab3-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
+                <pre
+                  id="rinchi-tab3-logs"
+                  class="py-1 px-3 mb-0 inchi-log"
+                ></pre>
               </div>
               <div class="row mt-1">
                 <div class="col-xl-8">
                   <div class="ratio ketcher">
-                    <iframe id="rinchi-tab3-ketcher" class="w-100" src="ketcher/index.html"></iframe>
+                    <iframe
+                      id="rinchi-tab3-ketcher"
+                      class="w-100"
+                      src="ketcher/index.html"
+                    ></iframe>
                   </div>
                 </div>
                 <div class="col-xl-4">
-                  Please note: The generated RXN file will contain zero atom coordinates in case no RAuxInfo with atom coordinates is provided. Unfortunately, the "clean" function of the Ketcher structure editor cannot properly recalculate the coordinates at the moment.
+                  Please note: The generated RXN file will contain zero atom
+                  coordinates in case no RAuxInfo with atom coordinates is
+                  provided. Unfortunately, the "clean" function of the Ketcher
+                  structure editor cannot properly recalculate the coordinates
+                  at the moment.
                 </div>
               </div>
             </div>
 
             <!-- Convert RInChI to RXN/RD file -->
-            <div class="tab-pane fade" id="rinchi-tab4-pane" role="tabpanel" aria-labelledby="rinchi-tab4" tabindex="0">
+            <div
+              class="tab-pane fade"
+              id="rinchi-tab4-pane"
+              role="tabpanel"
+              aria-labelledby="rinchi-tab4"
+              tabindex="0"
+            >
               <div class="row mt-1">
                 <div class="col-xl-8">
-                  <div class="ratio" style="height:100px;">
+                  <div class="ratio" style="height: 100px">
                     <div class="w-100">
-                      <textarea id="rinchi-tab4-rinchiTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+" oninput="updateRinchiTab4()"></textarea>
+                      <textarea
+                        id="rinchi-tab4-rinchiTextarea"
+                        class="form-control pe-5 h-100"
+                        style="resize: none"
+                        autocomplete="off"
+                        placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+"
+                        oninput="updateRinchiTab4()"
+                      ></textarea>
                     </div>
                   </div>
-                  <div class="ratio mt-2" style="height:100px;">
+                  <div class="ratio mt-2" style="height: 100px">
                     <div class="w-100">
-                      <textarea id="rinchi-tab4-rauxinfoTextarea" class="form-control pe-5 h-100" style="resize:none;" autocomplete="off" placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..." oninput="updateRinchiTab4()"></textarea>
+                      <textarea
+                        id="rinchi-tab4-rauxinfoTextarea"
+                        class="form-control pe-5 h-100"
+                        style="resize: none"
+                        autocomplete="off"
+                        placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..."
+                        oninput="updateRinchiTab4()"
+                      ></textarea>
                     </div>
                   </div>
                 </div>
                 <div class="col-xl-4 mt-auto">
                   <div>
-                    <label class="form-check-label mb-2">Select output format</label>
+                    <label class="form-check-label mb-2"
+                      >Select output format</label
+                    >
                   </div>
                   <div class="form-check">
-                    <input id="rinchi-tab4-outputformat-rxn" class="form-check-input" type="radio" name="rinchioutputformatRadio" value="RXN" onchange="updateRinchiTab4()" checked>
-                    <label class="form-check-label" for="rinchi-tab4-outputformat-rxn">RXN file</label>
+                    <input
+                      id="rinchi-tab4-outputformat-rxn"
+                      class="form-check-input"
+                      type="radio"
+                      name="rinchioutputformatRadio"
+                      value="RXN"
+                      onchange="updateRinchiTab4()"
+                      checked
+                    />
+                    <label
+                      class="form-check-label"
+                      for="rinchi-tab4-outputformat-rxn"
+                      >RXN file</label
+                    >
                   </div>
                   <div class="form-check mb-2">
-                    <input id="rinchi-tab4-outputformat-rd" class="form-check-input" type="radio" name="rinchioutputformatRadio" value="RD" onchange="updateRinchiTab4()">
-                    <label class="form-check-label" for="rinchi-tab4-outputformat-rd">RD file</label>
+                    <input
+                      id="rinchi-tab4-outputformat-rd"
+                      class="form-check-input"
+                      type="radio"
+                      name="rinchioutputformatRadio"
+                      value="RD"
+                      onchange="updateRinchiTab4()"
+                    />
+                    <label
+                      class="form-check-label"
+                      for="rinchi-tab4-outputformat-rd"
+                      >RD file</label
+                    >
                   </div>
                   <div class="mt-4">
-                    <label class="form-check-label mb-2" for="rinchi-tab4-rinchiversion">Select RInChI version</label>
-                    <select id="rinchi-tab4-rinchiversion" class="form-select" data-version onchange="updateRinchiTab4()"></select>
+                    <label
+                      class="form-check-label mb-2"
+                      for="rinchi-tab4-rinchiversion"
+                      >Select RInChI version</label
+                    >
+                    <select
+                      id="rinchi-tab4-rinchiversion"
+                      class="form-select"
+                      data-version
+                      onchange="updateRinchiTab4()"
+                    ></select>
                   </div>
                 </div>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">Log</small>
                 </div>
-                <pre id="rinchi-tab4-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
+                <pre
+                  id="rinchi-tab4-logs"
+                  class="py-1 px-3 mb-0 inchi-log"
+                ></pre>
               </div>
-              <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity:.3;">
+              <div
+                class="mt-2 border rounded bg-light"
+                style="--bs-bg-opacity: 0.3"
+              >
                 <div class="border-bottom py-1 px-3">
                   <small class="font-monospace">RXN/RD file</small>
                 </div>
-                <pre id="rinchi-tab4-rxnfile" class="py-1 px-3 mb-0 inchi-result-text" style="user-select:all;"></pre>
+                <pre
+                  id="rinchi-tab4-rxnfile"
+                  class="py-1 px-3 mb-0 inchi-result-text"
+                  style="user-select: all"
+                ></pre>
               </div>
             </div>
-
           </div>
-
         </div>
 
         <!-- About pill -->
-        <div class="tab-pane fade" id="pills-about" role="tabpanel" aria-labelledby="pills-about-tab" tabindex="0">
-
+        <div
+          class="tab-pane fade"
+          id="pills-about"
+          role="tabpanel"
+          aria-labelledby="pills-about-tab"
+          tabindex="0"
+        >
           <div class="row mt-1">
             <div class="col-lg-12">
               <h2 class="mt-2 pb-2 mb-2 border-bottom">Funding</h2>
-              Development of this demo application has been supported by the following organizations:
+              Development of this demo application has been supported by the
+              following organizations:
             </div>
           </div>
           <div class="row mt-5 mb-5">
             <div class="col-lg-4">
-              The Volkswagen Foundation with the project <a href="https://portal.volkswagenstiftung.de/search/projectDetails.do?ref=98698" target="_blank"><i>Universal molecular syntax for sustainable machine learning applications</i></a>.
+              The Volkswagen Foundation with the project
+              <a
+                href="https://portal.volkswagenstiftung.de/search/projectDetails.do?ref=98698"
+                target="_blank"
+                ><i
+                  >Universal molecular syntax for sustainable machine learning
+                  applications</i
+                ></a
+              >.
             </div>
             <div class="col-lg-3 offset-lg-1">
               <a href="https://www.volkswagenstiftung.de" target="_blank">
-                <img style="width:100%;height:auto;" src="img/Logo_Volkswagenstiftung.svg" alt="Volkswagenstiftung Logo">
+                <img
+                  style="width: 100%; height: auto"
+                  src="img/Logo_Volkswagenstiftung.svg"
+                  alt="Volkswagenstiftung Logo"
+                />
               </a>
             </div>
           </div>
-          <hr>
+          <hr />
           <div class="row mt-5 mb-5">
             <div class="col-lg-4">
-              <a href="https://www.nfdi4chem.de" target="_blank"><i>NFDI4Chem</i></a> funded by the German Research Foundation (project number <a href="https://gepris.dfg.de/gepris/projekt/441958208" target="_blank">441958208</a>).
+              <a href="https://www.nfdi4chem.de" target="_blank"
+                ><i>NFDI4Chem</i></a
+              >
+              funded by the German Research Foundation (project number
+              <a
+                href="https://gepris.dfg.de/gepris/projekt/441958208"
+                target="_blank"
+                >441958208</a
+              >).
             </div>
             <div class="col-lg-3 offset-lg-1">
               <a href="https://www.dfg.de" target="_blank">
-                <img style="width:100%;height:auto;" src="img/dfg_logo_schriftzug_blau_foerderung_en.gif" alt="DFG Logo">
+                <img
+                  style="width: 100%; height: auto"
+                  src="img/dfg_logo_schriftzug_blau_foerderung_en.gif"
+                  alt="DFG Logo"
+                />
               </a>
             </div>
             <div class="col-lg-3 offset-lg-1">
               <a href="https://www.nfdi4chem.de" target="_blank">
-                <img style="width:100%;height:auto;" src="img/NFDI4Chem-Logo_mehrfarbig_schwarz.png" alt="NFDI4Chem Logo">
+                <img
+                  style="width: 100%; height: auto"
+                  src="img/NFDI4Chem-Logo_mehrfarbig_schwarz.png"
+                  alt="NFDI4Chem Logo"
+                />
               </a>
-              <br>
+              <br />
               <small>
-                "<a href="https://commons.wikimedia.org/wiki/File:NFDI4Chem-Logo_mehrfarbig_schwarz.png" target="_blank">Logo of NFDI4Chem</a>" by <i>TimeSpin</i> is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en" target="_blank">CC BY-SA 4.0</a>.
+                "<a
+                  href="https://commons.wikimedia.org/wiki/File:NFDI4Chem-Logo_mehrfarbig_schwarz.png"
+                  target="_blank"
+                  >Logo of NFDI4Chem</a
+                >" by <i>TimeSpin</i> is licensed under
+                <a
+                  href="https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+                  target="_blank"
+                  >CC BY-SA 4.0</a
+                >.
               </small>
             </div>
           </div>
-          <hr>
+          <hr />
           <div class="row mt-5">
             <div class="col-lg-4">
-              <i>DALIA</i> funded by the German Federal Ministry of Education and Research (funding ID <a href="https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=16DWWQP07B" target="_blank">16DWWQP07B</a>) and Next Generation EU.
+              <i>DALIA</i> funded by the German Federal Ministry of Education
+              and Research (funding ID
+              <a
+                href="https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=16DWWQP07B"
+                target="_blank"
+                >16DWWQP07B</a
+              >) and Next Generation EU.
             </div>
             <div class="col-lg-3 offset-lg-1">
               <a href="https://www.bmbf.de" target="_blank">
-                <img style="width:100%;height:auto;" src="img/Foerderhinweis_BMBF.jpg" alt="BMBF Logo">
+                <img
+                  style="width: 100%; height: auto"
+                  src="img/Foerderhinweis_BMBF.jpg"
+                  alt="BMBF Logo"
+                />
               </a>
-              <br>
-              <img style="width:100%;height:auto;" src="img/Foerderhinweis_EU_horizontal.jpg" alt="Next Generation EU Logo">
+              <br />
+              <img
+                style="width: 100%; height: auto"
+                src="img/Foerderhinweis_EU_horizontal.jpg"
+                alt="Next Generation EU Logo"
+              />
             </div>
             <div class="col-lg-3 offset-lg-1">
-              <img style="width:100%;height:auto;" src="img/Dalia_Wortmarke_Kompakt_Blau_RGB.svg" alt="Dalia Logo">
+              <img
+                style="width: 100%; height: auto"
+                src="img/Dalia_Wortmarke_Kompakt_Blau_RGB.svg"
+                alt="Dalia Logo"
+              />
             </div>
           </div>
-
         </div>
-
       </div>
-
     </div>
 
     <!-- Template for InChI 1.06 options -->
     <template id="inchiOptionsTemplate106">
       <div class="form-check">
-        <input data-id="mobileH" class="form-check-input" type="checkbox" data-inchi-option-off="FixedH" data-default-checked checked>
+        <input
+          data-id="mobileH"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-off="FixedH"
+          data-default-checked
+          checked
+        />
         <label class="form-check-label">Mobile H Perception</label>
       </div>
       <div class="row row-cols-auto">
         <div class="col">
           <div class="form-check">
-            <input data-id="includeStereo" class="form-check-input" type="checkbox" data-inchi-option-off="SNon" data-default-checked checked>
+            <input
+              data-id="includeStereo"
+              class="form-check-input"
+              type="checkbox"
+              data-inchi-option-off="SNon"
+              data-default-checked
+              checked
+            />
             <label class="form-check-label">Include Stereo:</label>
           </div>
         </div>
         <div class="col">
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SAbs" class="form-check-input" type="radio" name="stereoRadio" data-inchi-stereo-option data-default-checked checked>
+            <input
+              data-id="SAbs"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-stereo-option
+              data-default-checked
+              checked
+            />
             <label class="form-check-label">Absolute</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SRel" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRel" data-inchi-stereo-option>
+            <input
+              data-id="SRel"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-option-on="SRel"
+              data-inchi-stereo-option
+            />
             <label class="form-check-label">Relative</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SRac" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRac" data-inchi-stereo-option>
+            <input
+              data-id="SRac"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-option-on="SRac"
+              data-inchi-stereo-option
+            />
             <label class="form-check-label">Racemic</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SUCF" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SUCF" data-inchi-stereo-option>
+            <input
+              data-id="SUCF"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-option-on="SUCF"
+              data-inchi-stereo-option
+            />
             <label class="form-check-label">From chiral flag</label>
           </div>
         </div>
       </div>
       <div class="form-check ms-4">
-        <input data-id="SUU" class="form-check-input" type="checkbox" data-inchi-option-on="SUU" data-inchi-stereo-option>
-        <label class="form-check-label">Always include omitted/undefined stereo</label>
+        <input
+          data-id="SUU"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="SUU"
+          data-inchi-stereo-option
+        />
+        <label class="form-check-label"
+          >Always include omitted/undefined stereo</label
+        >
       </div>
       <div class="form-check ms-4">
-        <input data-id="SLUUD" class="form-check-input" type="checkbox" data-inchi-option-on="SLUUD" data-inchi-stereo-option>
-        <label class="form-check-label">Different marks for unknown/undefined stereo</label>
+        <input
+          data-id="SLUUD"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="SLUUD"
+          data-inchi-stereo-option
+        />
+        <label class="form-check-label"
+          >Different marks for unknown/undefined stereo</label
+        >
       </div>
       <div class="form-check ms-4">
-        <input data-id="NEWPSOFF" class="form-check-input" type="checkbox" data-inchi-option-on="NEWPSOFF" data-inchi-stereo-option>
-        <label class="form-check-label">Both ends of wedge point to stereocenters</label>
+        <input
+          data-id="NEWPSOFF"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NEWPSOFF"
+          data-inchi-stereo-option
+        />
+        <label class="form-check-label"
+          >Both ends of wedge point to stereocenters</label
+        >
       </div>
       <div class="form-check">
-        <input data-id="RecMet" class="form-check-input" type="checkbox" data-inchi-option-on="RecMet">
+        <input
+          data-id="RecMet"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="RecMet"
+        />
         <label class="form-check-label">Include Bonds to Metal</label>
       </div>
       <div class="form-check">
-        <input data-id="KET" class="form-check-input" type="checkbox" data-inchi-option-on="KET">
+        <input
+          data-id="KET"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="KET"
+        />
         <label class="form-check-label">Keto-enol Tautomerism</label>
       </div>
       <div class="form-check">
-        <input data-id="15T" class="form-check-input" type="checkbox" data-inchi-option-on="15T">
+        <input
+          data-id="15T"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="15T"
+        />
         <label class="form-check-label">1,5-tautomerism</label>
       </div>
       <div class="form-check">
-        <input data-id="treatPolymers" class="form-check-input" type="checkbox" data-inchi-option-on="Polymers">
+        <input
+          data-id="treatPolymers"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="Polymers"
+        />
         <label class="form-check-label">Treat polymers:</label>
       </div>
       <div class="form-check ms-4">
-        <input data-id="NoEdits" class="form-check-input" type="checkbox" data-inchi-option-on="NoEdits" data-inchi-polymer-option data-default-disabled disabled>
-        <label class="form-check-label">No pre-edits of original polymer structure</label>
+        <input
+          data-id="NoEdits"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NoEdits"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
+        <label class="form-check-label"
+          >No pre-edits of original polymer structure</label
+        >
       </div>
       <div class="form-check ms-4">
-        <input data-id="FoldCRU" class="form-check-input" type="checkbox" data-inchi-option-on="FoldCRU" data-inchi-polymer-option data-default-disabled disabled>
+        <input
+          data-id="FoldCRU"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="FoldCRU"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
         <label class="form-check-label">Enable CRU folding</label>
       </div>
       <div class="form-check ms-4">
-        <input data-id="NoFrameShift" class="form-check-input" type="checkbox" data-inchi-option-on="NoFrameShift" data-inchi-polymer-option data-default-disabled disabled>
+        <input
+          data-id="NoFrameShift"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NoFrameShift"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
         <label class="form-check-label">Disable CRU frame shift</label>
       </div>
       <div class="form-check">
-        <input data-id="NPZz" class="form-check-input" type="checkbox" data-inchi-option-on="NPZz">
-        <label class="form-check-label">Allow non-polymer Zz pseudoatoms <i class="bi bi-question-circle-fill colored-icon" data-bs-toggle="tooltip" data-bs-custom-class="custom-tooltip" data-bs-html="true" data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />"*" pseudoatoms can be selected within the Ketcher structure editor either via the <i>Extended Table</i> in the right toolbar or using the hotkey "*".'></i></label>
+        <input
+          data-id="NPZz"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NPZz"
+        />
+        <label class="form-check-label"
+          >Allow non-polymer Zz pseudoatoms
+          <i
+            class="bi bi-question-circle-fill colored-icon"
+            data-bs-toggle="tooltip"
+            data-bs-custom-class="custom-tooltip"
+            data-bs-html="true"
+            data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />"*" pseudoatoms can be selected within the Ketcher structure editor either via the <i>Extended Table</i> in the right toolbar or using the hotkey "*".'
+          ></i
+        ></label>
       </div>
       <div class="mt-2">
-        <a style="text-decoration:none;" role="button" data-reset-inchi-options><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a>
+        <a style="text-decoration: none" role="button" data-reset-inchi-options
+          ><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a
+        >
       </div>
     </template>
 
     <!-- Template for InChI 1.07 options -->
     <template id="inchiOptionsTemplate107">
       <div class="form-check">
-        <input data-id="mobileH" class="form-check-input" type="checkbox" data-inchi-option-off="FixedH" data-default-checked checked>
+        <input
+          data-id="mobileH"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-off="FixedH"
+          data-default-checked
+          checked
+        />
         <label class="form-check-label">Mobile H Perception</label>
       </div>
       <div class="row row-cols-auto">
         <div class="col">
           <div class="form-check">
-            <input data-id="includeStereo" class="form-check-input" type="checkbox" data-inchi-option-off="SNon" data-default-checked checked>
+            <input
+              data-id="includeStereo"
+              class="form-check-input"
+              type="checkbox"
+              data-inchi-option-off="SNon"
+              data-default-checked
+              checked
+            />
             <label class="form-check-label">Include Stereo:</label>
           </div>
         </div>
         <div class="col">
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SAbs" class="form-check-input" type="radio" name="stereoRadio" data-inchi-stereo-option data-default-checked checked>
+            <input
+              data-id="SAbs"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-stereo-option
+              data-default-checked
+              checked
+            />
             <label class="form-check-label">Absolute</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SRel" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRel" data-inchi-stereo-option>
+            <input
+              data-id="SRel"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-option-on="SRel"
+              data-inchi-stereo-option
+            />
             <label class="form-check-label">Relative</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SRac" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRac" data-inchi-stereo-option>
+            <input
+              data-id="SRac"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-option-on="SRac"
+              data-inchi-stereo-option
+            />
             <label class="form-check-label">Racemic</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SUCF" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SUCF" data-inchi-stereo-option>
+            <input
+              data-id="SUCF"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-option-on="SUCF"
+              data-inchi-stereo-option
+            />
             <label class="form-check-label">From chiral flag</label>
           </div>
         </div>
       </div>
       <div class="form-check ms-4">
-        <input data-id="SUU" class="form-check-input" type="checkbox" data-inchi-option-on="SUU" data-inchi-stereo-option>
-        <label class="form-check-label">Always include omitted/undefined stereo</label>
+        <input
+          data-id="SUU"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="SUU"
+          data-inchi-stereo-option
+        />
+        <label class="form-check-label"
+          >Always include omitted/undefined stereo</label
+        >
       </div>
       <div class="form-check ms-4">
-        <input data-id="SLUUD" class="form-check-input" type="checkbox" data-inchi-option-on="SLUUD" data-inchi-stereo-option>
-        <label class="form-check-label">Different marks for unknown/undefined stereo</label>
+        <input
+          data-id="SLUUD"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="SLUUD"
+          data-inchi-stereo-option
+        />
+        <label class="form-check-label"
+          >Different marks for unknown/undefined stereo</label
+        >
       </div>
       <div class="form-check ms-4">
-        <input data-id="NEWPSOFF" class="form-check-input" type="checkbox" data-inchi-option-on="NEWPSOFF" data-inchi-stereo-option>
-        <label class="form-check-label">Both ends of wedge point to stereocenters</label>
+        <input
+          data-id="NEWPSOFF"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NEWPSOFF"
+          data-inchi-stereo-option
+        />
+        <label class="form-check-label"
+          >Both ends of wedge point to stereocenters</label
+        >
       </div>
       <div class="form-check">
-        <input data-id="RecMet" class="form-check-input" type="checkbox" data-inchi-option-on="RecMet">
+        <input
+          data-id="RecMet"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="RecMet"
+        />
         <label class="form-check-label">Include Bonds to Metal</label>
       </div>
       <div class="form-check">
-      <select data-tautomer-multiselect multiple="multiple">
-        <option data-role="divider"></option>
-        <option data-id="KET" data-inchi-option-on="KET" value="KET">KET - Keto-enol Tautomerism</option>
-        <option data-id="15T" data-inchi-option-on="15T" value="15T">15T - 1,5-tautomerism</option>
-        <option data-id="PT_06_00" data-inchi-option-on="PT_06_00" value="PT_06_00">PT_06_00 - 1,3 heteroatom H-shift</option>
-        <option data-id="PT_13_00" data-inchi-option-on="PT_13_00" value="PT_13_00">PT_13_00 - keten-inol exchange</option>
-        <option data-id="PT_16_00" data-inchi-option-on="PT_16_00" value="PT_16_00">PT_16_00 - nitroso/oxime</option>
-        <option data-id="PT_18_00" data-inchi-option-on="PT_18_00" value="PT_18_00">PT_18_00 - cyanic/iso-cyanic acids</option>
-        <option data-id="PT_22_00" data-inchi-option-on="PT_22_00" value="PT_22_00">PT_22_00 - imine/imine</option>
-        <option data-id="PT_39_00" data-inchi-option-on="PT_39_00" value="PT_39_00">PT_39_00 - nitrone/azoxy or Behrend rearrangement</option>
-      </select>
+        <select data-tautomer-multiselect multiple="multiple">
+          <option data-role="divider"></option>
+          <option data-id="KET" data-inchi-option-on="KET" value="KET">
+            KET - Keto-enol Tautomerism
+          </option>
+          <option data-id="15T" data-inchi-option-on="15T" value="15T">
+            15T - 1,5-tautomerism
+          </option>
+          <option
+            data-id="PT_06_00"
+            data-inchi-option-on="PT_06_00"
+            value="PT_06_00"
+          >
+            PT_06_00 - 1,3 heteroatom H-shift
+          </option>
+          <option
+            data-id="PT_13_00"
+            data-inchi-option-on="PT_13_00"
+            value="PT_13_00"
+          >
+            PT_13_00 - keten-inol exchange
+          </option>
+          <option
+            data-id="PT_16_00"
+            data-inchi-option-on="PT_16_00"
+            value="PT_16_00"
+          >
+            PT_16_00 - nitroso/oxime
+          </option>
+          <option
+            data-id="PT_18_00"
+            data-inchi-option-on="PT_18_00"
+            value="PT_18_00"
+          >
+            PT_18_00 - cyanic/iso-cyanic acids
+          </option>
+          <option
+            data-id="PT_22_00"
+            data-inchi-option-on="PT_22_00"
+            value="PT_22_00"
+          >
+            PT_22_00 - imine/imine
+          </option>
+          <option
+            data-id="PT_39_00"
+            data-inchi-option-on="PT_39_00"
+            value="PT_39_00"
+          >
+            PT_39_00 - nitrone/azoxy or Behrend rearrangement
+          </option>
+        </select>
       </div>
       <div class="form-check">
-        <input data-id="treatPolymers" class="form-check-input" type="checkbox" data-inchi-option-on="Polymers">
+        <input
+          data-id="treatPolymers"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="Polymers"
+        />
         <label class="form-check-label">Treat polymers:</label>
       </div>
       <div class="form-check ms-4">
-        <input data-id="NoEdits" class="form-check-input" type="checkbox" data-inchi-option-on="NoEdits" data-inchi-polymer-option data-default-disabled disabled>
-        <label class="form-check-label">No pre-edits of original polymer structure</label>
+        <input
+          data-id="NoEdits"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NoEdits"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
+        <label class="form-check-label"
+          >No pre-edits of original polymer structure</label
+        >
       </div>
       <div class="form-check ms-4">
-        <input data-id="FoldCRU" class="form-check-input" type="checkbox" data-inchi-option-on="FoldCRU" data-inchi-polymer-option data-default-disabled disabled>
+        <input
+          data-id="FoldCRU"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="FoldCRU"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
         <label class="form-check-label">Enable CRU folding</label>
       </div>
       <div class="form-check ms-4">
-        <input data-id="NoFrameShift" class="form-check-input" type="checkbox" data-inchi-option-on="NoFrameShift" data-inchi-polymer-option data-default-disabled disabled>
+        <input
+          data-id="NoFrameShift"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NoFrameShift"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
         <label class="form-check-label">Disable CRU frame shift</label>
       </div>
       <div class="form-check">
-        <input data-id="NPZz" class="form-check-input" type="checkbox" data-inchi-option-on="NPZz">
-        <label class="form-check-label">Allow non-polymer Zz pseudoatoms <i class="bi bi-question-circle-fill colored-icon" data-bs-toggle="tooltip" data-bs-custom-class="custom-tooltip" data-bs-html="true" data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />"*" pseudoatoms can be selected within the Ketcher structure editor either via the <i>Extended Table</i> in the right toolbar or using the hotkey "*".'></i></label>
+        <input
+          data-id="NPZz"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NPZz"
+        />
+        <label class="form-check-label"
+          >Allow non-polymer Zz pseudoatoms
+          <i
+            class="bi bi-question-circle-fill colored-icon"
+            data-bs-toggle="tooltip"
+            data-bs-custom-class="custom-tooltip"
+            data-bs-html="true"
+            data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />"*" pseudoatoms can be selected within the Ketcher structure editor either via the <i>Extended Table</i> in the right toolbar or using the hotkey "*".'
+          ></i
+        ></label>
       </div>
       <div class="mt-2">
-        <a style="text-decoration:none;" role="button" data-reset-inchi-options><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a>
+        <a style="text-decoration: none" role="button" data-reset-inchi-options
+          ><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a
+        >
       </div>
     </template>
 
     <!-- Template for InChI v1.07-orgmet options -->
     <template id="inchiOptionsTemplate107OrgMet">
       <div class="form-check">
-        <input data-id="mobileH" class="form-check-input" type="checkbox" data-inchi-option-off="FixedH" data-default-checked checked>
+        <input
+          data-id="mobileH"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-off="FixedH"
+          data-default-checked
+          checked
+        />
         <label class="form-check-label">Mobile H Perception</label>
       </div>
       <div class="row row-cols-auto">
         <div class="col">
           <div class="form-check">
-            <input data-id="includeStereo" class="form-check-input" type="checkbox" data-inchi-option-off="SNon" data-default-checked checked>
+            <input
+              data-id="includeStereo"
+              class="form-check-input"
+              type="checkbox"
+              data-inchi-option-off="SNon"
+              data-default-checked
+              checked
+            />
             <label class="form-check-label">Include Stereo:</label>
           </div>
         </div>
         <div class="col">
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SAbs" class="form-check-input" type="radio" name="stereoRadio" data-inchi-stereo-option data-default-checked checked>
+            <input
+              data-id="SAbs"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-stereo-option
+              data-default-checked
+              checked
+            />
             <label class="form-check-label">Absolute</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SRel" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRel" data-inchi-stereo-option>
+            <input
+              data-id="SRel"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-option-on="SRel"
+              data-inchi-stereo-option
+            />
             <label class="form-check-label">Relative</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SRac" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SRac" data-inchi-stereo-option>
+            <input
+              data-id="SRac"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-option-on="SRac"
+              data-inchi-stereo-option
+            />
             <label class="form-check-label">Racemic</label>
           </div>
           <div class="form-check ms-xl-0 ms-lg-4">
-            <input data-id="SUCF" class="form-check-input" type="radio" name="stereoRadio" data-inchi-option-on="SUCF" data-inchi-stereo-option>
+            <input
+              data-id="SUCF"
+              class="form-check-input"
+              type="radio"
+              name="stereoRadio"
+              data-inchi-option-on="SUCF"
+              data-inchi-stereo-option
+            />
             <label class="form-check-label">From chiral flag</label>
           </div>
         </div>
       </div>
       <div class="form-check ms-4">
-        <input data-id="SUU" class="form-check-input" type="checkbox" data-inchi-option-on="SUU" data-inchi-stereo-option>
-        <label class="form-check-label">Always include omitted/undefined stereo</label>
+        <input
+          data-id="SUU"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="SUU"
+          data-inchi-stereo-option
+        />
+        <label class="form-check-label"
+          >Always include omitted/undefined stereo</label
+        >
       </div>
       <div class="form-check ms-4">
-        <input data-id="SLUUD" class="form-check-input" type="checkbox" data-inchi-option-on="SLUUD" data-inchi-stereo-option>
-        <label class="form-check-label">Different marks for unknown/undefined stereo</label>
+        <input
+          data-id="SLUUD"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="SLUUD"
+          data-inchi-stereo-option
+        />
+        <label class="form-check-label"
+          >Different marks for unknown/undefined stereo</label
+        >
       </div>
       <div class="form-check ms-4">
-        <input data-id="NEWPSOFF" class="form-check-input" type="checkbox" data-inchi-option-on="NEWPSOFF" data-inchi-stereo-option>
-        <label class="form-check-label">Both ends of wedge point to stereocenters</label>
+        <input
+          data-id="NEWPSOFF"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NEWPSOFF"
+          data-inchi-stereo-option
+        />
+        <label class="form-check-label"
+          >Both ends of wedge point to stereocenters</label
+        >
       </div>
       <div class="form-check">
-        <input data-id="RecMet" class="form-check-input" type="checkbox" data-inchi-option-on="RecMet">
+        <input
+          data-id="RecMet"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="RecMet"
+        />
         <label class="form-check-label">Include Bonds to Metal</label>
       </div>
       <div class="form-check">
-      <select data-tautomer-multiselect multiple="multiple">
-        <option data-role="divider"></option>
-        <option data-id="KET" data-inchi-option-on="KET" value="KET">KET - Keto-enol Tautomerism</option>
-        <option data-id="15T" data-inchi-option-on="15T" value="15T">15T - 1,5-tautomerism</option>
-        <option data-id="PT_06_00" data-inchi-option-on="PT_06_00" value="PT_06_00">PT_06_00 - 1,3 heteroatom H-shift</option>
-        <option data-id="PT_13_00" data-inchi-option-on="PT_13_00" value="PT_13_00">PT_13_00 - keten-inol exchange</option>
-        <option data-id="PT_16_00" data-inchi-option-on="PT_16_00" value="PT_16_00">PT_16_00 - nitroso/oxime</option>
-        <option data-id="PT_18_00" data-inchi-option-on="PT_18_00" value="PT_18_00">PT_18_00 - cyanic/iso-cyanic acids</option>
-        <option data-id="PT_22_00" data-inchi-option-on="PT_22_00" value="PT_22_00">PT_22_00 - imine/imine</option>
-        <option data-id="PT_39_00" data-inchi-option-on="PT_39_00" value="PT_39_00">PT_39_00 - nitrone/azoxy or Behrend rearrangement</option>
-      </select>
+        <select data-tautomer-multiselect multiple="multiple">
+          <option data-role="divider"></option>
+          <option data-id="KET" data-inchi-option-on="KET" value="KET">
+            KET - Keto-enol Tautomerism
+          </option>
+          <option data-id="15T" data-inchi-option-on="15T" value="15T">
+            15T - 1,5-tautomerism
+          </option>
+          <option
+            data-id="PT_06_00"
+            data-inchi-option-on="PT_06_00"
+            value="PT_06_00"
+          >
+            PT_06_00 - 1,3 heteroatom H-shift
+          </option>
+          <option
+            data-id="PT_13_00"
+            data-inchi-option-on="PT_13_00"
+            value="PT_13_00"
+          >
+            PT_13_00 - keten-inol exchange
+          </option>
+          <option
+            data-id="PT_16_00"
+            data-inchi-option-on="PT_16_00"
+            value="PT_16_00"
+          >
+            PT_16_00 - nitroso/oxime
+          </option>
+          <option
+            data-id="PT_18_00"
+            data-inchi-option-on="PT_18_00"
+            value="PT_18_00"
+          >
+            PT_18_00 - cyanic/iso-cyanic acids
+          </option>
+          <option
+            data-id="PT_22_00"
+            data-inchi-option-on="PT_22_00"
+            value="PT_22_00"
+          >
+            PT_22_00 - imine/imine
+          </option>
+          <option
+            data-id="PT_39_00"
+            data-inchi-option-on="PT_39_00"
+            value="PT_39_00"
+          >
+            PT_39_00 - nitrone/azoxy or Behrend rearrangement
+          </option>
+        </select>
       </div>
       <div class="form-check">
-        <input data-id="treatPolymers" class="form-check-input" type="checkbox" data-inchi-option-on="Polymers">
+        <input
+          data-id="treatPolymers"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="Polymers"
+        />
         <label class="form-check-label">Treat polymers:</label>
       </div>
       <div class="form-check ms-4">
-        <input data-id="NoEdits" class="form-check-input" type="checkbox" data-inchi-option-on="NoEdits" data-inchi-polymer-option data-default-disabled disabled>
-        <label class="form-check-label">No pre-edits of original polymer structure</label>
+        <input
+          data-id="NoEdits"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NoEdits"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
+        <label class="form-check-label"
+          >No pre-edits of original polymer structure</label
+        >
       </div>
       <div class="form-check ms-4">
-        <input data-id="FoldCRU" class="form-check-input" type="checkbox" data-inchi-option-on="FoldCRU" data-inchi-polymer-option data-default-disabled disabled>
+        <input
+          data-id="FoldCRU"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="FoldCRU"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
         <label class="form-check-label">Enable CRU folding</label>
       </div>
       <div class="form-check ms-4">
-        <input data-id="NoFrameShift" class="form-check-input" type="checkbox" data-inchi-option-on="NoFrameShift" data-inchi-polymer-option data-default-disabled disabled>
+        <input
+          data-id="NoFrameShift"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NoFrameShift"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
         <label class="form-check-label">Disable CRU frame shift</label>
       </div>
       <div class="form-check">
-        <input data-id="NPZz" class="form-check-input" type="checkbox" data-inchi-option-on="NPZz">
-        <label class="form-check-label">Allow non-polymer Zz pseudoatoms <i class="bi bi-question-circle-fill colored-icon" data-bs-toggle="tooltip" data-bs-custom-class="custom-tooltip" data-bs-html="true" data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />"*" pseudoatoms can be selected within the Ketcher structure editor either via the <i>Extended Table</i> in the right toolbar or using the hotkey "*".'></i></label>
+        <input
+          data-id="NPZz"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NPZz"
+        />
+        <label class="form-check-label"
+          >Allow non-polymer Zz pseudoatoms
+          <i
+            class="bi bi-question-circle-fill colored-icon"
+            data-bs-toggle="tooltip"
+            data-bs-custom-class="custom-tooltip"
+            data-bs-html="true"
+            data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />"*" pseudoatoms can be selected within the Ketcher structure editor either via the <i>Extended Table</i> in the right toolbar or using the hotkey "*".'
+          ></i
+        ></label>
       </div>
       <div class="form-check">
-        <input data-id="OrgMet" class="form-check-input" type="checkbox" data-inchi-option-on="OrgMet" data-default-checked checked>
-        <label class="form-check-label">Molecular inorganics
-          <i 
-          class="bi bi-exclamation-circle-fill colored-icon"
-          data-bs-toggle="tooltip"
-          data-bs-custom-class="custom-tooltip"
-          data-bs-html="true"
-          data-bs-title='
+        <input
+          data-id="OrgMet"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="OrgMet"
+          data-default-checked
+          checked
+        />
+        <label class="form-check-label"
+          >Molecular inorganics
+          <i
+            class="bi bi-exclamation-circle-fill colored-icon"
+            data-bs-toggle="tooltip"
+            data-bs-custom-class="custom-tooltip"
+            data-bs-html="true"
+            data-bs-title="
             The functionality for molecular incorganics is a work in progress. You can expect to encounter warnings.
             </br>
             </br>
@@ -745,11 +1770,15 @@
               <li>Input crystal structures as molfiles. Convert the CIF to a molfile (e.g., using Mercury).</li>
               <li>In the structure editor, for donor atoms beyond nitrogen please change the “valence” (i.e., coordination number) of the atoms accordingly by right-clicking on the corresponding atoms.</li>
             </ul>
-          '>
+          "
+          >
           </i>
-        </label>      </div>
+        </label>
+      </div>
       <div class="mt-2">
-        <a style="text-decoration:none;" role="button" data-reset-inchi-options><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a>
+        <a style="text-decoration: none" role="button" data-reset-inchi-options
+          ><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a
+        >
       </div>
     </template>
 
