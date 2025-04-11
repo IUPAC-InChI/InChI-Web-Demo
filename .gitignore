@@ -21,3 +21,13 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+pages/bootstrap
+pages/bootstrap-icons
+pages/bootstrap-multiselect
+pages/jquery
+pages/ketcher
+pages/inchi
+pages/rinchi
+
+source
