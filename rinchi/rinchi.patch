@@ -1,5 +1,5 @@
 diff --git a/src/lib/rinchi_platform.h b/src/lib/rinchi_platform.h
-index df89df66..3812749c 100644
+index f2b46697..2a45162b 100644
 --- a/src/lib/rinchi_platform.h
 +++ b/src/lib/rinchi_platform.h
 @@ -71,6 +71,9 @@
@@ -13,10 +13,10 @@ index df89df66..3812749c 100644
  	Error Unsupported_platform
  #endif
 diff --git a/src/rinchi_lib/Makefile-32bit b/src/rinchi_lib/Makefile-32bit
-index b3213984..987a73cd 100644
+index a51b3579..469ba575 100644
 --- a/src/rinchi_lib/Makefile-32bit
 +++ b/src/rinchi_lib/Makefile-32bit
-@@ -10,11 +10,11 @@ MAKEFILE      = Makefile-32bit
+@@ -10,8 +10,8 @@ MAKEFILE      = Makefile-32bit
  
  ####### Compiler, tools and options
  
@@ -26,11 +26,7 @@ index b3213984..987a73cd 100644
 +CXX           = em++
  DEFINES       = -DTARGET_API_LIB
  CFLAGS        = -m32 -pipe -ansi -DCOMPILE_ANSI_ONLY -fvisibility=hidden -O2 -Wall -W -fPIC $(DEFINES)
--CXXFLAGS      = -m32 -pipe -fvisibility=hidden -O2 -Wall -W -fPIC $(DEFINES)
-+CXXFLAGS      = -m32 -pipe -fvisibility=hidden -O2 -Wall -std=c++11 -W -fPIC $(DEFINES)
- INCPATH       = -I. -I../lib -I../parsers -I../rinchi -I../writers -I../../../InChI/INCHI-1-SRC/INCHI_BASE/src
- QMAKE         = /usr/lib/x86_64-linux-gnu/qt5/bin/qmake
- DEL_FILE      = rm -f
+ CXXFLAGS      = -m32 -pipe -std=c++11 -fvisibility=hidden -O2 -Wall -W -fPIC $(DEFINES)
 @@ -34,8 +34,10 @@ TAR           = tar -cf
  COMPRESS      = gzip -9f
  DISTNAME      = rinchi1.0.0

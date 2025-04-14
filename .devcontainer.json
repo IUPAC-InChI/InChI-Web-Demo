@@ -50,5 +50,6 @@
                 "timonwong.shellcheck"
             ]
         }
-    }
+    },
+    "postCreateCommand": "npm install -g yarn"
 }

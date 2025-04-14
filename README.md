@@ -2,14 +2,24 @@
 
 ## Local development
 
-:warning:
-We'll facilitate local development with a devcontainer in the future.
-The following instructions are an interim solution (aka hack).
-:warning:
+We recommend setting up our [development container](./.devcontainer.json) as a pre-configured local development environment.
+For details on how to get started with the container see <https://containers.dev> and <https://code.visualstudio.com/docs/devcontainers/containers>.
+When you're not using the development container, make sure that your environment supports the Emscripten toolchain (<https://github.com/emscripten-core/emsdk>).
 
-The webdemo is served from the `pages` directory.
-To serve the webdemo locally, `pages` needs to contain all resources that are [built on CI](.github/workflows/ci.yml).
-`pages` already contains some of those resources, whereas others are missing.
-The  missing resources are the ones that are listed in [pages/.gitignore](pages/.gitignore).
-You can download the missing resources from the latest CI run (<https://github.com/IUPAC-InChI/InChI-Web-Demo/actions>) and copy them into `pages`.
-Once `pages` contains all resources, you can serve the webdemo locally on `localhost:8000` with `cd pages && python3 -m http.server`.
+The web-demo is served from the `pages` directory.
+Set up all required resources under pages by running
+
+```shell
+./pages/build_wasm_modules.sh $(pwd)
+./pages/download_packages.sh $(pwd)
+source ./pages/utils.sh
+build_ketcher $(pwd)
+```
+
+from the root of the repository (the argument to the scripts must be the absolute path to the root of the project).
+
+Once `pages` contains all resources, serve the web-demo locally on `localhost:8000` with
+
+```shell
+cd pages && python3 -m http.server
+```
