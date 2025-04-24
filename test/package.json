@@ -1,0 +1,11 @@
+{
+  "name": "inchi-tests",
+  "version": "1.0.0",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.0.0"
+  },
+  "scripts": {
+    "test": "jest"
+  }
+}

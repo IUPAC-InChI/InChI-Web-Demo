@@ -13,7 +13,7 @@ index f2b46697..2a45162b 100644
  	Error Unsupported_platform
  #endif
 diff --git a/src/rinchi_lib/Makefile-32bit b/src/rinchi_lib/Makefile-32bit
-index a51b3579..469ba575 100644
+index a51b3579..58a819c6 100644
 --- a/src/rinchi_lib/Makefile-32bit
 +++ b/src/rinchi_lib/Makefile-32bit
 @@ -10,8 +10,8 @@ MAKEFILE      = Makefile-32bit
@@ -27,20 +27,30 @@ index a51b3579..469ba575 100644
  DEFINES       = -DTARGET_API_LIB
  CFLAGS        = -m32 -pipe -ansi -DCOMPILE_ANSI_ONLY -fvisibility=hidden -O2 -Wall -W -fPIC $(DEFINES)
  CXXFLAGS      = -m32 -pipe -std=c++11 -fvisibility=hidden -O2 -Wall -W -fPIC $(DEFINES)
-@@ -34,8 +34,10 @@ TAR           = tar -cf
+@@ -34,9 +34,19 @@ TAR           = tar -cf
  COMPRESS      = gzip -9f
  DISTNAME      = rinchi1.0.0
  DISTDIR = /home/jhje/iupac/RInChI/src/rinchi_lib/.tmp/rinchi1.0.0
 -LINK          = g++
 -LFLAGS        = -m32 -Wl,-O1 -shared -Wl,-soname,librinchi.so.1
+-LIBS          = $(SUBLIBS)  
 +LINK          = em++
 +EXPORTED_FUNCTIONS = _rinchilib_latest_err_msg,_rinchilib_rinchi_from_file_text,_rinchilib_file_text_from_rinchi,_rinchilib_rinchikey_from_rinchi,_malloc,_free
 +EXPORTED_RUNTIME_METHODS = ccall,cwrap,UTF8ToString,getValue
-+LFLAGS        = -m32 -Wl,-O1 -sNO_DISABLE_EXCEPTION_CATCHING -sEXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS) -sEXPORTED_RUNTIME_METHODS=$(EXPORTED_RUNTIME_METHODS) -sEXPORT_NAME=rinchiModule11 -sMODULARIZE -sENVIRONMENT=web -sSTACK_SIZE=1048576
- LIBS          = $(SUBLIBS)  
++LFLAGS        = -m32 \
++				-Wl,-O1 \
++				-sNO_DISABLE_EXCEPTION_CATCHING \
++				-sEXPORTED_FUNCTIONS=$(EXPORTED_FUNCTIONS) \
++				-sEXPORTED_RUNTIME_METHODS=$(EXPORTED_RUNTIME_METHODS) \
++				-sEXPORT_NAME=rinchiModule11 \
++				-sMODULARIZE \
++				-sENVIRONMENT=web,node \
++				-sSTACK_SIZE=1048576
++LIBS          = $(SUBLIBS)
  AR            = ar cqs
  RANLIB        = 
-@@ -245,7 +247,7 @@ DIST          = ../lib/rinchi_utils.cpp \
+ SED           = sed
+@@ -245,7 +255,7 @@ DIST          = ../lib/rinchi_utils.cpp \
  		../../../InChI/INCHI-1-SRC/INCHI_API/libinchi/src/inchi_dll_b.c
  QMAKE_TARGET  = rinchi
  DESTDIR       = 

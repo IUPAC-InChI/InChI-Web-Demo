@@ -90,3 +90,15 @@ async function molfileFromAuxinfo(
 
   return JSON.parse(result);
 }
+
+if (typeof module === "object" && module.exports) {
+  // Only export functions in Node. See https://github.com/umdjs/umd.
+  // Prevents "Uncaught ReferenceError: module is not defined" in browser.
+  module.exports = {
+    inchiFromMolfile,
+    inchikeyFromInchi,
+    molfileFromInchi,
+    molfileFromAuxinfo,
+    availableInchiVersions,
+  };
+}
