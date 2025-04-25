@@ -1,8 +1,6 @@
-name: Test WASM build, prepare web application and deploy to GitHub Pages
+name: Deploy GitHub Pages
 
 on:
-  push:
-    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -15,226 +13,83 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test_and_deploy:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup emsdk
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 4.0.6
+          actions-cache-folder: "emsdk-cache"
+
+      - name: Install yarn
+        run: npm install -g yarn
+
+      - uses: actions/checkout@v4
+
+      - name: Cache dependencies
+        id: cache-dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/pages/jquery
+            ${{ github.workspace }}/pages/bootstrap
+            ${{ github.workspace }}/pages/bootstrap-icons
+            ${{ github.workspace }}/pages/bootstrap-multiselect
+          # The hashed script contains the versions of the dependencies.
+          key: ${{ hashFiles('./pages/download_packages.sh') }}
+
+      - name: Download dependencies
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
+        run: ./pages/download_packages.sh ${{ github.workspace }}
+
+      - name: Cache Ketcher
+        id: cache-ketcher
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/pages/ketcher
+          key: ${{ hashFiles('./ketcher/react-app/**/*') }}
+
+      - name: Build Ketcher
+        if: steps.cache-ketcher.outputs.cache-hit != 'true'
+        run: |
+          source ./pages/utils.sh
+          build_ketcher ${{ github.workspace }}
+
+      - name: Cache WASM modules
+        id: cache-wasm-modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/pages/inchi
+            ${{ github.workspace }}/pages/rinchi
+          # The hashed script contains the versions of the modules.
+          key: ${{ hashFiles('./pages/build_wasm_modules.sh') }}
+
+      - name: Build WASM modules
+        if: steps.cache-wasm-modules.outputs.cache-hit != 'true'
+        run: |
+          ./pages/build_wasm_modules.sh ${{ github.workspace }}
+
+      - name: Test WASM modules
+        if: steps.cache-wasm-modules.outputs.cache-hit != 'true'
+        run: |
+          cd test
+          yarn install
+          yarn test
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{github.workspace}}/pages
+
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    needs: build-and-test
     steps:
-      - name: Setup emsdk
-        uses: mymindstorm/setup-emsdk@v13
-        with:
-          version: 3.1.43
-          actions-cache-folder: "emsdk-cache"
-
-      - name: Verify emsdk
-        run: |
-          emcc -v
-
-      - name: Verify Node.js version
-        run: |
-          node -v
-
-      - name: Checkout this repository
-        uses: actions/checkout@v4
-        with:
-          path: "./InChI-Web-Demo"
-
-      #
-      # Compile v1.06's INCHI_EXE and run the test suite
-      #
-      - name: Checkout v1.06 from InChI repository
-        uses: actions/checkout@v4
-        with:
-          path: "./InChI_1_06"
-          repository: "IUPAC-InChI/InChI"
-          ref: "v1.06"
-
-      - name: Patch InChI_1_06's util.c
-        run: |
-          cd $GITHUB_WORKSPACE/InChI_1_06
-          git apply $GITHUB_WORKSPACE/InChI-Web-Demo/inchi/util.c.patch
-
-      - name: Compile InChI_1_06's INCHI_EXE
-        # Creates inchi-1.js and inchi-1.wasm in $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_EXE/bin/wasm
-        run: |
-          cd $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_EXE/inchi-1/gcc
-          mkdir -p ../../bin/wasm
-          make -j C_COMPILER=emcc CPP_COMPILER=em++ LINKER=em++ LINKER_OPTIONS="-lnodefs.js -lnoderawfs.js -sSTACK_SIZE=1048576" BIN_DIR=../../bin/wasm INCHI_EXECUTABLE_NAME=inchi-1.js
-
-      - name: Prepare InChI_1_06's tests
-        run: |
-          cd $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-TEST/test
-          unzip test-datasets.zip -d test-datasets
-          unzip test-results.zip -d expected-test-results
-          cp $GITHUB_WORKSPACE/InChI-Web-Demo/inchi/INCHI-1-TEST/inchify_*.sh .
-
-      - name: Run InChI_1_06's tests and compare test results with expected results
-        run: |
-          cd $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-TEST/test
-          ./inchify_InChI_TestSet.sh "node ../../INCHI-1-SRC/INCHI_EXE/bin/wasm/inchi-1.js" test-datasets test-results test-logs
-          ./inchify_zzp.sh "node ../../INCHI-1-SRC/INCHI_EXE/bin/wasm/inchi-1.js" test-datasets test-results test-logs
-          diff -q --strip-trailing-cr test-results/ expected-test-results/ && echo "Tests are OK!"
-
-      #
-      # Build InChI v1.06 WASM module
-      #
-      - name: Compile InChI_1_06 WebAssembly module (INCHI_WEB)
-        # Creates inchi-web106.js and inchi-web106.wasm in $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_WEB
-        run: |
-          cd $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC
-          cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/inchi/INCHI_WEB .
-          cd INCHI_WEB
-          make -j -f makefile INCHI_WEB_NAME=inchi-web106 MODULE_NAME=inchiModule106
-
-      #
-      # Build InChI v1.07 WASM module
-      #
-      - name: Checkout v1.07 from InChI repository
-        uses: actions/checkout@v4
-        with:
-          path: "./InChI_1_07"
-          repository: "IUPAC-InChI/InChI"
-          ref: "v1.07.3"
-
-      - name: Compile InChI_1_07 WebAssembly module (INCHI_WEB)
-        # Creates inchi-web107.js and inchi-web107.wasm in $GITHUB_WORKSPACE/InChI_1_07/INCHI-1-SRC/INCHI_WEB
-        run: |
-          cd $GITHUB_WORKSPACE/InChI_1_07/INCHI-1-SRC
-          cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/inchi/INCHI_WEB .
-          cd INCHI_WEB
-          make -j -f makefile INCHI_WEB_NAME=inchi-web107 MODULE_NAME=inchiModule107
-
-      #
-      # Build InChI v1.07-orgmet WASM module
-      #
-      - name: Checkout v1.07-orgmet from InChI repository
-        uses: actions/checkout@v4
-        with:
-          path: "${{github.workspace}}/InChI_1_07-orgmet"
-          repository: "IUPAC-InChI/InChI"
-          ref: "5c17c7eed490712984d526ec0fd5599a0601016e"
-
-      - name: Compile InChI_1_07-orgmet WebAssembly module (INCHI_WEB)
-        # Creates inchi-web107-orgmet.js and inchi-web107-orgmet.wasm in $GITHUB_WORKSPACE/InChI_1_07-orgmet/INCHI-1-SRC/INCHI_WEB
-        run: |
-          cd $GITHUB_WORKSPACE/InChI_1_07-orgmet/INCHI-1-SRC
-          cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/inchi/INCHI_WEB .
-          cd INCHI_WEB
-          make -j -f makefile INCHI_WEB_NAME=inchi-web107-orgmet MODULE_NAME=inchiModule107OrgMet
-
-      #
-      # Build RInChI WASM module
-      #
-      - name: Checkout RInChI repository
-        uses: actions/checkout@v4
-        with:
-          path: "./RInChI/RInChI"
-          repository: "IUPAC-InChI/RInChI"
-          ref: "d122a78457c592b9728906f3c0b565a2c2c5d6dd"
-
-      - name: Checkout v1.07 from InChI repository
-        uses: actions/checkout@v4
-        with:
-          path: "./RInChI/InChI"
-          repository: "IUPAC-InChI/InChI"
-          ref: "v1.07.3"
-
-      - name: Patch RInChI project
-        run: |
-          cd $GITHUB_WORKSPACE/RInChI/RInChI
-          git apply $GITHUB_WORKSPACE/InChI-Web-Demo/rinchi/rinchi.patch
-
-      - name: Compile RInChI WebAssembly module from rinchi_lib
-        # Creates librinchi-1.1.js and librinchi-1.1.wasm in $GITHUB_WORKSPACE/RInChI/RInChI/src/rinchi_lib
-        run: |
-          cd $GITHUB_WORKSPACE/RInChI/RInChI/src/rinchi_lib
-          make -j -f Makefile-32bit
-
-      #
-      # Build Ketcher
-      #
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "yarn"
-          cache-dependency-path: ${{github.workspace}}/InChI-Web-Demo/ketcher/react-app/yarn.lock
-
-      - name: Verify Node.js version
-        run: |
-          node -v
-
-      - name: Build Ketcher React App
-        # creates build directoy in $GITHUB_WORKSPACE/InChI-Web-Demo/ketcher/react-app
-        run: |
-          cd $GITHUB_WORKSPACE/InChI-Web-Demo/ketcher/react-app
-          yarn install --frozen-lockfile
-          yarn run build
-
-      #
-      # Bootstrap
-      #
-      - name: Download Bootstrap
-        run: |
-          cd $GITHUB_WORKSPACE
-          wget https://github.com/twbs/bootstrap/releases/download/v5.2.3/bootstrap-5.2.3-dist.zip
-          wget https://github.com/twbs/icons/releases/download/v1.10.3/bootstrap-icons-1.10.3.zip
-          unzip bootstrap-5.2.3-dist.zip -d bootstrap
-          unzip bootstrap-icons-1.10.3.zip -d bootstrap-icons
-
-      #
-      # Bootstrap Multiselect
-      #
-      - name: Download Bootstrap Multiselect
-        run: |
-          cd $GITHUB_WORKSPACE
-          wget -O bootstrap-multiselect.zip https://github.com/davidstutz/bootstrap-multiselect/archive/refs/tags/v1.1.2.zip
-          unzip bootstrap-multiselect.zip -d bootstrap-multiselect
-
-      #
-      # JQuery
-      #
-      - name: Download JQuery
-        run: |
-          cd $GITHUB_WORKSPACE
-          wget -P jquery https://code.jquery.com/jquery-3.7.1.min.js
-
-      #
-      # GitHub pages deployment
-      #
-      - name: Collect artifacts for deployment
-        run: |
-          cd $GITHUB_WORKSPACE
-          cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/pages .
-          cd pages
-          mkdir inchi
-          cp $GITHUB_WORKSPACE/InChI_1_06/INCHI-1-SRC/INCHI_WEB/inchi-web106.* inchi
-          cp $GITHUB_WORKSPACE/InChI_1_07/INCHI-1-SRC/INCHI_WEB/inchi-web107.* inchi
-          cp $GITHUB_WORKSPACE/InChI_1_07-orgmet/INCHI-1-SRC/INCHI_WEB/inchi-web107-orgmet.* inchi
-          mkdir rinchi
-          cp $GITHUB_WORKSPACE/RInChI/RInChI/src/rinchi_lib/librinchi-1.1.* rinchi
-          mkdir ketcher
-          cp -R $GITHUB_WORKSPACE/InChI-Web-Demo/ketcher/react-app/build/* ketcher
-          cp -R $GITHUB_WORKSPACE/bootstrap .
-          cp -R $GITHUB_WORKSPACE/bootstrap-icons .
-          cp -R $GITHUB_WORKSPACE/bootstrap-multiselect/bootstrap-multiselect-*/dist bootstrap-multiselect
-          cp -R $GITHUB_WORKSPACE/jquery .
-
-      - name: Zip pages directory and add it to the deployment
-        run: |
-          cd $GITHUB_WORKSPACE
-          zip -r InChI-Web-Demo_pages.zip pages
-          mv $GITHUB_WORKSPACE/InChI-Web-Demo_pages.zip pages
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ${{github.workspace}}/pages
-
-      - name: Deploy to GitHub Pages
-        id: deployment
+      - id: deployment
         uses: actions/deploy-pages@v4
