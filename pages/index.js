@@ -1,25 +1,13 @@
 "use strict";
 
-/*
- * Page loaded
- */
-function onBodyLoad() {
-  // initialize user-selectable parameters
-  addVersions("inchi-tab1-pane", availableInchiVersions);
-  addInchiOptionsForm("inchi-tab1-pane", () => updateInchiTab1());
-
-  addVersions("inchi-tab2-pane", availableInchiVersions);
-  addInchiOptionsForm("inchi-tab2-pane", () => updateInchiTab2());
-
-  addVersions("inchi-tab3-pane", availableInchiVersions);
-
-  addVersions("rinchi-tab1-pane", availableRInchiVersions);
-  addVersions("rinchi-tab2-pane", availableRInchiVersions);
-  addVersions("rinchi-tab3-pane", availableRInchiVersions);
-  addVersions("rinchi-tab4-pane", availableRInchiVersions);
-
-  // enable tooltips
-  initTooltips();
+function initTooltips(tabDivId) {
+  [
+    ...document
+      .getElementById(tabDivId)
+      .querySelectorAll('[data-bs-toggle="tooltip"]'),
+  ].map((tooltipTriggerEl) => {
+    new bootstrap.Tooltip(tooltipTriggerEl);
+  });
 }
 
 function addVersions(tabDivId, versions) {
@@ -164,14 +152,6 @@ function resetInchiOptions(targetDivId) {
   $(targetDiv)
     .find("select[data-tautomer-multiselect]")
     .multiselect("deselectAll", false);
-}
-
-function initTooltips() {
-  [...document.querySelectorAll('[data-bs-toggle="tooltip"]')].map(
-    (tooltipTriggerEl) => {
-      new bootstrap.Tooltip(tooltipTriggerEl);
-    }
-  );
 }
 
 function getInchiOptions(tabId) {
