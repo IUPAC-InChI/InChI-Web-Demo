@@ -15,13 +15,8 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    container: emscripten/emsdk:4.0.6
     steps:
-      - name: Setup emsdk
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: 4.0.6
-          actions-cache-folder: "emsdk-cache"
-
       - name: Install yarn
         run: npm install -g yarn
 
@@ -32,49 +27,50 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ${{ github.workspace }}/pages/jquery
-            ${{ github.workspace }}/pages/bootstrap
-            ${{ github.workspace }}/pages/bootstrap-icons
-            ${{ github.workspace }}/pages/bootstrap-multiselect
+            pages/jquery
+            pages/bootstrap
+            pages/bootstrap-icons
+            pages/bootstrap-multiselect
           # The hashed script contains the versions of the dependencies.
-          key: ${{ hashFiles('./pages/download_packages.sh') }}
+          key: ${{ hashFiles('pages/download_packages.sh') }}
 
       - name: Download dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
-        run: ./pages/download_packages.sh ${{ github.workspace }}
+        run: $GITHUB_WORKSPACE/pages/download_packages.sh $GITHUB_WORKSPACE
 
       - name: Cache Ketcher
         id: cache-ketcher
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/pages/ketcher
-          key: ${{ hashFiles('./ketcher/react-app/**/*') }}
+          path: pages/ketcher
+          key: ${{ hashFiles('ketcher/react-app/**/*') }}
 
       - name: Build Ketcher
         if: steps.cache-ketcher.outputs.cache-hit != 'true'
+        shell: bash
         run: |
-          source ./pages/utils.sh
-          build_ketcher ${{ github.workspace }}
+          source $GITHUB_WORKSPACE/pages/utils.sh
+          build_ketcher $GITHUB_WORKSPACE
 
       - name: Cache WASM modules
         id: cache-wasm-modules
         uses: actions/cache@v4
         with:
           path: |
-            ${{ github.workspace }}/pages/inchi
-            ${{ github.workspace }}/pages/rinchi
+            pages/inchi
+            pages/rinchi
           # The hashed script contains the versions of the modules.
-          key: ${{ hashFiles('./pages/build_wasm_modules.sh') }}
+          key: ${{ hashFiles('pages/build_wasm_modules.sh') }}
 
       - name: Build WASM modules
         if: steps.cache-wasm-modules.outputs.cache-hit != 'true'
         run: |
-          ./pages/build_wasm_modules.sh ${{ github.workspace }}
+          $GITHUB_WORKSPACE/pages/build_wasm_modules.sh $GITHUB_WORKSPACE
 
       - name: Test WASM modules
         if: steps.cache-wasm-modules.outputs.cache-hit != 'true'
         run: |
-          cd test
+          cd $GITHUB_WORKSPACE/test
           yarn install
           yarn test
 
@@ -82,7 +78,8 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{github.workspace}}/pages
+          retention-days: 30
+          path: pages
 
   deploy:
     environment:
