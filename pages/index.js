@@ -291,8 +291,51 @@ async function onChangeInChIVersion(tabDivId, updateFunction) {
   const optionsState = getInchiOptionsState(tabDivId);
   addInchiOptionsForm(tabDivId, () => updateFunction());
   applyInchiOptionsState(tabDivId, optionsState);
-
+  await updateKetcherOptions(tabDivId);
   await updateFunction();
+}
+
+// This variable is used to store the last InChI version used in the Ketcher
+// options. It is used to avoid unnecessary updates when the InChI version
+// has not changed.
+// It is initialized to null, so that the first call to updateKetcherOptions
+// will always update the Ketcher options.  
+let lastInChiVersion = null;
+
+// This function updates the Ketcher options based on the selected InChI version
+// and the Ketcher instance associated with the given tabDivId.
+// It checks if the InChI version has changed since the last update, and if so,
+// it updates the Ketcher options accordingly.
+async function updateKetcherOptions(tabDivId) {
+
+  // get ketcher instance and selected inchi version
+  var lastIndex = tabDivId.lastIndexOf("-");
+  const idKetcher = tabDivId.substring(0, lastIndex + 1) + "ketcher";
+  console.log("idKetcher: " + idKetcher);
+  const ketcher = getKetcher(idKetcher);
+  const inchiVersion = getVersion(tabDivId);
+  // check if ketcher is loaded
+  if(!ketcher) {
+    console.log("Ketcher not found");
+    return;
+  }
+  // check if inchiVersion is not the same as lastInChiVersion
+  if (inchiVersion === lastInChiVersion) {
+    console.log("InChI version not changed");
+    return;
+  }
+  lastInChiVersion = inchiVersion;
+  // Update Ketcher options
+  // check for version, if "MoIn" version set "showHydrogenLabels" to "all"
+  // otherwise set it to "Terminal and Hetero"
+  if (inchiVersion === "1.07.3 with Molecular inorganics") {
+    await ketcher.editor.setOptions('{"showHydrogenLabels": "all"}');
+    console.log("showHydrogenLabels: all");
+  } else {
+    await ketcher.editor.setOptions('{"showHydrogenLabels": "Terminal and Hetero"}');
+    console.log("showHydrogenLabels: Terminal and Hetero");
+  }
+  console.log("Ketcher options updated for InChI version: " + inchiVersion);
 }
 
 async function updateInchiTab2() {
@@ -727,7 +770,7 @@ async function convertRinchiToTextfile(
   if (rinchiResult.error !== "") {
     writeResult(
       "Error from rinchilib_file_text_from_rinchi() call: " +
-        rinchiResult.error,
+      rinchiResult.error,
       logTextElementId
     );
   }
