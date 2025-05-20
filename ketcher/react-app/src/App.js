@@ -30,6 +30,9 @@ function App() {
       onInit={(ketcher) => {
         window.ketcher = ketcher;
         window.parent.postMessage({ eventType: "init" }, "*");
+        ketcher.editor.setOptions(
+          '{"showHydrogenLabels": "Terminal and Hetero"}'
+        );
       }}
     />
   );

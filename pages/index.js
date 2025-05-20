@@ -285,6 +285,23 @@ async function updateInchiTab1() {
 
 async function onChangeInChIVersionTab1() {
   await onChangeInChIVersion("inchi-tab1-pane", () => updateInchiTab1());
+  await updateKetcherOptions(
+    getKetcher("inchi-tab1-ketcher"),
+    getVersion("inchi-tab1-pane")
+  );
+  initTooltips("inchi-tab1-pane");
+}
+async function onChangeInChIVersionTab2() {
+  await onChangeInChIVersion("inchi-tab2-pane", () => updateInchiTab2());
+  initTooltips("inchi-tab2-pane");
+}
+
+async function onChangeInChIVersionTab3() {
+  await updateInchiTab3();
+  await updateKetcherOptions(
+    getKetcher("inchi-tab3-ketcher"),
+    getVersion("inchi-tab3-pane")
+  );
 }
 
 async function onChangeInChIVersion(tabDivId, updateFunction) {
@@ -293,6 +310,26 @@ async function onChangeInChIVersion(tabDivId, updateFunction) {
   applyInchiOptionsState(tabDivId, optionsState);
 
   await updateFunction();
+}
+
+/*
+ * Update the Ketcher options based on the selected InChI version
+ */
+async function updateKetcherOptions(ketcher, inchiVersion) {
+  if (!ketcher) {
+    console.log("Ketcher not found");
+    return;
+  }
+
+  if (inchiVersion === "1.07.3 with Molecular inorganics") {
+    await ketcher.editor.setOptions('{"showHydrogenLabels": "all"}');
+    console.log("showHydrogenLabels: all");
+  } else {
+    await ketcher.editor.setOptions(
+      '{"showHydrogenLabels": "Terminal and Hetero"}'
+    );
+    console.log("showHydrogenLabels: Terminal and Hetero");
+  }
 }
 
 async function updateInchiTab2() {
@@ -320,10 +357,6 @@ async function updateInchiTab2() {
     "inchi-tab2-auxinfo",
     "inchi-tab2-logs"
   );
-}
-
-async function onChangeInChIVersionTab2() {
-  await onChangeInChIVersion("inchi-tab2-pane", () => updateInchiTab2());
 }
 
 async function convertMolfileToInchiAndWriteResults(
