@@ -4,6 +4,21 @@ global.inchiModule106 = require("../pages/inchi/inchi-web106.js");
 global.inchiModule107 = require("../pages/inchi/inchi-web107.js");
 global.inchiModule107OrgMet = require("../pages/inchi/inchi-web107-orgmet.js");
 
+// Mock availableInchiVersions for global availability during testing.
+const loadInchiVersions = () => {
+  const inchiVersions = require("../pages/inchi_versions.json");
+  return Object.fromEntries(
+    Object.entries(inchiVersions).map(([version, cfg]) => [
+      version,
+      {
+        ...cfg,
+        module: global[cfg.module](),
+      },
+    ])
+  );
+};
+global.availableInchiVersions = loadInchiVersions();
+
 const {
   inchiFromMolfile,
   inchikeyFromInchi,

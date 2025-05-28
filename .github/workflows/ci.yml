@@ -59,12 +59,12 @@ jobs:
           path: |
             pages/inchi
             pages/rinchi
-          # The hashed script contains the versions of the modules.
-          key: ${{ hashFiles('pages/build_wasm_modules.sh') }}
+          key: ${{ hashFiles('pages/inchi_versions.json') }}
 
       - name: Build WASM modules
         if: steps.cache-wasm-modules.outputs.cache-hit != 'true'
         run: |
+          apt-get update -y && apt-get install -y jq
           $GITHUB_WORKSPACE/pages/build_wasm_modules.sh $GITHUB_WORKSPACE
 
       - name: Test WASM modules

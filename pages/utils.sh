@@ -38,21 +38,22 @@ build_ketcher() {
 
 
 clone_inchi_source() {
-    local commit=$1  # branch or tag
+    local commit=$1  # hash
     readonly commit
     local target_dir=$2
     readonly target_dir
 
-    # Download only INCHI-1-SRC from branch with git: https://stackoverflow.com/a/52269934
-    git clone --no-checkout --depth 1 --branch "$commit" --single-branch --filter=tree:0 https://github.com/IUPAC-InChI/InChI.git "$target_dir"
+    # Download only INCHI-1-SRC from commit with git: https://stackoverflow.com/a/52269934
+    git clone --no-checkout --filter=tree:0 https://github.com/IUPAC-InChI/InChI.git "$target_dir"
     cd "$target_dir" || exit
+    git fetch --depth 1 origin "$commit"
     git sparse-checkout set --no-cone /INCHI-1-SRC
-    git checkout
+    git checkout "$commit"
 }
 
 
 build_inchi_wasm() {
-    local commit=$1  # branch or tag
+    local commit=$1  # hash
     readonly commit
     local artifact_name=$2
     readonly artifact_name
@@ -102,7 +103,7 @@ build_rinchi_wasm() {
     rm -rf "$artifact_dir" && mkdir -p "$artifact_dir"
 
     # RInChI needs InChI source
-    clone_inchi_source "v1.07.3" "${source_dir}/InChI"
+    clone_inchi_source $(jq -r '."1.07.3".commit' "${_root_dir}/pages/inchi_versions.json")  "${source_dir}/InChI"
 
     # Get RInChI source
     git clone --no-checkout --depth 1 --branch "main" --single-branch https://github.com/IUPAC-InChI/RInChI.git "${source_dir}/RInChI"

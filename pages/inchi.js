@@ -1,26 +1,30 @@
 "use strict";
 
-/*
- * WASM module(s) initialization
- *
- * Calling the factory function returns a Promise which resolves to the module object.
- * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
- */
-const availableInchiVersions = {
-  1.06: {
-    module: inchiModule106(),
-    optionsTemplateId: "inchiOptionsTemplate106",
-  },
-  "1.07.3": {
-    module: inchiModule107(),
-    optionsTemplateId: "inchiOptionsTemplate107",
-    default: true,
-  },
-  "1.07.3 with Molecular inorganics": {
-    module: inchiModule107OrgMet(),
-    optionsTemplateId: "inchiOptionsTemplate107OrgMet",
-  },
-};
+// Only run this in the browser, not in Node.js.
+if (typeof window !== "undefined") {
+  // Instantiate `availableInchiVersions` with IIFE (https://developer.mozilla.org/en-US/docs/Glossary/IIFE).
+  (async () => {
+    const response = await fetch("inchi_versions.json");
+    const inchiVersions = await response.json();
+
+    const availableInchiVersions = Object.fromEntries(
+      Object.entries(inchiVersions).map(([version, cfg]) => [
+        version,
+        {
+          ...cfg,
+          /*
+           * WASM module(s) initialization
+           *
+           * Calling the factory function returns a Promise which resolves to the module object.
+           * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
+           */
+          module: window[cfg.module](),
+        },
+      ])
+    );
+    window.availableInchiVersions = availableInchiVersions;
+  })();
+}
 
 /*
  * Glue code to invoke the C functions in inchi_web.c
@@ -99,6 +103,5 @@ if (typeof module === "object" && module.exports) {
     inchikeyFromInchi,
     molfileFromInchi,
     molfileFromAuxinfo,
-    availableInchiVersions,
   };
 }
