@@ -32,12 +32,7 @@ class InChIToolsComponent extends InsertHTMLComponent {
     await super.connectedCallback();
 
     addInchiOptionsForm("inchi-tab1-pane", () => updateInchiTab1());
-    initTooltips("inchi-tab1-pane");
-
     addInchiOptionsForm("inchi-tab2-pane", () => updateInchiTab2());
-    initTooltips("inchi-tab2-pane");
-
-    initTooltips("inchi-tab3-pane");
   }
 }
 

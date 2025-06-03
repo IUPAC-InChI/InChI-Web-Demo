@@ -1,15 +1,5 @@
 "use strict";
 
-function initTooltips(tabDivId) {
-  [
-    ...document
-      .getElementById(tabDivId)
-      .querySelectorAll('[data-bs-toggle="tooltip"]'),
-  ].map((tooltipTriggerEl) => {
-    new bootstrap.Tooltip(tooltipTriggerEl);
-  });
-}
-
 function addVersions(tabDivId, versions) {
   const targetSelect = document
     .getElementById(tabDivId)
@@ -119,6 +109,12 @@ function addInchiOptionsForm(tabDivId, updateFunction) {
   // Attach to target element
   targetDiv.innerHTML = "";
   targetDiv.appendChild(clone);
+  // Initialize tooltips
+  [...targetDiv.querySelectorAll('[data-bs-toggle="tooltip"]')].map(
+    (tooltipTriggerEl) => {
+      new bootstrap.Tooltip(tooltipTriggerEl);
+    }
+  );
 }
 
 function resetInchiOptions(targetDivId) {
@@ -383,11 +379,9 @@ async function onChangeInChIVersionTab1() {
     getKetcher("inchi-tab1-ketcher"),
     getVersion("inchi-tab1-pane")
   );
-  initTooltips("inchi-tab1-pane");
 }
 async function onChangeInChIVersionTab2() {
   await updateInchiOptions("inchi-tab2-pane", () => updateInchiTab2());
-  initTooltips("inchi-tab2-pane");
 }
 
 async function onChangeInChIVersionTab3() {
