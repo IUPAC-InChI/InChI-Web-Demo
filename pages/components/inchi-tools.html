@@ -74,17 +74,9 @@
           </div>
         </div>
         <div class="col-xl-4 mt-auto">
-          <div class="mt-2">
-            <label class="form-check-label mb-2" for="inchi-tab1-inchiversion"
-              >Select InChI version</label
-            >
-            <select
-              id="inchi-tab1-inchiversion"
-              class="form-select"
-              data-version
-              onchange="onChangeInChIVersionTab1()"
-            ></select>
-          </div>
+          <inchi-inchi-version-selection
+            onVersionChange="onChangeInChIVersionTab1()"
+          ></inchi-inchi-version-selection>
           <div data-inchi-options></div>
         </div>
       </div>
@@ -156,17 +148,9 @@
           </div>
         </div>
         <div class="col-xl-4 mt-auto">
-          <div class="mt-2">
-            <label class="form-check-label mb-2" for="inchi-tab2-inchiversion"
-              >Select InChI version</label
-            >
-            <select
-              id="inchi-tab2-inchiversion"
-              class="form-select"
-              data-version
-              onchange="onChangeInChIVersionTab2()"
-            ></select>
-          </div>
+          <inchi-inchi-version-selection
+            onVersionChange="onChangeInChIVersionTab2()"
+          ></inchi-inchi-version-selection>
           <div data-inchi-options></div>
         </div>
       </div>
@@ -229,17 +213,9 @@
           </div>
         </div>
         <div class="col-xl-4 mt-auto">
-          <div class="mt-2">
-            <label class="form-check-label mb-2" for="inchi-tab3-inchiversion"
-              >Select InChI version</label
-            >
-            <select
-              id="inchi-tab3-inchiversion"
-              class="form-select"
-              data-version
-              onchange="onChangeInChIVersionTab3()"
-            ></select>
-          </div>
+          <inchi-inchi-version-selection
+            onVersionChange="onChangeInChIVersionTab3()"
+          ></inchi-inchi-version-selection>
         </div>
       </div>
       <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
