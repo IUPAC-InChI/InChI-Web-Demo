@@ -284,7 +284,7 @@ async function updateInchiTab1() {
 }
 
 async function onChangeInChIVersionTab1() {
-  await onChangeInChIVersion("inchi-tab1-pane", () => updateInchiTab1());
+  await updateInchiOptions("inchi-tab1-pane", () => updateInchiTab1());
   await updateKetcherOptions(
     getKetcher("inchi-tab1-ketcher"),
     getVersion("inchi-tab1-pane")
@@ -292,7 +292,7 @@ async function onChangeInChIVersionTab1() {
   initTooltips("inchi-tab1-pane");
 }
 async function onChangeInChIVersionTab2() {
-  await onChangeInChIVersion("inchi-tab2-pane", () => updateInchiTab2());
+  await updateInchiOptions("inchi-tab2-pane", () => updateInchiTab2());
   initTooltips("inchi-tab2-pane");
 }
 
@@ -304,7 +304,7 @@ async function onChangeInChIVersionTab3() {
   );
 }
 
-async function onChangeInChIVersion(tabDivId, updateFunction) {
+async function updateInchiOptions(tabDivId, updateFunction) {
   const optionsState = getInchiOptionsState(tabDivId);
   addInchiOptionsForm(tabDivId, () => updateFunction());
   applyInchiOptionsState(tabDivId, optionsState);
