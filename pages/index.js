@@ -270,6 +270,97 @@ async function updateInchiTab3() {
   writeResult(log.join("\n"), logTextElementId);
 }
 
+async function updateInchiTab4() {
+  // clear output fields
+  writeResult("", "inchi-tab4-inchis");
+
+  const options = collectInchiOptions("inchi-tab4-pane");
+  const inchiVersion = getVersion("inchi-tab4-pane");
+  const sdFile = document.getElementById("inchi-tab4-sdfFileInput").files[0];
+  if (!sdFile || sdFile.size === 0 || sdFile.name.endsWith(".sdf") === false) {
+    // no file selected or not a valid SDF file
+    writeResult("No SD file selected.", "inchi-tab4-inchis");
+    return;
+  }
+
+  // const fileText = await sdFile.text();
+  // console.log("SD file text:", fileText);
+
+  const $output = document.getElementById("inchi-tab4-inchis");
+  var reader = new FileReader();
+  reader.onload = async function (event) {
+    const fileText = await sdFile.text();
+
+    var entries = fileText.split("$$$$");
+
+    for (let i = 0; i < entries.length - 1; i++) {
+      let molfile = entries[i];
+      var lines = molfile.split("\n");
+
+      var indexOf = lines.findIndex(
+        (line) => line.trim().endsWith("V3000") || line.trim().endsWith("V2000")
+      );
+
+      if (indexOf === -1) {
+        console.error(`No V3000 or V2000 found in entry ${i + 1}`);
+        $output.innerHTML += `<p>Error processing entry ${
+          i + 1
+        }: no V3000 or V2000 found</p>`;
+        continue; // skip this entry
+      }
+      if (indexOf > 3) {
+        var nLinesToRemove = indexOf - 3;
+        // Remove the first nNewLines lines
+        lines.splice(0, nLinesToRemove);
+        // Join the remaining lines back into a single string
+        molfile = lines.join("\n");
+      }
+      if (lines.length < 3) {
+        var nNewLines = 3 - indexOf;
+        // Add new lines to the beginning
+        for (let j = 0; j < nNewLines; j++) {
+          lines.unshift("\n");
+        }
+        // Join the lines back into a single string
+        molfile = lines.join("\n");
+      }
+
+      console.log(`Processing entry ${i + 1}:`, molfile);
+      if (molfile === "") {
+        output.innerHTML += `<p>Error processing entry ${
+          i + 1
+        }: empty entry</p>`;
+        continue; // skip empty entries
+      }
+
+      let inchiResult;
+      let inchikeyResult;
+      try {
+        inchiResult = await inchiFromMolfile(molfile, options, inchiVersion);
+        inchikeyResult = await inchikeyFromInchi(
+          inchiResult.inchi,
+          inchiVersion
+        );
+      } catch (e) {
+        console.error(`Caught exception from inchiFromMolfile(): ${e}`);
+        continue; // skip this entry on error
+      }
+
+      if (inchiResult.inchi !== "") {
+        $output.innerHTML += `<p>${inchiResult.inchi}\n${inchikeyResult.inchikey}\n</p>`;
+      } else {
+        $output.innerHTML += `<p>Error processing entry ${i + 1}:\n ${
+          inchiResult.log
+        };  Index of counts line: ${indexOf}</p>`;
+      }
+    }
+    if ($output.innerHTML === "") {
+      $output.innerHTML = "<p>No valid InChI entries found.</p>";
+    }
+  };
+  reader.readAsText(sdFile);
+}
+
 async function onChangeInChIVersionTab1() {
   await updateInchiOptions("inchi-tab1-pane", () => updateInchiTab1());
   await updateKetcherOptions(

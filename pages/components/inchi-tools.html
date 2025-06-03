@@ -49,6 +49,20 @@
         Convert InChI or AuxInfo to structure
       </button>
     </li>
+    <li class="nav-item" role="presentation">
+      <button
+        class="nav-link"
+        id="inchi-tab4"
+        data-bs-toggle="tab"
+        data-bs-target="#inchi-tab4-pane"
+        type="button"
+        role="tab"
+        aria-controls="inchi-tab4-pane"
+        aria-selected="false"
+      >
+        Convert SDF to InChIs again
+      </button>
+    </li>
   </ul>
 
   <!-- Contents of InChI tabs -->
@@ -191,6 +205,57 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Convert SDF to InChIs -->
+    <div
+      class="tab-pane fade"
+      id="inchi-tab4-pane"
+      role="tabpanel"
+      aria-labelledby="inchi-tab4"
+      tabindex="0"
+    >
+      <div class="row mt-1">
+        <div class="col-xl-8">
+          <div class="w-100">
+            <input
+              id="inchi-tab4-sdfFileInput"
+              type="file"
+              class="form-control pe-5 h-100"
+              accept=".sdf"
+              onchange="updateInchiTab4()"
+            />
+          </div>
+          <div
+            class="mt-2 border rounded bg-light"
+            style="--bs-bg-opacity: 0.3"
+          >
+            <div class="border-bottom py-1 px-3">
+              <small class="font-monospace">InChIs</small>
+            </div>
+            <pre
+              id="inchi-tab4-inchis"
+              class="py-1 px-3 mb-0 py-1 px-3 mb-0 inchi-result-text"
+            ></pre>
+          </div>
+        </div>
+        <div class="col-xl-4">
+          <inchi-version-selection
+            onVersionChange="onChangeInChIVersionTab4()"
+          ></inchi-version-selection>
+          <div data-inchi-options></div>
+        </div>
+      </div>
+
+      <!-- <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
+        <div class="border-bottom py-1 px-3">
+          <small class="font-monospace">InChIs</small>
+        </div>
+        <pre
+          id="inchi-tab4-inchis"
+          class="py-1 px-3 mb-0 py-1 px-3 mb-0 inchi-result-text"
+        ></pre>
+      </div> -->
     </div>
   </div>
 </div>
