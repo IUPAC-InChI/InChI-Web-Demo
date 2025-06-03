@@ -33,6 +33,7 @@ class InChIToolsElement extends InsertHTMLElement {
 
     await addInchiOptionsForm("inchi-tab1-pane", () => updateInchiTab1());
     await addInchiOptionsForm("inchi-tab2-pane", () => updateInchiTab2());
+    await addInchiOptionsForm("inchi-tab4-pane", () => updateInchiTab4());
   }
 }
 
