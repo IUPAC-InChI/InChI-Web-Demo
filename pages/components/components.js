@@ -41,6 +41,9 @@ class InChIToolsComponent extends InsertHTMLComponent {
 
     addVersions("inchi-tab3-pane", availableInchiVersions);
     initTooltips("inchi-tab3-pane");
+
+    addVersions("inchi-tab4-pane", availableInchiVersions);
+    addInchiOptionsForm("inchi-tab4-pane", () => updateInchiTab4());
   }
 }
 
