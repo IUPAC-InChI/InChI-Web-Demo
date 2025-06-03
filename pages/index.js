@@ -283,55 +283,6 @@ async function updateInchiTab1() {
   );
 }
 
-async function onChangeInChIVersionTab1() {
-  await updateInchiOptions("inchi-tab1-pane", () => updateInchiTab1());
-  await updateKetcherOptions(
-    getKetcher("inchi-tab1-ketcher"),
-    getVersion("inchi-tab1-pane")
-  );
-  initTooltips("inchi-tab1-pane");
-}
-async function onChangeInChIVersionTab2() {
-  await updateInchiOptions("inchi-tab2-pane", () => updateInchiTab2());
-  initTooltips("inchi-tab2-pane");
-}
-
-async function onChangeInChIVersionTab3() {
-  await updateInchiTab3();
-  await updateKetcherOptions(
-    getKetcher("inchi-tab3-ketcher"),
-    getVersion("inchi-tab3-pane")
-  );
-}
-
-async function updateInchiOptions(tabDivId, updateFunction) {
-  const optionsState = getInchiOptionsState(tabDivId);
-  addInchiOptionsForm(tabDivId, () => updateFunction());
-  applyInchiOptionsState(tabDivId, optionsState);
-
-  await updateFunction();
-}
-
-/*
- * Update the Ketcher options based on the selected InChI version
- */
-async function updateKetcherOptions(ketcher, inchiVersion) {
-  if (!ketcher) {
-    console.log("Ketcher not found");
-    return;
-  }
-
-  if (inchiVersion === "1.07.3 with Molecular inorganics") {
-    await ketcher.editor.setOptions('{"showHydrogenLabels": "all"}');
-    console.log("showHydrogenLabels: all");
-  } else {
-    await ketcher.editor.setOptions(
-      '{"showHydrogenLabels": "Terminal and Hetero"}'
-    );
-    console.log("showHydrogenLabels: Terminal and Hetero");
-  }
-}
-
 async function updateInchiTab2() {
   // clear output fields
   writeResult(
@@ -357,60 +308,6 @@ async function updateInchiTab2() {
     "inchi-tab2-auxinfo",
     "inchi-tab2-logs"
   );
-}
-
-async function convertMolfileToInchiAndWriteResults(
-  molfile,
-  options,
-  inchiVersion,
-  inchiTextElementId,
-  inchikeyTextElementId,
-  auxinfoTextElementId,
-  logTextElementId
-) {
-  const log = [];
-  log.push("InChI options: " + options);
-
-  let inchiResult;
-  try {
-    inchiResult = await inchiFromMolfile(molfile, options, inchiVersion);
-  } catch (e) {
-    writeResult(
-      `Caught exception from inchiFromMolfile(): ${e}`,
-      logTextElementId
-    );
-    console.error(e);
-    return;
-  }
-  writeResult(inchiResult.inchi, inchiTextElementId);
-  writeResult(inchiResult.auxinfo, auxinfoTextElementId);
-
-  if (inchiResult.log !== "") {
-    log.push(inchiResult.log);
-  }
-
-  if (inchiResult.return_code != -1 && inchiResult.inchi !== "") {
-    let inchikeyResult;
-    try {
-      inchikeyResult = await inchikeyFromInchi(inchiResult.inchi, inchiVersion);
-    } catch (e) {
-      log.push(`Caught exception from inchikeyFromInchi(): ${e}`);
-      console.error(e);
-    }
-    writeResult(inchikeyResult.inchikey, inchikeyTextElementId);
-
-    if (inchikeyResult.return_code == -1 && inchikeyResult.message !== "") {
-      log.push(inchikeyResult.message);
-    }
-  }
-
-  writeResult(log.join("\n"), logTextElementId);
-}
-
-function writeResult(text, ...ids) {
-  for (let id of ids) {
-    document.getElementById(id).textContent = text;
-  }
 }
 
 async function updateInchiTab3() {
@@ -478,6 +375,109 @@ async function updateInchiTab3() {
     log.push(molfileResult.message);
   }
   writeResult(log.join("\n"), logTextElementId);
+}
+
+async function onChangeInChIVersionTab1() {
+  await updateInchiOptions("inchi-tab1-pane", () => updateInchiTab1());
+  await updateKetcherOptions(
+    getKetcher("inchi-tab1-ketcher"),
+    getVersion("inchi-tab1-pane")
+  );
+  initTooltips("inchi-tab1-pane");
+}
+async function onChangeInChIVersionTab2() {
+  await updateInchiOptions("inchi-tab2-pane", () => updateInchiTab2());
+  initTooltips("inchi-tab2-pane");
+}
+
+async function onChangeInChIVersionTab3() {
+  await updateInchiTab3();
+  await updateKetcherOptions(
+    getKetcher("inchi-tab3-ketcher"),
+    getVersion("inchi-tab3-pane")
+  );
+}
+
+async function updateInchiOptions(tabDivId, updateFunction) {
+  const optionsState = getInchiOptionsState(tabDivId);
+  addInchiOptionsForm(tabDivId, () => updateFunction());
+  applyInchiOptionsState(tabDivId, optionsState);
+
+  await updateFunction();
+}
+
+/*
+ * Update the Ketcher options based on the selected InChI version
+ */
+async function updateKetcherOptions(ketcher, inchiVersion) {
+  if (!ketcher) {
+    console.log("Ketcher not found");
+    return;
+  }
+
+  if (inchiVersion === "1.07.3 with Molecular inorganics") {
+    await ketcher.editor.setOptions('{"showHydrogenLabels": "all"}');
+    console.log("showHydrogenLabels: all");
+  } else {
+    await ketcher.editor.setOptions(
+      '{"showHydrogenLabels": "Terminal and Hetero"}'
+    );
+    console.log("showHydrogenLabels: Terminal and Hetero");
+  }
+}
+
+async function convertMolfileToInchiAndWriteResults(
+  molfile,
+  options,
+  inchiVersion,
+  inchiTextElementId,
+  inchikeyTextElementId,
+  auxinfoTextElementId,
+  logTextElementId
+) {
+  const log = [];
+  log.push("InChI options: " + options);
+
+  let inchiResult;
+  try {
+    inchiResult = await inchiFromMolfile(molfile, options, inchiVersion);
+  } catch (e) {
+    writeResult(
+      `Caught exception from inchiFromMolfile(): ${e}`,
+      logTextElementId
+    );
+    console.error(e);
+    return;
+  }
+  writeResult(inchiResult.inchi, inchiTextElementId);
+  writeResult(inchiResult.auxinfo, auxinfoTextElementId);
+
+  if (inchiResult.log !== "") {
+    log.push(inchiResult.log);
+  }
+
+  if (inchiResult.return_code != -1 && inchiResult.inchi !== "") {
+    let inchikeyResult;
+    try {
+      inchikeyResult = await inchikeyFromInchi(inchiResult.inchi, inchiVersion);
+    } catch (e) {
+      log.push(`Caught exception from inchikeyFromInchi(): ${e}`);
+      console.error(e);
+    }
+    writeResult(inchikeyResult.inchikey, inchikeyTextElementId);
+
+    if (inchikeyResult.return_code == -1 && inchikeyResult.message !== "") {
+      log.push(inchikeyResult.message);
+    }
+  }
+
+  writeResult(log.join("\n"), logTextElementId);
+}
+
+function writeResult(text, ...ids) {
+  for (let id of ids) {
+    document.getElementById(id).textContent = text;
+  }
 }
 
 async function updateRinchiTab1() {
