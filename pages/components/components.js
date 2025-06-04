@@ -40,13 +40,12 @@ class RInChIToolsComponent extends InsertHTMLComponent {
   constructor() {
     super("components/rinchi-tools.html");
   }
+
   async connectedCallback() {
     await super.connectedCallback();
-
-    addVersions("rinchi-tab1-pane", availableRInchiVersions);
-    addVersions("rinchi-tab2-pane", availableRInchiVersions);
-    addVersions("rinchi-tab3-pane", availableRInchiVersions);
-    addVersions("rinchi-tab4-pane", availableRInchiVersions);
+    [...document.querySelectorAll("#rinchi-version")].map((span) => {
+      span.innerText = `Results computed with RInChI version ${RINCHI_VERSION}`;
+    });
   }
 }
 

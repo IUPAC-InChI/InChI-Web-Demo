@@ -1,17 +1,13 @@
 "use strict";
 
+const RINCHI_VERSION = "1.1-dev with InChI 1.07.3";
 /*
  * WASM module(s) initialization
  *
  * Calling the factory function returns a Promise which resolves to the module object.
  * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
  */
-const availableRInchiVersions = {
-  "1.1-dev with InChI 1.07.3": {
-    module: rinchiModule11(),
-    default: true,
-  },
-};
+const RINCHI_MODULE = rinchiModule11();
 
 /*
  * Glue code to invoke rinchi_lib's C functions.
@@ -19,8 +15,8 @@ const availableRInchiVersions = {
  * See https://medium.com/@scalevectors/webassembly-c-pointers-strings-part-2-8e173e50912b
  * on how to cope with char** arguments.
  */
-async function rinchiFromRxnfile(rxnfile, forceEquilibrium, rinchiVersion) {
-  const module = await availableRInchiVersions[rinchiVersion].module;
+async function rinchiFromRxnfile(rxnfile, forceEquilibrium) {
+  const module = await RINCHI_MODULE;
 
   const out_rinchi_stringPtr = module._malloc(4);
   const out_rinchi_auxinfoPtr = module._malloc(4);
@@ -53,8 +49,8 @@ async function rinchiFromRxnfile(rxnfile, forceEquilibrium, rinchiVersion) {
   return { rinchi: rinchi, rauxinfo: rauxinfo, return_code: res, error: error };
 }
 
-async function fileTextFromRinchi(rinchi, rauxinfo, format, rinchiVersion) {
-  const module = await availableRInchiVersions[rinchiVersion].module;
+async function fileTextFromRinchi(rinchi, rauxinfo, format) {
+  const module = await RINCHI_MODULE;
 
   const out_file_textPtr = module._malloc(4);
   const res = module.ccall(
@@ -76,8 +72,8 @@ async function fileTextFromRinchi(rinchi, rauxinfo, format, rinchiVersion) {
   return { fileText: fileText, return_code: res, error: error };
 }
 
-async function rinchikeyFromRinchi(rinchi, keyType, rinchiVersion) {
-  const module = await availableRInchiVersions[rinchiVersion].module;
+async function rinchikeyFromRinchi(rinchi, keyType) {
+  const module = await RINCHI_MODULE;
 
   const out_rinchi_keyPtr = module._malloc(4);
   const res = module.ccall(

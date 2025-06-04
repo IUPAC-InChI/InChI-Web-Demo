@@ -64,21 +64,12 @@ const rinchi =
   "RInChI=1.00.1S/C4H8O/c1-3-4(2)5-3/h3-4H,1-2H3/t3-,4?/m0/s1<>C4H9BrO/c1-3(5)4(2)6/h3-4,6H,1-2H3/t3-,4+/m1/s1!Na.H2O/h;1H2/q+1;/p-1/d-";
 
 test("RInChI from RXNFile", async () => {
-  const result = await rinchiFromRxnfile(
-    rxnfile,
-    false,
-    "1.1-dev with InChI 1.07.3"
-  );
+  const result = await rinchiFromRxnfile(rxnfile, false);
   expect(result.rinchi).toBe(rinchi);
 });
 
 test("File text from RInChI", async () => {
-  const result = await fileTextFromRinchi(
-    rinchi,
-    rauxinfo,
-    "RXN",
-    "1.1-dev with InChI 1.07.3"
-  );
+  const result = await fileTextFromRinchi(rinchi, rauxinfo, "RXN");
   expect(result.fileText).toBe(rxnfile);
 });
 
@@ -93,10 +84,6 @@ test.each([
   ],
   ["W", "Web-RInChIKey=UFEYRRLMNYPCDUWUI-MSZCBGVVHVRIXSA"],
 ])("RInChI key from RInChI with key type %s", async (keyType, expectedKey) => {
-  const result = await rinchikeyFromRinchi(
-    rinchi,
-    keyType,
-    "1.1-dev with InChI 1.07.3"
-  );
+  const result = await rinchikeyFromRinchi(rinchi, keyType);
   expect(result.rinchikey).toBe(expectedKey);
 });

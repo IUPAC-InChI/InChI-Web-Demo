@@ -1,18 +1,5 @@
 "use strict";
 
-function addVersions(tabDivId, versions) {
-  const targetSelect = document
-    .getElementById(tabDivId)
-    .querySelector("select[data-version]");
-  for (const [versionString, versionObject] of Object.entries(versions)) {
-    const option = document.createElement("option");
-    option.innerHTML = versionString;
-    option.value = versionString;
-    option.selected = Boolean(versionObject.default);
-    targetSelect.appendChild(option);
-  }
-}
-
 function addInchiOptionsForm(tabDivId, updateFunction) {
   const inchiVersion = getVersion(tabDivId);
   const templateId = availableInchiVersions[inchiVersion].optionsTemplateId;
@@ -498,14 +485,12 @@ async function updateRinchiTab1() {
   } else {
     rxnfile = await ketcher.getRxn();
   }
-  const rinchiVersion = getVersion("rinchi-tab1-pane");
   const equilibrium = hasEquilibriumReactionArrow(ketcher);
 
   // run conversion
   await convertRxnfileToRinchiAndWriteResults(
     rxnfile,
     equilibrium,
-    rinchiVersion,
     "rinchi-tab1-rinchi",
     "rinchi-tab1-longrinchikey",
     "rinchi-tab1-shortrinchikey",
@@ -543,7 +528,6 @@ async function updateRinchiTab2() {
   const rxnfile = document.getElementById(
     "rinchi-tab2-rxnrdfileTextarea"
   ).value;
-  const rinchiVersion = getVersion("rinchi-tab2-pane");
   const equilibrium = document.getElementById(
     "rinchi-tab2-forceequilibrium"
   ).checked;
@@ -552,7 +536,6 @@ async function updateRinchiTab2() {
   await convertRxnfileToRinchiAndWriteResults(
     rxnfile,
     equilibrium,
-    rinchiVersion,
     "rinchi-tab2-rinchi",
     "rinchi-tab2-longrinchikey",
     "rinchi-tab2-shortrinchikey",
@@ -565,7 +548,6 @@ async function updateRinchiTab2() {
 async function convertRxnfileToRinchiAndWriteResults(
   rxnfile,
   forceEquilibrium,
-  rinchiVersion,
   rinchiTextElementId,
   longRinchikeyTextElementId,
   shortRinchikeyTextElementId,
@@ -581,11 +563,7 @@ async function convertRxnfileToRinchiAndWriteResults(
 
   let rinchiResult;
   try {
-    rinchiResult = await rinchiFromRxnfile(
-      rxnfile,
-      forceEquilibrium,
-      rinchiVersion
-    );
+    rinchiResult = await rinchiFromRxnfile(rxnfile, forceEquilibrium);
   } catch (e) {
     writeResult(
       `Caught exception from rinchiFromRxnfile(): ${e}`,
@@ -606,21 +584,18 @@ async function convertRxnfileToRinchiAndWriteResults(
   if (rinchiResult.return_code == 0 && rinchiResult.rinchi !== "") {
     convertRinchiToRinchikeyAndWriteResult(
       rinchiResult.rinchi,
-      rinchiVersion,
       "Long",
       longRinchikeyTextElementId,
       log
     );
     convertRinchiToRinchikeyAndWriteResult(
       rinchiResult.rinchi,
-      rinchiVersion,
       "Short",
       shortRinchikeyTextElementId,
       log
     );
     convertRinchiToRinchikeyAndWriteResult(
       rinchiResult.rinchi,
-      rinchiVersion,
       "Web",
       webRinchikeyTextElementId,
       log
@@ -632,14 +607,13 @@ async function convertRxnfileToRinchiAndWriteResults(
 
 async function convertRinchiToRinchikeyAndWriteResult(
   rinchi,
-  rinchiVersion,
   keyType,
   rinchikeyTextElementId,
   log
 ) {
   let rinchikeyResult;
   try {
-    rinchikeyResult = await rinchikeyFromRinchi(rinchi, keyType, rinchiVersion);
+    rinchikeyResult = await rinchikeyFromRinchi(rinchi, keyType);
   } catch (e) {
     log.push(`Caught exception from rinchikeyFromRinchi(): ${e}`);
     console.error(e);
@@ -662,7 +636,6 @@ async function updateRinchiTab3() {
   const rauxinfo = document
     .getElementById("rinchi-tab3-rauxinfoTextarea")
     .value.trim();
-  const rinchiVersion = getVersion("rinchi-tab3-pane");
   const logTextElementId = "rinchi-tab3-logs";
   const ketcher = getKetcher("rinchi-tab3-ketcher");
 
@@ -673,7 +646,6 @@ async function updateRinchiTab3() {
     rinchi,
     rauxinfo,
     "RXN",
-    rinchiVersion,
     logTextElementId
   );
   if (fileText) {
@@ -692,7 +664,6 @@ async function updateRinchiTab4() {
   const format = document.querySelector(
     'input.form-check-input[type="radio"][name="rinchioutputformatRadio"]:checked'
   ).value;
-  const rinchiVersion = getVersion("rinchi-tab4-pane");
   const logTextElementId = "rinchi-tab4-logs";
   const outputTextElementId = "rinchi-tab4-rxnfile";
 
@@ -702,7 +673,6 @@ async function updateRinchiTab4() {
     rinchi,
     rauxinfo,
     format,
-    rinchiVersion,
     logTextElementId
   );
   if (fileText) {
@@ -714,7 +684,6 @@ async function convertRinchiToTextfile(
   rinchi,
   rauxinfo,
   format,
-  rinchiVersion,
   logTextElementId
 ) {
   if (!rinchi) {
@@ -737,12 +706,7 @@ async function convertRinchiToTextfile(
 
   let rinchiResult;
   try {
-    rinchiResult = await fileTextFromRinchi(
-      rinchi,
-      rauxinfo,
-      format,
-      rinchiVersion
-    );
+    rinchiResult = await fileTextFromRinchi(rinchi, rauxinfo, format);
   } catch (e) {
     writeResult(
       `Caught exception from fileTextFromRinchi(): ${e}`,
