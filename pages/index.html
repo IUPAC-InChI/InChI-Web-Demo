@@ -128,8 +128,7 @@
       </div>
     </div>
 
-    <!-- Template for InChI 1.06 options -->
-    <template id="inchiOptionsTemplate106">
+    <template id="inchiOptionsTemplateBase">
       <div class="form-check">
         <input
           data-id="mobileH"
@@ -248,6 +247,79 @@
         />
         <label class="form-check-label">Include Bonds to Metal</label>
       </div>
+      <div class="form-check">
+        <input
+          data-id="treatPolymers"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="Polymers"
+        />
+        <label class="form-check-label">Treat polymers:</label>
+      </div>
+      <div class="form-check ms-4">
+        <input
+          data-id="NoEdits"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NoEdits"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
+        <label class="form-check-label"
+          >No pre-edits of original polymer structure</label
+        >
+      </div>
+      <div class="form-check ms-4">
+        <input
+          data-id="FoldCRU"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="FoldCRU"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
+        <label class="form-check-label">Enable CRU folding</label>
+      </div>
+      <div class="form-check ms-4">
+        <input
+          data-id="NoFrameShift"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NoFrameShift"
+          data-inchi-polymer-option
+          data-default-disabled
+          disabled
+        />
+        <label class="form-check-label">Disable CRU frame shift</label>
+      </div>
+      <div class="form-check">
+        <input
+          data-id="NPZz"
+          class="form-check-input"
+          type="checkbox"
+          data-inchi-option-on="NPZz"
+        />
+        <label class="form-check-label"
+          >Allow non-polymer Zz pseudoatoms
+          <i
+            class="bi bi-question-circle-fill colored-icon"
+            data-bs-toggle="tooltip"
+            data-bs-custom-class="custom-tooltip"
+            data-bs-html="true"
+            data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />"*" pseudoatoms can be selected within the Ketcher structure editor either via the <i>Extended Table</i> in the right toolbar or using the hotkey "*".'
+          ></i
+        ></label>
+      </div>
+      <div class="mt-2">
+        <a style="text-decoration: none" role="button" data-reset-inchi-options
+          ><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a
+        >
+      </div>
+    </template>
+
+    <template id="inchiOptionsTemplate106">
       <div class="form-check">
         <input
           data-id="KET"
@@ -266,199 +338,10 @@
         />
         <label class="form-check-label">1,5-tautomerism</label>
       </div>
-      <div class="form-check">
-        <input
-          data-id="treatPolymers"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="Polymers"
-        />
-        <label class="form-check-label">Treat polymers:</label>
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="NoEdits"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="NoEdits"
-          data-inchi-polymer-option
-          data-default-disabled
-          disabled
-        />
-        <label class="form-check-label"
-          >No pre-edits of original polymer structure</label
-        >
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="FoldCRU"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="FoldCRU"
-          data-inchi-polymer-option
-          data-default-disabled
-          disabled
-        />
-        <label class="form-check-label">Enable CRU folding</label>
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="NoFrameShift"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="NoFrameShift"
-          data-inchi-polymer-option
-          data-default-disabled
-          disabled
-        />
-        <label class="form-check-label">Disable CRU frame shift</label>
-      </div>
-      <div class="form-check">
-        <input
-          data-id="NPZz"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="NPZz"
-        />
-        <label class="form-check-label"
-          >Allow non-polymer Zz pseudoatoms
-          <i
-            class="bi bi-question-circle-fill colored-icon"
-            data-bs-toggle="tooltip"
-            data-bs-custom-class="custom-tooltip"
-            data-bs-html="true"
-            data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />"*" pseudoatoms can be selected within the Ketcher structure editor either via the <i>Extended Table</i> in the right toolbar or using the hotkey "*".'
-          ></i
-        ></label>
-      </div>
-      <div class="mt-2">
-        <a style="text-decoration: none" role="button" data-reset-inchi-options
-          ><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a
-        >
-      </div>
     </template>
 
-    <!-- Template for InChI 1.07 options -->
     <template id="inchiOptionsTemplate107">
       <div class="form-check">
-        <input
-          data-id="mobileH"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-off="FixedH"
-          data-default-checked
-          checked
-        />
-        <label class="form-check-label">Mobile H Perception</label>
-      </div>
-      <div class="row row-cols-auto">
-        <div class="col">
-          <div class="form-check">
-            <input
-              data-id="includeStereo"
-              class="form-check-input"
-              type="checkbox"
-              data-inchi-option-off="SNon"
-              data-default-checked
-              checked
-            />
-            <label class="form-check-label">Include Stereo:</label>
-          </div>
-        </div>
-        <div class="col">
-          <div class="form-check ms-xl-0 ms-lg-4">
-            <input
-              data-id="SAbs"
-              class="form-check-input"
-              type="radio"
-              name="stereoRadio"
-              data-inchi-stereo-option
-              data-default-checked
-              checked
-            />
-            <label class="form-check-label">Absolute</label>
-          </div>
-          <div class="form-check ms-xl-0 ms-lg-4">
-            <input
-              data-id="SRel"
-              class="form-check-input"
-              type="radio"
-              name="stereoRadio"
-              data-inchi-option-on="SRel"
-              data-inchi-stereo-option
-            />
-            <label class="form-check-label">Relative</label>
-          </div>
-          <div class="form-check ms-xl-0 ms-lg-4">
-            <input
-              data-id="SRac"
-              class="form-check-input"
-              type="radio"
-              name="stereoRadio"
-              data-inchi-option-on="SRac"
-              data-inchi-stereo-option
-            />
-            <label class="form-check-label">Racemic</label>
-          </div>
-          <div class="form-check ms-xl-0 ms-lg-4">
-            <input
-              data-id="SUCF"
-              class="form-check-input"
-              type="radio"
-              name="stereoRadio"
-              data-inchi-option-on="SUCF"
-              data-inchi-stereo-option
-            />
-            <label class="form-check-label">From chiral flag</label>
-          </div>
-        </div>
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="SUU"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="SUU"
-          data-inchi-stereo-option
-        />
-        <label class="form-check-label"
-          >Always include omitted/undefined stereo</label
-        >
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="SLUUD"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="SLUUD"
-          data-inchi-stereo-option
-        />
-        <label class="form-check-label"
-          >Different marks for unknown/undefined stereo</label
-        >
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="NEWPSOFF"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="NEWPSOFF"
-          data-inchi-stereo-option
-        />
-        <label class="form-check-label"
-          >Both ends of wedge point to stereocenters</label
-        >
-      </div>
-      <div class="form-check">
-        <input
-          data-id="RecMet"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="RecMet"
-        />
-        <label class="form-check-label">Include Bonds to Metal</label>
-      </div>
-      <div class="form-check">
         <select data-tautomer-multiselect multiple="multiple">
           <option data-role="divider"></option>
           <option data-id="KET" data-inchi-option-on="KET" value="KET">
@@ -510,199 +393,10 @@
             PT_39_00 - nitrone/azoxy or Behrend rearrangement
           </option>
         </select>
-      </div>
-      <div class="form-check">
-        <input
-          data-id="treatPolymers"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="Polymers"
-        />
-        <label class="form-check-label">Treat polymers:</label>
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="NoEdits"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="NoEdits"
-          data-inchi-polymer-option
-          data-default-disabled
-          disabled
-        />
-        <label class="form-check-label"
-          >No pre-edits of original polymer structure</label
-        >
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="FoldCRU"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="FoldCRU"
-          data-inchi-polymer-option
-          data-default-disabled
-          disabled
-        />
-        <label class="form-check-label">Enable CRU folding</label>
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="NoFrameShift"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="NoFrameShift"
-          data-inchi-polymer-option
-          data-default-disabled
-          disabled
-        />
-        <label class="form-check-label">Disable CRU frame shift</label>
-      </div>
-      <div class="form-check">
-        <input
-          data-id="NPZz"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="NPZz"
-        />
-        <label class="form-check-label"
-          >Allow non-polymer Zz pseudoatoms
-          <i
-            class="bi bi-question-circle-fill colored-icon"
-            data-bs-toggle="tooltip"
-            data-bs-custom-class="custom-tooltip"
-            data-bs-html="true"
-            data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />"*" pseudoatoms can be selected within the Ketcher structure editor either via the <i>Extended Table</i> in the right toolbar or using the hotkey "*".'
-          ></i
-        ></label>
-      </div>
-      <div class="mt-2">
-        <a style="text-decoration: none" role="button" data-reset-inchi-options
-          ><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a
-        >
       </div>
     </template>
 
-    <!-- Template for InChI v1.07-orgmet options -->
     <template id="inchiOptionsTemplate107OrgMet">
-      <div class="form-check">
-        <input
-          data-id="mobileH"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-off="FixedH"
-          data-default-checked
-          checked
-        />
-        <label class="form-check-label">Mobile H Perception</label>
-      </div>
-      <div class="row row-cols-auto">
-        <div class="col">
-          <div class="form-check">
-            <input
-              data-id="includeStereo"
-              class="form-check-input"
-              type="checkbox"
-              data-inchi-option-off="SNon"
-              data-default-checked
-              checked
-            />
-            <label class="form-check-label">Include Stereo:</label>
-          </div>
-        </div>
-        <div class="col">
-          <div class="form-check ms-xl-0 ms-lg-4">
-            <input
-              data-id="SAbs"
-              class="form-check-input"
-              type="radio"
-              name="stereoRadio"
-              data-inchi-stereo-option
-              data-default-checked
-              checked
-            />
-            <label class="form-check-label">Absolute</label>
-          </div>
-          <div class="form-check ms-xl-0 ms-lg-4">
-            <input
-              data-id="SRel"
-              class="form-check-input"
-              type="radio"
-              name="stereoRadio"
-              data-inchi-option-on="SRel"
-              data-inchi-stereo-option
-            />
-            <label class="form-check-label">Relative</label>
-          </div>
-          <div class="form-check ms-xl-0 ms-lg-4">
-            <input
-              data-id="SRac"
-              class="form-check-input"
-              type="radio"
-              name="stereoRadio"
-              data-inchi-option-on="SRac"
-              data-inchi-stereo-option
-            />
-            <label class="form-check-label">Racemic</label>
-          </div>
-          <div class="form-check ms-xl-0 ms-lg-4">
-            <input
-              data-id="SUCF"
-              class="form-check-input"
-              type="radio"
-              name="stereoRadio"
-              data-inchi-option-on="SUCF"
-              data-inchi-stereo-option
-            />
-            <label class="form-check-label">From chiral flag</label>
-          </div>
-        </div>
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="SUU"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="SUU"
-          data-inchi-stereo-option
-        />
-        <label class="form-check-label"
-          >Always include omitted/undefined stereo</label
-        >
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="SLUUD"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="SLUUD"
-          data-inchi-stereo-option
-        />
-        <label class="form-check-label"
-          >Different marks for unknown/undefined stereo</label
-        >
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="NEWPSOFF"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="NEWPSOFF"
-          data-inchi-stereo-option
-        />
-        <label class="form-check-label"
-          >Both ends of wedge point to stereocenters</label
-        >
-      </div>
-      <div class="form-check">
-        <input
-          data-id="RecMet"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="RecMet"
-        />
-        <label class="form-check-label">Include Bonds to Metal</label>
-      </div>
       <div class="form-check">
         <select data-tautomer-multiselect multiple="multiple">
           <option data-role="divider"></option>
@@ -755,71 +449,6 @@
             PT_39_00 - nitrone/azoxy or Behrend rearrangement
           </option>
         </select>
-      </div>
-      <div class="form-check">
-        <input
-          data-id="treatPolymers"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="Polymers"
-        />
-        <label class="form-check-label">Treat polymers:</label>
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="NoEdits"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="NoEdits"
-          data-inchi-polymer-option
-          data-default-disabled
-          disabled
-        />
-        <label class="form-check-label"
-          >No pre-edits of original polymer structure</label
-        >
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="FoldCRU"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="FoldCRU"
-          data-inchi-polymer-option
-          data-default-disabled
-          disabled
-        />
-        <label class="form-check-label">Enable CRU folding</label>
-      </div>
-      <div class="form-check ms-4">
-        <input
-          data-id="NoFrameShift"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="NoFrameShift"
-          data-inchi-polymer-option
-          data-default-disabled
-          disabled
-        />
-        <label class="form-check-label">Disable CRU frame shift</label>
-      </div>
-      <div class="form-check">
-        <input
-          data-id="NPZz"
-          class="form-check-input"
-          type="checkbox"
-          data-inchi-option-on="NPZz"
-        />
-        <label class="form-check-label"
-          >Allow non-polymer Zz pseudoatoms
-          <i
-            class="bi bi-question-circle-fill colored-icon"
-            data-bs-toggle="tooltip"
-            data-bs-custom-class="custom-tooltip"
-            data-bs-html="true"
-            data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />"*" pseudoatoms can be selected within the Ketcher structure editor either via the <i>Extended Table</i> in the right toolbar or using the hotkey "*".'
-          ></i
-        ></label>
       </div>
       <div class="form-check">
         <input
@@ -844,17 +473,12 @@
             For an improved experience when working with inorganic structures, consider the following tips:
             <ul>
               <li>Input crystal structures as molfiles. Convert the CIF to a molfile, e.g., using Mercury (CCDC), or codcif2sdf (cod-tools).</li>
-              <li>In the structure editor, for donor atoms beyond nitrogen please change the “valence” (i.e., coordination number) of the atoms accordingly by right-clicking on the corresponding atoms.</li>
+              <li>In the structure editor, for donor atoms beyond nitrogen please change the 'valence' (i.e., coordination number) of the atoms accordingly by right-clicking on the corresponding atoms.</li>
             </ul>
           "
           >
           </i>
         </label>
-      </div>
-      <div class="mt-2">
-        <a style="text-decoration: none" role="button" data-reset-inchi-options
-          ><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a
-        >
       </div>
     </template>
   </body>

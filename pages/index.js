@@ -2,13 +2,16 @@
 
 function addInchiOptionsForm(tabDivId, updateFunction) {
   const inchiVersion = getVersion(tabDivId);
-  const templateId = availableInchiVersions[inchiVersion].optionsTemplateId;
-  const template = document.getElementById(templateId);
-
-  const targetDiv = document
-    .getElementById(tabDivId)
-    .querySelector("div[data-inchi-options]");
-  const clone = template.content.cloneNode(true);
+  const versionTemplateId =
+    availableInchiVersions[inchiVersion].optionsTemplateId;
+  const versionTemplate = document
+    .getElementById(versionTemplateId)
+    .content.cloneNode(true);
+  const baseTemplate = document
+    .getElementById("inchiOptionsTemplateBase")
+    .content.cloneNode(true);
+  const clone = new DocumentFragment();
+  clone.append(versionTemplate, baseTemplate);
 
   /*
    * Reassign the name of the "stereoRadio" radio button group.
@@ -94,6 +97,9 @@ function addInchiOptionsForm(tabDivId, updateFunction) {
     });
 
   // Attach to target element
+  const targetDiv = document
+    .getElementById(tabDivId)
+    .querySelector("div[data-inchi-options]");
   targetDiv.innerHTML = "";
   targetDiv.appendChild(clone);
   // Initialize tooltips
