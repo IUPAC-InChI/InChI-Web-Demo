@@ -63,3 +63,11 @@ button.form-select.multiselect:focus {
   max-width: 500px !important;
   text-align: left !important;
 }
+
+.bounding-box {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 12px;
+  background-color: #f9f9f9;
+  width: 100%;
+}

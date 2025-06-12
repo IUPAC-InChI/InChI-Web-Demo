@@ -56,8 +56,8 @@ class InChIVersionSelectionElement extends HTMLElement {
   }
 
   async connectedCallback() {
-    const html = `<div style="border: 1px solid #ddd; border-radius: 4px; padding: 12px; background-color: #f9f9f9; width: fit-content;">
-    <label for="version-dropdown" style="display: block;">InChI version</label>
+    const html = `<div class="bounding-box">
+    <h4>Version</h4>
     <select id="version-dropdown" style="display: block;" data-version></select>
     <span id="version-commit" style="display: block;"></span>
   </div>`;
@@ -109,7 +109,10 @@ class InChIOptionsElement extends HTMLElement {
       })
     );
 
-    this.innerHTML = htmlFragments.join("\n");
+    const boundingBox = document.createElement("div");
+    boundingBox.setAttribute("class", "bounding-box");
+    boundingBox.innerHTML = "<h4>Options</h4>" + htmlFragments.join("");
+    this.appendChild(boundingBox);
 
     /*
      * Reassign the name of the "stereoRadio" radio button group.
