@@ -1,4 +1,4 @@
-class InsertHTMLComponent extends HTMLElement {
+class InsertHTMLElement extends HTMLElement {
   constructor(htmlPath) {
     super();
     this.htmlPath = htmlPath;
@@ -17,13 +17,13 @@ class InsertHTMLComponent extends HTMLElement {
   }
 }
 
-class AboutComponent extends InsertHTMLComponent {
+class AboutElement extends InsertHTMLElement {
   constructor() {
     super("components/about.html");
   }
 }
 
-class InChIToolsComponent extends InsertHTMLComponent {
+class InChIToolsElement extends InsertHTMLElement {
   constructor() {
     super("components/inchi-tools.html");
   }
@@ -36,7 +36,7 @@ class InChIToolsComponent extends InsertHTMLComponent {
   }
 }
 
-class RInChIToolsComponent extends InsertHTMLComponent {
+class RInChIToolsElement extends InsertHTMLElement {
   constructor() {
     super("components/rinchi-tools.html");
   }
@@ -49,7 +49,7 @@ class RInChIToolsComponent extends InsertHTMLComponent {
   }
 }
 
-class InChIVersionSelection extends HTMLElement {
+class InChIVersionSelectionElement extends HTMLElement {
   constructor() {
     super();
     this.onVersionChange = new Function(this.getAttribute("onVersionChange"));
@@ -90,7 +90,7 @@ class InChIVersionSelection extends HTMLElement {
   }
 }
 
-class InChIOptionsComponent extends HTMLElement {
+class InChIOptionsElement extends HTMLElement {
   constructor() {
     super();
   }
@@ -203,7 +203,7 @@ class InChIOptionsComponent extends HTMLElement {
     );
   }
 }
-class InChIOptions106Component extends InChIOptionsComponent {
+class InChIOptions106Element extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
@@ -212,7 +212,7 @@ class InChIOptions106Component extends InChIOptionsComponent {
     ];
   }
 }
-class InChIOptions107Component extends InChIOptionsComponent {
+class InChIOptions107Element extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
@@ -221,7 +221,7 @@ class InChIOptions107Component extends InChIOptionsComponent {
     ];
   }
 }
-class InChIOptions107MoInComponent extends InChIOptionsComponent {
+class InChIOptions107MoInElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
@@ -232,10 +232,10 @@ class InChIOptions107MoInComponent extends InChIOptionsComponent {
   }
 }
 
-customElements.define("inchi-about-component", AboutComponent);
-customElements.define("inchi-inchi-tools-component", InChIToolsComponent);
-customElements.define("inchi-rinchi-tools-component", RInChIToolsComponent);
-customElements.define("inchi-inchi-version-selection", InChIVersionSelection);
-customElements.define("inchi-options-106", InChIOptions106Component);
-customElements.define("inchi-options-107", InChIOptions107Component);
-customElements.define("inchi-options-107-moin", InChIOptions107MoInComponent);
+customElements.define("inchi-about", AboutElement);
+customElements.define("inchi-inchi-tools", InChIToolsElement);
+customElements.define("inchi-rinchi-tools", RInChIToolsElement);
+customElements.define("inchi-version-selection", InChIVersionSelectionElement);
+customElements.define("inchi-options-106", InChIOptions106Element);
+customElements.define("inchi-options-107", InChIOptions107Element);
+customElements.define("inchi-options-107-moin", InChIOptions107MoInElement);
