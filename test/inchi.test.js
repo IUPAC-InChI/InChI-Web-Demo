@@ -2,7 +2,7 @@
 // That's why we need to inject the modules into the global scope before using inchi.js.
 global.inchiModule106 = require("../pages/inchi/inchi-web106.js");
 global.inchiModule107 = require("../pages/inchi/inchi-web107.js");
-global.inchiModule107OrgMet = require("../pages/inchi/inchi-web107-orgmet.js");
+global.inchiModule107MoIn = require("../pages/inchi/inchi-web107-moin.js");
 
 // Mock availableInchiVersions for global availability during testing.
 const loadInchiVersions = () => {

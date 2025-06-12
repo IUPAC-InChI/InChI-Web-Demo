@@ -2,20 +2,20 @@
   "1.06": {
     "module": "inchiModule106",
     "name": "inchi-web106",
-    "optionsTemplateId": "inchiOptionsTemplate106",
+    "optionsTemplateId": "inchi-options-106",
     "commit": "a515b3973d08abe659d0de3e4def3d28d74eeb88"
   },
   "1.07.3": {
     "module": "inchiModule107",
     "name": "inchi-web107",
-    "optionsTemplateId": "inchiOptionsTemplate107",
+    "optionsTemplateId": "inchi-options-107",
     "commit": "0b3e941d29289f3e5024c9ecfd45186285319420",
     "default": true
   },
   "1.07.3 with Molecular inorganics": {
-    "module": "inchiModule107OrgMet",
-    "name": "inchi-web107-orgmet",
-    "optionsTemplateId": "inchiOptionsTemplate107OrgMet",
+    "module": "inchiModule107MoIn",
+    "name": "inchi-web107-moin",
+    "optionsTemplateId": "inchi-options-107-moin",
     "commit": "e0b35b0e61814299c631da5dbad9fbaae0e0b930"
   }
 }

@@ -1,113 +1,17 @@
 "use strict";
 
-function addInchiOptionsForm(tabDivId, updateFunction) {
+async function addInchiOptionsForm(tabDivId, updateFunction) {
   const inchiVersion = getVersion(tabDivId);
-  const versionTemplateId =
-    availableInchiVersions[inchiVersion].optionsTemplateId;
-  const versionTemplate = document
-    .getElementById(versionTemplateId)
-    .content.cloneNode(true);
-  const baseTemplate = document
-    .getElementById("inchiOptionsTemplateBase")
-    .content.cloneNode(true);
-  const clone = new DocumentFragment();
-  clone.append(versionTemplate, baseTemplate);
+  const inchiOptions = document.createElement(
+    availableInchiVersions[inchiVersion].optionsTemplateId
+  );
+  await inchiOptions.postCreate(tabDivId, updateFunction);
 
-  /*
-   * Reassign the name of the "stereoRadio" radio button group.
-   */
-  clone
-    .querySelectorAll(
-      'input.form-check-input[type="radio"][name="stereoRadio"]'
-    )
-    .forEach((input) => {
-      input.name = "stereoRadio-" + tabDivId;
-    });
-
-  /*
-   * Register an on-change event on the "Include Stereo" checkbox to switch the
-   * 'disabled' state of the inputs that cope with stereo options.
-   */
-  clone
-    .querySelector('input.form-check-input[data-id="includeStereo"]')
-    .addEventListener("change", function () {
-      document
-        .getElementById(tabDivId)
-        .querySelectorAll("input.form-check-input[data-inchi-stereo-option]")
-        .forEach((input) => {
-          input.disabled = !this.checked;
-        });
-    });
-
-  /*
-   * Register an on-change event on the "Treat polymers" checkbox to switch the
-   * 'disabled' state of the inputs that cope with polymer options.
-   */
-  clone
-    .querySelector('input.form-check-input[data-id="treatPolymers"]')
-    .addEventListener("change", function () {
-      document
-        .getElementById(tabDivId)
-        .querySelectorAll("input.form-check-input[data-inchi-polymer-option]")
-        .forEach((input) => {
-          input.disabled = !this.checked;
-        });
-    });
-
-  /*
-   * Register an on-click event on the "Reset InChI Options" link.
-   */
-  clone
-    .querySelector("a[data-reset-inchi-options]")
-    .addEventListener("click", function () {
-      resetInchiOptions(tabDivId);
-      updateFunction();
-    });
-
-  /*
-   * Assign ids to all <input> elements and assign the target id of their
-   * <label> element accordingly. Also register an on-change event to call
-   * updateFunction.
-   */
-  clone.querySelectorAll("input.form-check-input").forEach((input) => {
-    input.id = input.dataset.id + "-" + tabDivId;
-    input.nextElementSibling.htmlFor = input.id;
-
-    input.addEventListener("change", updateFunction);
-  });
-
-  /*
-   * Initialize the Bootstrap Multiselect widget for tautomer options if it exists.
-   */
-  $(clone)
-    .find("select[data-tautomer-multiselect]")
-    .multiselect({
-      buttonContainer: '<div class="btn-group mw-100"></div>',
-      includeSelectAllOption: true,
-      nonSelectedText: "Tautomer options",
-      numberDisplayed: 1,
-      onChange: () => updateFunction(),
-      onDeselectAll: () => updateFunction(),
-      onSelectAll: () => updateFunction(),
-      // Workaround for Bootstrap 5
-      templates: {
-        button:
-          '<button type="button" class="form-select multiselect dropdown-toggle" data-bs-toggle="dropdown"><span class="multiselect-selected-text"></span></button>',
-      },
-    });
-
-  // Attach to target element
   const targetDiv = document
     .getElementById(tabDivId)
     .querySelector("div[data-inchi-options]");
-  targetDiv.innerHTML = "";
-  targetDiv.appendChild(clone);
-  // Initialize tooltips
-  [...targetDiv.querySelectorAll('[data-bs-toggle="tooltip"]')].map(
-    (tooltipTriggerEl) => {
-      new bootstrap.Tooltip(tooltipTriggerEl);
-    }
-  );
+  targetDiv.innerHTML = ""; // Remove previous options
+  targetDiv.appendChild(inchiOptions); // Add current options
 }
 
 function resetInchiOptions(targetDivId) {
@@ -387,7 +291,7 @@ async function onChangeInChIVersionTab3() {
 
 async function updateInchiOptions(tabDivId, updateFunction) {
   const optionsState = getInchiOptionsState(tabDivId);
-  addInchiOptionsForm(tabDivId, () => updateFunction());
+  await addInchiOptionsForm(tabDivId, () => updateFunction());
   applyInchiOptionsState(tabDivId, optionsState);
 
   await updateFunction();

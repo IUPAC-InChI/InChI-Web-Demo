@@ -1,0 +1,30 @@
+<div class="form-check">
+  <input
+    data-id="MolecularInorganics"
+    class="form-check-input"
+    type="checkbox"
+    data-inchi-option-on="MolecularInorganics"
+    data-default-checked
+    checked
+  />
+  <label class="form-check-label"
+    >Molecular inorganics
+    <i
+      class="bi bi-exclamation-circle-fill colored-icon"
+      data-bs-toggle="tooltip"
+      data-bs-custom-class="custom-tooltip"
+      data-bs-html="true"
+      data-bs-title="
+        The functionality for molecular incorganics is a work in progress. You can expect to encounter warnings.
+        </br>
+        </br>
+        For an improved experience when working with inorganic structures, consider the following tips:
+        <ul>
+          <li>Input crystal structures as molfiles. Convert the CIF to a molfile, e.g., using Mercury (CCDC), or codcif2sdf (cod-tools).</li>
+          <li>In the structure editor, for donor atoms beyond nitrogen please change the 'valence' (i.e., coordination number) of the atoms accordingly by right-clicking on the corresponding atoms.</li>
+        </ul>
+      "
+    >
+    </i>
+  </label>
+</div>

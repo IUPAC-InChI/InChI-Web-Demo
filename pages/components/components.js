@@ -31,8 +31,8 @@ class InChIToolsComponent extends InsertHTMLComponent {
   async connectedCallback() {
     await super.connectedCallback();
 
-    addInchiOptionsForm("inchi-tab1-pane", () => updateInchiTab1());
-    addInchiOptionsForm("inchi-tab2-pane", () => updateInchiTab2());
+    await addInchiOptionsForm("inchi-tab1-pane", () => updateInchiTab1());
+    await addInchiOptionsForm("inchi-tab2-pane", () => updateInchiTab2());
   }
 }
 
@@ -90,7 +90,152 @@ class InChIVersionSelection extends HTMLElement {
   }
 }
 
+class InChIOptionsComponent extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  async postCreate(tabDivId, updateFunction) {
+    const htmlFragments = await Promise.all(
+      this.componentPaths.map(async (path) => {
+        try {
+          const response = await fetch(path);
+          return response.ok
+            ? await response.text()
+            : `<p>Error loading ${path}</p>`;
+        } catch {
+          return `<p>Error loading ${path}</p>`;
+        }
+      })
+    );
+
+    this.innerHTML = htmlFragments.join("\n");
+
+    /*
+     * Reassign the name of the "stereoRadio" radio button group.
+     */
+    this.querySelectorAll(
+      'input.form-check-input[type="radio"][name="stereoRadio"]'
+    ).forEach((input) => {
+      input.name = "stereoRadio-" + tabDivId;
+    });
+
+    /*
+     * Register an on-change event on the "Include Stereo" checkbox to switch the
+     * 'disabled' state of the inputs that cope with stereo options.
+     */
+    this.querySelector(
+      'input.form-check-input[data-id="includeStereo"]'
+    ).addEventListener("change", function () {
+      document
+        .getElementById(tabDivId)
+        .querySelectorAll("input.form-check-input[data-inchi-stereo-option]")
+        .forEach((input) => {
+          input.disabled = !this.checked;
+        });
+    });
+
+    /*
+     * Register an on-change event on the "Treat polymers" checkbox to switch the
+     * 'disabled' state of the inputs that cope with polymer options.
+     */
+    this.querySelector(
+      'input.form-check-input[data-id="treatPolymers"]'
+    ).addEventListener("change", function () {
+      document
+        .getElementById(tabDivId)
+        .querySelectorAll("input.form-check-input[data-inchi-polymer-option]")
+        .forEach((input) => {
+          input.disabled = !this.checked;
+        });
+    });
+
+    /*
+     * Register an on-click event on the "Reset InChI Options" link.
+     */
+    this.querySelector("a[data-reset-inchi-options]").addEventListener(
+      "click",
+      function () {
+        resetInchiOptions(tabDivId);
+        updateFunction();
+      }
+    );
+
+    /*
+     * Assign ids to all <input> elements and assign the target id of their
+     * <label> element accordingly. Also register an on-change event to call
+     * updateFunction.
+     */
+    this.querySelectorAll("input.form-check-input").forEach((input) => {
+      input.id = input.dataset.id + "-" + tabDivId;
+      input.nextElementSibling.htmlFor = input.id;
+
+      input.addEventListener("change", updateFunction);
+    });
+
+    /*
+     * Initialize the Bootstrap Multiselect widget for tautomer options if it exists.
+     */
+    $(this)
+      .find("select[data-tautomer-multiselect]")
+      .multiselect({
+        buttonContainer: '<div class="btn-group mw-100"></div>',
+        includeSelectAllOption: true,
+        nonSelectedText: "Tautomer options",
+        numberDisplayed: 1,
+        onChange: () => updateFunction(),
+        onDeselectAll: () => updateFunction(),
+        onSelectAll: () => updateFunction(),
+        // Workaround for Bootstrap 5
+        templates: {
+          button:
+            '<button type="button" class="form-select multiselect dropdown-toggle" data-bs-toggle="dropdown"><span class="multiselect-selected-text"></span></button>',
+        },
+      });
+
+    /*
+     * Initialize Bootstrap tooltips
+     */
+    [...this.querySelectorAll('[data-bs-toggle="tooltip"]')].map(
+      (tooltipTriggerEl) => {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+      }
+    );
+  }
+}
+class InChIOptions106Component extends InChIOptionsComponent {
+  constructor() {
+    super();
+    this.componentPaths = [
+      "components/106-options.html",
+      "components/base-options.html",
+    ];
+  }
+}
+class InChIOptions107Component extends InChIOptionsComponent {
+  constructor() {
+    super();
+    this.componentPaths = [
+      "components/tautomer-options.html",
+      "components/base-options.html",
+    ];
+  }
+}
+class InChIOptions107MoInComponent extends InChIOptionsComponent {
+  constructor() {
+    super();
+    this.componentPaths = [
+      "components/tautomer-options.html",
+      "components/107-moin-options.html",
+      "components/base-options.html",
+    ];
+  }
+}
+
 customElements.define("inchi-about-component", AboutComponent);
 customElements.define("inchi-inchi-tools-component", InChIToolsComponent);
 customElements.define("inchi-rinchi-tools-component", RInChIToolsComponent);
 customElements.define("inchi-inchi-version-selection", InChIVersionSelection);
+customElements.define("inchi-options-106", InChIOptions106Component);
+customElements.define("inchi-options-107", InChIOptions107Component);
+customElements.define("inchi-options-107-moin", InChIOptions107MoInComponent);
