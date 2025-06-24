@@ -51,18 +51,21 @@ clone_inchi_source() {
     git checkout "$commit"
 }
 
-
 build_inchi_wasm() {
-    local commit=$1  # hash
-    readonly commit
-    local artifact_name=$2
-    readonly artifact_name
-    local module_name=$3  # FIXME: Use artifact_name
-    readonly module_name
-    local _root_dir=$4
+    local version=$1
+    readonly version
+    local version_config_file=$2
+    readonly version_config_file
+    local _root_dir=$3
     readonly _root_dir
-    local patch_file=${5:-'no_patch'}
+    local patch_file=${4:-'no_patch'}
     readonly patch_file
+
+    # Parse version configuration file.
+    local params
+    params=$(jq -r --arg version "$version" '.[$version] | "\(.commit) \(.name) \(.module)"' "$version_config_file")
+    local commit artifact_name module_name
+    read -r commit artifact_name module_name <<< "$params"
 
     local source_dir="${_root_dir}/source/inchi"
     readonly source_dir
@@ -87,6 +90,10 @@ build_inchi_wasm() {
     make -j -f makefile INCHI_WEB_NAME="$artifact_name" MODULE_NAME="$module_name"
     make -f makefile clean
     cp "${artifact_name}.js" "${artifact_name}.wasm" "$artifact_dir"
+
+    # Move things back to where they were prior to running this function.
+    cd "${_root_dir}" || exit
+    git checkout -
 }
 
 
@@ -118,4 +125,8 @@ build_rinchi_wasm() {
     cd "${source_dir}/RInChI/src/rinchi_lib" || exit
     make -j -f Makefile-32bit
     cp librinchi-1.1.* "$artifact_dir"
+
+    # Move things back to where they were prior to running this function.
+    cd "${_root_dir}" || exit
+    git checkout -
 }
