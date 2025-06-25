@@ -50,3 +50,28 @@ or a subset with
 ```shell
 yarn run jest <path_to_test_file>
 ```
+
+## Deployment
+
+You can deploy the web-demo via GitHub actions.
+Navigate to the "Deploy GitHub Pages" workflow in the "Actions" tab of the GitHub repository.
+The workflow has a manual trigger,
+i.e., you can deploy the web-demo with the [push of a button](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/manually-running-a-workflow).
+For details regarding the deployment, have a look at the [workflow configuration](.github/workflows/ci.yml).
+
+## Update an InChI version
+
+The web-demo allows for the selection of different InChI versions.
+Those versions are configured in [inchi_versions.json](./pages/inchi_versions.json).
+Each version is pinned to a specific commit.
+You can change the commit that's associated with a version by editing the version's `commit` entry.
+Once you've changed the commit, you can re-compile the web-assembly module of the version:
+
+```shell
+source ./pages/utils.sh
+build_inchi_wasm <version> pages/inchi_versions.json $(pwd)
+```
+
+where `<version>` can be any of the top-level keys in `inchi_versions.json`.
+It's a good idea to subsequently [test the update locally](#test).
+Once you're satisfied with the test results, you can [deploy the update](#deployment).
