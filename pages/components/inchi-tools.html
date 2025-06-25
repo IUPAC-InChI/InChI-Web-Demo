@@ -60,7 +60,7 @@
         aria-controls="inchi-tab4-pane"
         aria-selected="false"
       >
-        Convert SDF to InChIs again
+        Convert SDF to InChIs
       </button>
     </li>
   </ul>
@@ -230,12 +230,22 @@
             class="mt-2 border rounded bg-light"
             style="--bs-bg-opacity: 0.3"
           >
-            <div class="border-bottom py-1 px-3">
+            <div
+              class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
+            >
               <small class="font-monospace">InChIs</small>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary ms-auto"
+                title="Copy to clipboard"
+                onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab4-inchis').innerText)"
+              >
+                <i class="bi bi-clipboard"></i>
+              </button>
             </div>
             <pre
               id="inchi-tab4-inchis"
-              class="py-1 px-3 mb-0 py-1 px-3 mb-0 inchi-result-text"
+              class="py-1 px-3 mb-0 inchi-sdf-result-text"
             ></pre>
           </div>
         </div>
@@ -246,16 +256,6 @@
           <div data-inchi-options></div>
         </div>
       </div>
-
-      <!-- <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
-        <div class="border-bottom py-1 px-3">
-          <small class="font-monospace">InChIs</small>
-        </div>
-        <pre
-          id="inchi-tab4-inchis"
-          class="py-1 px-3 mb-0 py-1 px-3 mb-0 inchi-result-text"
-        ></pre>
-      </div> -->
     </div>
   </div>
 </div>

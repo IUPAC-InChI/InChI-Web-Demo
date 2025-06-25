@@ -271,6 +271,7 @@ async function updateInchiTab3() {
 }
 
 async function updateInchiTab4() {
+  console.log("updateInchiTab4() called");
   // clear output fields
   writeResult("", "inchi-tab4-inchis");
 
@@ -325,7 +326,6 @@ async function updateInchiTab4() {
         molfile = lines.join("\n");
       }
 
-      console.log(`Processing entry ${i + 1}:`, molfile);
       if (molfile === "") {
         output.innerHTML += `<p>Error processing entry ${
           i + 1
@@ -378,6 +378,10 @@ async function onChangeInChIVersionTab3() {
     getKetcher("inchi-tab3-ketcher"),
     getVersion("inchi-tab3-pane")
   );
+}
+
+async function onChangeInChIVersionTab4() {
+  await updateInchiOptions("inchi-tab4-pane", () => updateInchiTab4());
 }
 
 async function updateInchiOptions(tabDivId, updateFunction) {

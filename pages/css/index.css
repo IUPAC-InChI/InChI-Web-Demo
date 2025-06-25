@@ -45,6 +45,13 @@ button.form-select.multiselect:focus {
   word-break: break-all;
 }
 
+.inchi-sdf-result-text {
+  white-space: pre-wrap;
+  word-break: break-all;
+  min-height: 600px;
+  max-height: 600px;
+}
+
 .inchi-log {
   white-space: pre-wrap;
 }
