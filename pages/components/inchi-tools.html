@@ -217,7 +217,7 @@
     >
       <div class="row mt-1">
         <div class="col-xl-8">
-          <div class="w-100">
+          <div class="w-100 d-flex align-items-center gap-2">
             <input
               id="inchi-tab4-sdfFileInput"
               type="file"
@@ -225,6 +225,16 @@
               accept=".sdf"
               onchange="updateInchiTab4()"
             />
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              title="Download InChIs"
+              onclick="downloadInchiTab4Results()"
+              disabled
+              id="inchi-tab4-downloadButton"
+            >
+              <i class="bi bi-download"></i>
+            </button>
           </div>
           <div
             class="mt-2 border rounded bg-light"
