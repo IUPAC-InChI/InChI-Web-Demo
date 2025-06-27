@@ -95,6 +95,19 @@ async function molfileFromAuxinfo(
   return JSON.parse(result);
 }
 
+async function getAllFromMol(molfile, options, inchiVersion) {
+  const inchiResult = await inchiFromMolfile(molfile, options, inchiVersion);
+  const inchiKeyResult = await inchikeyFromInchi(inchiResult.inchi, inchiVersion);
+  const inchi = inchiResult.inchi || "";
+  const auxinfo = inchiResult.auxinfo || "";
+  const key = inchiKeyResult.inchikey || "";
+  return {
+    inchi: inchi,
+    auxinfo: auxinfo,
+    inchikey: key,
+  };
+}
+
 if (typeof module === "object" && module.exports) {
   // Only export functions in Node. See https://github.com/umdjs/umd.
   // Prevents "Uncaught ReferenceError: module is not defined" in browser.
@@ -103,5 +116,6 @@ if (typeof module === "object" && module.exports) {
     inchikeyFromInchi,
     molfileFromInchi,
     molfileFromAuxinfo,
+    getAllFromMol
   };
 }
