@@ -283,82 +283,37 @@ async function updateInchiTab4() {
     writeResult("No SD file selected.", "inchi-tab4-inchis");
     return;
   }
+  
+  const output = document.getElementById("inchi-tab4-inchis");
+  await writeInchisFromSdFileToOutput(sdFile, options, inchiVersion, output);
+}
 
-  // const fileText = await sdFile.text();
-  // console.log("SD file text:", fileText);
+async function writeInchisFromSdFileToOutput(sdFile, options, inchiVersion, output) {
+  const sdfText = await sdFile.text();
+  const entries = sdfText.split("$$$$\n");
 
-  const $output = document.getElementById("inchi-tab4-inchis");
-  var reader = new FileReader();
-  reader.onload = async function (event) {
-    const fileText = await sdFile.text();
-
-    var entries = fileText.split("$$$$");
-
-    for (let i = 0; i < entries.length - 1; i++) {
-      let molfile = entries[i];
-      var lines = molfile.split("\n");
-
-      var indexOf = lines.findIndex(
-        (line) => line.trim().endsWith("V3000") || line.trim().endsWith("V2000")
-      );
-
-      if (indexOf === -1) {
-        console.error(`No V3000 or V2000 found in entry ${i + 1}`);
-        $output.innerHTML += `<p>Error processing entry ${
-          i + 1
-        }: no V3000 or V2000 found</p>`;
-        continue; // skip this entry
-      }
-      if (indexOf > 3) {
-        var nLinesToRemove = indexOf - 3;
-        // Remove the first nNewLines lines
-        lines.splice(0, nLinesToRemove);
-        // Join the remaining lines back into a single string
-        molfile = lines.join("\n");
-      }
-      if (lines.length < 3) {
-        var nNewLines = 3 - indexOf;
-        // Add new lines to the beginning
-        for (let j = 0; j < nNewLines; j++) {
-          lines.unshift("\n");
+  for (let i = 0; i < entries.length - 1; i++) {
+    let mol = entries[i];
+    if (mol === "") {
+      output.innerHTML += `<p>Error processing entry ${i + 1}: empty entry</p>`;
+      continue; // skip empty entries
+    }
+ 
+    await getAllFromMol(mol, options, inchiVersion)
+      .then((result) => {
+        if (result.inchi !== "") {
+          output.innerHTML += `<p>${result.inchi}\n${result.auxinfo}\n${result.inchikey}\n</p>`;
+        } else {
+          output.innerHTML += `<p>Error processing entry ${i + 1}:\n ${
+            inchiResult.log
+          }; </p>`;
         }
-        // Join the lines back into a single string
-        molfile = lines.join("\n");
+      }).catch((e) => {  
+           console.error(`Caught exception from inchiFromMolfile(): ${e}`);
+        output.innerHTML += `<p>Error processing entry ${i + 1}: ${e.message}</p>`;
       }
-
-      if (molfile === "") {
-        output.innerHTML += `<p>Error processing entry ${
-          i + 1
-        }: empty entry</p>`;
-        continue; // skip empty entries
-      }
-
-      let inchiResult;
-      let inchikeyResult;
-      try {
-        inchiResult = await inchiFromMolfile(molfile, options, inchiVersion);
-        inchikeyResult = await inchikeyFromInchi(
-          inchiResult.inchi,
-          inchiVersion
-        );
-      } catch (e) {
-        console.error(`Caught exception from inchiFromMolfile(): ${e}`);
-        continue; // skip this entry on error
-      }
-
-      if (inchiResult.inchi !== "") {
-        $output.innerHTML += `<p>${inchiResult.inchi}\n${inchikeyResult.inchikey}\n</p>`;
-      } else {
-        $output.innerHTML += `<p>Error processing entry ${i + 1}:\n ${
-          inchiResult.log
-        };  Index of counts line: ${indexOf}</p>`;
-      }
-    }
-    if ($output.innerHTML === "") {
-      $output.innerHTML = "<p>No valid InChI entries found.</p>";
-    }
-  };
-  reader.readAsText(sdFile);
+      );  
+  } 
 }
 
 async function onChangeInChIVersionTab1() {
