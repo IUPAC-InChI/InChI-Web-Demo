@@ -306,7 +306,7 @@ async function writeInchisFromSdFileToOutput(
       return `<p>Error processing entry ${index + 1}: empty entry</p>`;
     }
     try {
-      const inchiResult = await getAllFromMol(mol, options, inchiVersion);
+      const inchiResult = await getAllFromMolfile(mol, options, inchiVersion);
       if (inchiResult.inchi !== "") {
         return `<p>${inchiResult.inchi}\n${inchiResult.auxinfo}\n${inchiResult.inchikey}\n</p>`;
       } else {

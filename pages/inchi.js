@@ -95,9 +95,12 @@ async function molfileFromAuxinfo(
   return JSON.parse(result);
 }
 
-async function getAllFromMol(molfile, options, inchiVersion) {
+async function getAllFromMolfile(molfile, options, inchiVersion) {
   const inchiResult = await inchiFromMolfile(molfile, options, inchiVersion);
-  const inchiKeyResult = await inchikeyFromInchi(inchiResult.inchi, inchiVersion);
+  const inchiKeyResult = await inchikeyFromInchi(
+    inchiResult.inchi,
+    inchiVersion
+  );
   const inchi = inchiResult.inchi || "";
   const auxinfo = inchiResult.auxinfo || "";
   const key = inchiKeyResult.inchikey || "";
@@ -116,6 +119,6 @@ if (typeof module === "object" && module.exports) {
     inchikeyFromInchi,
     molfileFromInchi,
     molfileFromAuxinfo,
-    getAllFromMol
+    getAllFromMolfile,
   };
 }
