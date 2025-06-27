@@ -282,17 +282,22 @@ async function updateInchiTab4() {
   if (!sdFile || sdFile.size === 0 || sdFile.name.endsWith(".sdf") === false) {
     // no file selected or not a valid SDF file
     writeResult("No SD file selected.", "inchi-tab4-inchis");
-    downloadButton.disabled = true;  // Disable the download button
+    downloadButton.disabled = true; // Disable the download button
     return;
   }
-  
+
   downloadButton.disabled = true; // Disable the download button while processing
   const output = document.getElementById("inchi-tab4-inchis");
   await writeInchisFromSdFileToOutput(sdFile, options, inchiVersion, output);
   downloadButton.disabled = false; // Re-enable the download button after processing
 }
 
-async function writeInchisFromSdFileToOutput(sdFile, options, inchiVersion, output) {
+async function writeInchisFromSdFileToOutput(
+  sdFile,
+  options,
+  inchiVersion,
+  output
+) {
   const sdfText = await sdFile.text();
   const entries = sdfText.split("$$$$\n");
 
@@ -305,21 +310,22 @@ async function writeInchisFromSdFileToOutput(sdFile, options, inchiVersion, outp
       if (inchiResult.inchi !== "") {
         return `<p>${inchiResult.inchi}\n${inchiResult.auxinfo}\n${inchiResult.inchikey}\n</p>`;
       } else {
-        return `<p>Error processing entry ${index + 1}:\n ${inchiResult.log}; </p>`;
+        return `<p>Error processing entry ${index + 1}:\n ${
+          inchiResult.log
+        }; </p>`;
       }
     } catch (e) {
       console.error(`Caught exception from inchiFromMolfile(): ${e}`);
       return `<p>Error processing entry ${index + 1}: ${e.message}</p>`;
     }
-  }, 5) // throttleMap will process up to 5 entries concurrently
+  })
     .then((results) => {
       output.innerHTML = results.join("");
     })
     .catch((error) => {
       console.error(`Error processing SD file: ${error}`);
       output.innerHTML = `<p>Error processing SD file: ${error.message}</p>`;
-    }
-  );
+    });
 }
 
 async function onChangeInChIVersionTab1() {
@@ -351,7 +357,7 @@ function downloadInchiTab4Results() {
   if (!text) {
     alert("No InChI results to download.");
     return;
-  } 
+  }
   const blob = new Blob([text], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -772,16 +778,16 @@ function throttleMap(inputs, mapper, maxConcurrent = 5) {
   let i = 0;
   let active = 0;
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     function next() {
       while (active < maxConcurrent && i < inputs.length) {
         const currentIndex = i++;
         active++;
         Promise.resolve(mapper(inputs[currentIndex], currentIndex))
-          .then(res => {
+          .then((res) => {
             results[currentIndex] = res;
           })
-          .catch(err => {
+          .catch((err) => {
             results[currentIndex] = { error: err.message || err.toString() };
           })
           .finally(() => {
