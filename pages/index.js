@@ -278,14 +278,18 @@ async function updateInchiTab4() {
   const options = collectInchiOptions("inchi-tab4-pane");
   const inchiVersion = getVersion("inchi-tab4-pane");
   const sdFile = document.getElementById("inchi-tab4-sdfFileInput").files[0];
+  const downloadButton = document.getElementById("inchi-tab4-downloadButton");
   if (!sdFile || sdFile.size === 0 || sdFile.name.endsWith(".sdf") === false) {
     // no file selected or not a valid SDF file
     writeResult("No SD file selected.", "inchi-tab4-inchis");
+    downloadButton.disabled = true;  // Disable the download button
     return;
   }
   
+  downloadButton.disabled = true; // Disable the download button while processing
   const output = document.getElementById("inchi-tab4-inchis");
   await writeInchisFromSdFileToOutput(sdFile, options, inchiVersion, output);
+  downloadButton.disabled = false; // Re-enable the download button after processing
 }
 
 async function writeInchisFromSdFileToOutput(sdFile, options, inchiVersion, output) {
@@ -316,7 +320,6 @@ async function writeInchisFromSdFileToOutput(sdFile, options, inchiVersion, outp
       output.innerHTML = `<p>Error processing SD file: ${error.message}</p>`;
     }
   );
-
 }
 
 async function onChangeInChIVersionTab1() {
@@ -340,6 +343,24 @@ async function onChangeInChIVersionTab3() {
 
 async function onChangeInChIVersionTab4() {
   await updateInchiOptions("inchi-tab4-pane", () => updateInchiTab4());
+}
+
+function downloadInchiTab4Results() {
+  const output = document.getElementById("inchi-tab4-inchis");
+  const text = output.innerText.trim();
+  if (!text) {
+    alert("No InChI results to download.");
+    return;
+  } 
+  const blob = new Blob([text], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "inchi_results.txt"; // Default filename
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url); // Clean up the URL object
 }
 
 async function updateInchiOptions(tabDivId, updateFunction) {
