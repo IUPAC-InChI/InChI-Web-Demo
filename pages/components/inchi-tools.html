@@ -225,16 +225,6 @@
               accept=".sdf"
               onchange="updateInchiTab4()"
             />
-            <button
-              type="button"
-              class="btn btn-outline-secondary"
-              title="Download InChIs"
-              onclick="downloadInchiTab4Results()"
-              disabled
-              id="inchi-tab4-downloadButton"
-            >
-              <i class="bi bi-download"></i>
-            </button>
           </div>
           <div
             class="mt-2 border rounded bg-light"
@@ -251,6 +241,16 @@
                 onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab4-inchis').innerText)"
               >
                 <i class="bi bi-clipboard"></i>
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                title="Download InChIs"
+                onclick="downloadInchiTab4Results()"
+                disabled
+                id="inchi-tab4-downloadButton"
+              >
+                <i class="bi bi-download"></i>
               </button>
             </div>
             <pre
