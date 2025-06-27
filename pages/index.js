@@ -292,28 +292,31 @@ async function writeInchisFromSdFileToOutput(sdFile, options, inchiVersion, outp
   const sdfText = await sdFile.text();
   const entries = sdfText.split("$$$$\n");
 
-  for (let i = 0; i < entries.length - 1; i++) {
-    let mol = entries[i];
+  await throttleMap(entries, async (mol, index) => {
     if (mol === "") {
-      output.innerHTML += `<p>Error processing entry ${i + 1}: empty entry</p>`;
-      continue; // skip empty entries
+      return `<p>Error processing entry ${index + 1}: empty entry</p>`;
     }
- 
-    await getAllFromMol(mol, options, inchiVersion)
-      .then((result) => {
-        if (result.inchi !== "") {
-          output.innerHTML += `<p>${result.inchi}\n${result.auxinfo}\n${result.inchikey}\n</p>`;
-        } else {
-          output.innerHTML += `<p>Error processing entry ${i + 1}:\n ${
-            inchiResult.log
-          }; </p>`;
-        }
-      }).catch((e) => {  
-           console.error(`Caught exception from inchiFromMolfile(): ${e}`);
-        output.innerHTML += `<p>Error processing entry ${i + 1}: ${e.message}</p>`;
+    try {
+      const inchiResult = await getAllFromMol(mol, options, inchiVersion);
+      if (inchiResult.inchi !== "") {
+        return `<p>${inchiResult.inchi}\n${inchiResult.auxinfo}\n${inchiResult.inchikey}\n</p>`;
+      } else {
+        return `<p>Error processing entry ${index + 1}:\n ${inchiResult.log}; </p>`;
       }
-      );  
-  } 
+    } catch (e) {
+      console.error(`Caught exception from inchiFromMolfile(): ${e}`);
+      return `<p>Error processing entry ${index + 1}: ${e.message}</p>`;
+    }
+  }, 5) // throttleMap will process up to 5 entries concurrently
+    .then((results) => {
+      output.innerHTML = results.join("");
+    })
+    .catch((error) => {
+      console.error(`Error processing SD file: ${error}`);
+      output.innerHTML = `<p>Error processing SD file: ${error.message}</p>`;
+    }
+  );
+
 }
 
 async function onChangeInChIVersionTab1() {
@@ -741,4 +744,34 @@ async function extractContent(dataTransfer) {
     });
   }
   return null;
+}
+
+function throttleMap(inputs, mapper, maxConcurrent = 5) {
+  const results = [];
+  let i = 0;
+  let active = 0;
+
+  return new Promise(resolve => {
+    function next() {
+      while (active < maxConcurrent && i < inputs.length) {
+        const currentIndex = i++;
+        active++;
+        Promise.resolve(mapper(inputs[currentIndex], currentIndex))
+          .then(res => {
+            results[currentIndex] = res;
+          })
+          .catch(err => {
+            results[currentIndex] = { error: err.message || err.toString() };
+          })
+          .finally(() => {
+            active--;
+            next();
+            if (i >= inputs.length && active === 0) {
+              resolve(results);
+            }
+          });
+      }
+    }
+    next();
+  });
 }
