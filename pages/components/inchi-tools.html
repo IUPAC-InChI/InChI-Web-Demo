@@ -80,79 +80,19 @@
           <div data-inchi-options></div>
         </div>
       </div>
-      <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
-        <div
-          class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
-        >
-          <small class="font-monospace">InChI</small>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto"
-            title="Copy to clipboard"
-            onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab1-inchi').innerText)"
-          >
-            <i class="bi bi-clipboard"></i>
-          </button>
-        </div>
-        <pre
-          id="inchi-tab1-inchi"
-          class="py-1 px-3 mb-0 inchi-result-text"
-        ></pre>
-      </div>
-      <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
-        <div
-          class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
-        >
-          <small class="font-monospace">InChIKey</small>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto"
-            title="Copy to clipboard"
-            onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab1-inchikey').innerText)"
-          >
-            <i class="bi bi-clipboard"></i>
-          </button>
-        </div>
-        <pre
-          id="inchi-tab1-inchikey"
-          class="py-1 px-3 mb-0 inchi-result-text"
-        ></pre>
-      </div>
-      <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
-        <div
-          class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
-        >
-          <small class="font-monospace">AuxInfo</small>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto"
-            title="Copy to clipboard"
-            onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab1-auxinfo').innerText)"
-          >
-            <i class="bi bi-clipboard"></i>
-          </button>
-        </div>
-        <pre
-          id="inchi-tab1-auxinfo"
-          class="py-1 px-3 mb-0 inchi-result-text"
-        ></pre>
-      </div>
-      <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
-        <div
-          class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
-        >
-          <small class="font-monospace">Log</small>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto"
-            title="Copy to clipboard"
-            onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab1-logs').innerText)"
-          >
-            <i class="bi bi-clipboard"></i>
-          </button>
-        </div>
-        <pre id="inchi-tab1-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
-      </div>
+      <inchi-result-field
+        id="inchi-tab1-inchi"
+        title="InChI"
+      ></inchi-result-field>
+      <inchi-result-field
+        id="inchi-tab1-inchikey"
+        title="InChIKey"
+      ></inchi-result-field>
+      <inchi-result-field
+        id="inchi-tab1-auxinfo"
+        title="AuxInfo"
+      ></inchi-result-field>
+      <inchi-result-field id="inchi-tab1-logs" title="Log"></inchi-result-field>
     </div>
 
     <!-- Convert Molfile to InChI -->
@@ -194,79 +134,19 @@
           <div data-inchi-options></div>
         </div>
       </div>
-      <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
-        <div
-          class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
-        >
-          <small class="font-monospace">InChI</small>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto"
-            title="Copy to clipboard"
-            onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab2-inchi').innerText)"
-          >
-            <i class="bi bi-clipboard"></i>
-          </button>
-        </div>
-        <pre
-          id="inchi-tab2-inchi"
-          class="py-1 px-3 mb-0 inchi-result-text"
-        ></pre>
-      </div>
-      <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
-        <div
-          class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
-        >
-          <small class="font-monospace">InChIKey</small>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto"
-            title="Copy to clipboard"
-            onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab2-inchikey').innerText)"
-          >
-            <i class="bi bi-clipboard"></i>
-          </button>
-        </div>
-        <pre
-          id="inchi-tab2-inchikey"
-          class="py-1 px-3 mb-0 inchi-result-text"
-        ></pre>
-      </div>
-      <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
-        <div
-          class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
-        >
-          <small class="font-monospace">AuxInfo</small>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto"
-            title="Copy to clipboard"
-            onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab2-auxinfo').innerText)"
-          >
-            <i class="bi bi-clipboard"></i>
-          </button>
-        </div>
-        <pre
-          id="inchi-tab2-auxinfo"
-          class="py-1 px-3 mb-0 inchi-result-text"
-        ></pre>
-      </div>
-      <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
-        <div
-          class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
-        >
-          <small class="font-monospace">Log</small>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto"
-            title="Copy to clipboard"
-            onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab2-logs').innerText)"
-          >
-            <i class="bi bi-clipboard"></i>
-          </button>
-        </div>
-        <pre id="inchi-tab2-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
-      </div>
+      <inchi-result-field
+        id="inchi-tab2-inchi"
+        title="InChI"
+      ></inchi-result-field>
+      <inchi-result-field
+        id="inchi-tab2-inchikey"
+        title="InChIKey"
+      ></inchi-result-field>
+      <inchi-result-field
+        id="inchi-tab2-auxinfo"
+        title="AuxInfo"
+      ></inchi-result-field>
+      <inchi-result-field id="inchi-tab2-logs" title="Log"></inchi-result-field>
     </div>
 
     <!-- Convert InChI or AuxInfo to structure -->
@@ -298,22 +178,7 @@
           ></inchi-version-selection>
         </div>
       </div>
-      <div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
-        <div
-          class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
-        >
-          <small class="font-monospace">Log</small>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto"
-            title="Copy to clipboard"
-            onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab3-logs').innerText)"
-          >
-            <i class="bi bi-clipboard"></i>
-          </button>
-        </div>
-        <pre id="inchi-tab3-logs" class="py-1 px-3 mb-0 inchi-log"></pre>
-      </div>
+      <inchi-result-field id="inchi-tab3-logs" title="Log"></inchi-result-field>
       <div class="mt-1">
         <div class="col-xl-8">
           <div class="ratio ketcher">

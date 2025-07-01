@@ -90,6 +90,45 @@ class InChIVersionSelectionElement extends HTMLElement {
   }
 }
 
+class InChIResultFieldElement extends HTMLElement {
+  constructor() {
+    super();
+    this.title = this.getAttribute("title");
+    this.id = this.getAttribute("id");
+  }
+
+  connectedCallback() {
+    const html = `<div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
+      <div
+        class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
+      >
+        <small class="font-monospace">${this.title}</small>
+        <button
+          id=copy-button-${this.id}
+          type="button"
+          class="btn btn-sm btn-outline-secondary ms-auto"
+          title="Copy to clipboard"
+        >
+          <i class="bi bi-clipboard"></i>
+        </button>
+      </div>
+      <pre id="${this.id}" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+    </div>`;
+
+    const parentElement = this.parentElement;
+    parentElement.insertAdjacentHTML("beforeend", html);
+
+    const copyButton = parentElement.querySelector(`#copy-button-${this.id}`);
+    copyButton.addEventListener("click", () => {
+      navigator.clipboard.writeText(
+        parentElement.querySelector(`#${this.id}`).innerText
+      );
+    });
+
+    this.remove();
+  }
+}
+
 class InChIOptionsElement extends HTMLElement {
   constructor() {
     super();
@@ -239,6 +278,7 @@ customElements.define("inchi-about", AboutElement);
 customElements.define("inchi-inchi-tools", InChIToolsElement);
 customElements.define("inchi-rinchi-tools", RInChIToolsElement);
 customElements.define("inchi-version-selection", InChIVersionSelectionElement);
+customElements.define("inchi-result-field", InChIResultFieldElement);
 customElements.define("inchi-options-106", InChIOptions106Element);
 customElements.define("inchi-options-107", InChIOptions107Element);
 customElements.define("inchi-options-107-moin", InChIOptions107MoInElement);
