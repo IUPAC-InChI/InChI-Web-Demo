@@ -226,38 +226,10 @@
               onchange="updateInchiTab4()"
             />
           </div>
-          <div
-            class="mt-2 border rounded bg-light"
-            style="--bs-bg-opacity: 0.3"
-          >
-            <div
-              class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
-            >
-              <small class="font-monospace">InChIs</small>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary ms-auto"
-                title="Copy to clipboard"
-                onclick="navigator.clipboard.writeText(document.getElementById('inchi-tab4-inchis').innerText)"
-              >
-                <i class="bi bi-clipboard"></i>
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary"
-                title="Download InChIs"
-                onclick="downloadInchiTab4Results()"
-                disabled
-                id="inchi-tab4-downloadButton"
-              >
-                <i class="bi bi-download"></i>
-              </button>
-            </div>
-            <pre
-              id="inchi-tab4-inchis"
-              class="py-1 px-3 mb-0 inchi-sdf-result-text"
-            ></pre>
-          </div>
+          <inchi-result-field
+            id="inchi-tab4-inchis"
+            title="InChIs"
+          ></inchi-result-field>
         </div>
         <div class="col-xl-4">
           <inchi-version-selection

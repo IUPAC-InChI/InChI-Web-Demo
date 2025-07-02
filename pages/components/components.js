@@ -95,38 +95,77 @@ class InChIResultFieldElement extends HTMLElement {
   constructor() {
     super();
     this.title = this.getAttribute("title");
-    this.id = this.getAttribute("id");
+    this._id = this.getAttribute("id");
+    this.setAttribute("id", `${this._id}-wrapper`); // Avoid "id" attribute name conflict with the pre element.
   }
 
   connectedCallback() {
-    const html = `<div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
+    this.innerHTML = `<div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
       <div
         class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
       >
         <small class="font-monospace">${this.title}</small>
-        <button
-          id=copy-button-${this.id}
-          type="button"
-          class="btn btn-sm btn-outline-secondary ms-auto"
-          title="Copy to clipboard"
-        >
-          <i class="bi bi-clipboard"></i>
-        </button>
+        <div class="btn-group" role="group">
+          <button
+            id=copy-button-${this._id}
+            type="button"
+            class="btn btn-sm btn-outline-secondary ms-auto"
+            title="Copy to clipboard"
+            disabled
+          >
+            <i class="bi bi-clipboard"></i>
+          </button>
+          <button
+            id=download-button-${this._id}
+            type="button"
+            class="btn btn-sm btn-outline-secondary ms-auto"
+            title="Download to text file"
+            disabled
+          >
+            <i class="bi bi-download"></i>
+          </button>
+        </div>
       </div>
-      <pre id="${this.id}" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+      <pre id="${this._id}" class="py-1 px-3 mb-0 inchi-result-text"></pre>
     </div>`;
 
-    const parentElement = this.parentElement;
-    parentElement.insertAdjacentHTML("beforeend", html);
+    const resultText = this.querySelector(`#${this._id}`);
+    const copyButton = this.querySelector(`#copy-button-${this._id}`);
+    const downloadButton = this.querySelector(`#download-button-${this._id}`);
 
-    const copyButton = parentElement.querySelector(`#copy-button-${this.id}`);
     copyButton.addEventListener("click", () => {
-      navigator.clipboard.writeText(
-        parentElement.querySelector(`#${this.id}`).innerText
-      );
+      navigator.clipboard.writeText(resultText.innerText.trim());
     });
 
-    this.remove();
+    downloadButton.addEventListener("click", () => {
+      const text = resultText.innerText.trim();
+      if (!text) {
+        alert("No InChI results to download.");
+        return;
+      }
+      const blob = new Blob([text], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${this.title}_${new Date().toISOString()}.txt`; // Default filename
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url); // Clean up the URL object
+    });
+
+    const toggleButtonState = () => {
+      const resultAvailable = resultText.innerText.trim().length > 0;
+      copyButton.disabled = !resultAvailable;
+      downloadButton.disabled = !resultAvailable;
+    };
+
+    const observer = new MutationObserver(toggleButtonState);
+    observer.observe(resultText, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
   }
 }
 
