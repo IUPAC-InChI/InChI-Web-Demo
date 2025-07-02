@@ -52,81 +52,77 @@ clone_inchi_source() {
 }
 
 build_inchi_wasm() {
-    local version=$1
-    readonly version
-    local version_config_file=$2
-    readonly version_config_file
-    local _root_dir=$3
-    readonly _root_dir
-    local patch_file=${4:-'no_patch'}
-    readonly patch_file
+    (
+        local version=$1
+        readonly version
+        local version_config_file=$2
+        readonly version_config_file
+        local _root_dir=$3
+        readonly _root_dir
+        local patch_file=${4:-'no_patch'}
+        readonly patch_file
 
-    # Parse version configuration file.
-    local params
-    params=$(jq -r --arg version "$version" '.[$version] | "\(.commit) \(.name) \(.module)"' "$version_config_file")
-    local commit artifact_name module_name
-    read -r commit artifact_name module_name <<< "$params"
+        # Parse version configuration file.
+        local params
+        params=$(jq -r --arg version "$version" '.[$version] | "\(.commit) \(.name) \(.module)"' "$version_config_file")
+        local commit artifact_name module_name
+        read -r commit artifact_name module_name <<< "$params"
 
-    local source_dir="${_root_dir}/source/inchi"
-    readonly source_dir
-    local artifact_dir="${_root_dir}/pages/inchi"
-    readonly artifact_dir
+        local source_dir="${_root_dir}/source/inchi"
+        readonly source_dir
+        local artifact_dir="${_root_dir}/pages/inchi"
+        readonly artifact_dir
 
-    rm -rf "${source_dir}/${artifact_name:?}" && mkdir -p "${source_dir}/${artifact_name}"
-    if [ ! -d "$artifact_dir" ]; then
-         mkdir -p "$artifact_dir"
-    fi
+        rm -rf "${source_dir}/${artifact_name:?}" && mkdir -p "${source_dir}/${artifact_name}"
+        if [ ! -d "$artifact_dir" ]; then
+            mkdir -p "$artifact_dir"
+        fi
 
-    clone_inchi_source "$commit" "${source_dir}/${artifact_name}"
+        clone_inchi_source "$commit" "${source_dir}/${artifact_name}"
 
-    if [ "$patch_file" != "no_patch" ]; then
-        echo "Applying patch: $patch_file"
-        git apply "$patch_file"
-    fi
+        if [ "$patch_file" != "no_patch" ]; then
+            echo "Applying patch: $patch_file"
+            git apply "$patch_file"
+        fi
 
-    # Build JavaScript and WASM modules
-    cp -R "${_root_dir}/inchi/INCHI_WEB" INCHI-1-SRC
-    cd INCHI-1-SRC/INCHI_WEB || exit
-    make -j -f makefile INCHI_WEB_NAME="$artifact_name" MODULE_NAME="$module_name"
-    make -f makefile clean
-    cp "${artifact_name}.js" "${artifact_name}.wasm" "$artifact_dir"
-
-    # Move things back to where they were prior to running this function.
-    cd "${_root_dir}" || exit
-    git checkout -
+        # Build JavaScript and WASM modules
+        cp -R "${_root_dir}/inchi/INCHI_WEB" INCHI-1-SRC
+        cd INCHI-1-SRC/INCHI_WEB || exit
+        make -j -f makefile INCHI_WEB_NAME="$artifact_name" MODULE_NAME="$module_name"
+        make -f makefile clean
+        cp "${artifact_name}.js" "${artifact_name}.wasm" "$artifact_dir"
+    )
 }
 
 
 build_rinchi_wasm() {
-    local _root_dir=$1
-    readonly _root_dir
+    (
+        local _root_dir=$1
+        readonly _root_dir
 
-    local source_dir="${_root_dir}/source/rinchi"
-    readonly source_dir
-    local artifact_dir="${_root_dir}/pages/rinchi"
-    readonly artifact_dir
+        local source_dir="${_root_dir}/source/rinchi"
+        readonly source_dir
+        local artifact_dir="${_root_dir}/pages/rinchi"
+        readonly artifact_dir
 
-    rm -rf "$source_dir" && mkdir -p "$source_dir"
-    rm -rf "$artifact_dir" && mkdir -p "$artifact_dir"
+        rm -rf "$source_dir" && mkdir -p "$source_dir"
+        rm -rf "$artifact_dir" && mkdir -p "$artifact_dir"
 
-    # RInChI needs InChI source
-    clone_inchi_source $(jq -r '."1.07.3".commit' "${_root_dir}/pages/inchi_versions.json")  "${source_dir}/InChI"
+        # RInChI needs InChI source
+        clone_inchi_source $(jq -r '."1.07.3".commit' "${_root_dir}/pages/inchi_versions.json")  "${source_dir}/InChI"
 
-    # Get RInChI source
-    git clone --no-checkout --depth 1 --branch "main" --single-branch https://github.com/IUPAC-InChI/RInChI.git "${source_dir}/RInChI"
-    cd "${source_dir}/RInChI" || exit
-    # Use specific commit for reproducibility
-    git checkout "46643428f8a547114466dc34ab847bfb890b836a"
+        # Get RInChI source
+        git clone --no-checkout --depth 1 --branch "main" --single-branch https://github.com/IUPAC-InChI/RInChI.git "${source_dir}/RInChI"
+        cd "${source_dir}/RInChI" || exit
+        # Use specific commit for reproducibility
+        git checkout "46643428f8a547114466dc34ab847bfb890b836a"
 
-    # Patch RInChI to enable emcc compilation
-    git apply "${_root_dir}/rinchi/rinchi.patch"
+        # Patch RInChI to enable emcc compilation
+        git apply "${_root_dir}/rinchi/rinchi.patch"
 
-    # Build JavaScript and WASM modules
-    cd "${source_dir}/RInChI/src/rinchi_lib" || exit
-    make -j -f Makefile-32bit
-    cp librinchi-1.1.* "$artifact_dir"
-
-    # Move things back to where they were prior to running this function.
-    cd "${_root_dir}" || exit
-    git checkout -
+        # Build JavaScript and WASM modules
+        cd "${source_dir}/RInChI/src/rinchi_lib" || exit
+        make -j -f Makefile-32bit
+        cp librinchi-1.1.* "$artifact_dir"
+    )
 }
