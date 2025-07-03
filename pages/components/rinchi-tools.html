@@ -1,334 +1,315 @@
-<div
-  class="tab-pane fade"
-  id="pills-rinchi"
-  role="tabpanel"
-  aria-labelledby="pills-rinchi-tab"
-  tabindex="0"
->
-  <!-- RInChI tabs -->
-  <ul class="nav nav-tabs mt-1" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button
-        class="nav-link active"
-        id="rinchi-tab1"
-        data-bs-toggle="tab"
-        data-bs-target="#rinchi-tab1-pane"
-        type="button"
-        role="tab"
-        aria-controls="rinchi-tab1-pane"
-        aria-selected="true"
-      >
-        Draw reaction and convert to RInChI
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button
-        class="nav-link"
-        id="rinchi-tab2"
-        data-bs-toggle="tab"
-        data-bs-target="#rinchi-tab2-pane"
-        type="button"
-        role="tab"
-        aria-controls="rinchi-tab2-pane"
-        aria-selected="false"
-      >
-        Convert RXN/RD file to RInChI
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button
-        class="nav-link"
-        id="rinchi-tab3"
-        data-bs-toggle="tab"
-        data-bs-target="#rinchi-tab3-pane"
-        type="button"
-        role="tab"
-        aria-controls="rinchi-tab3-pane"
-        aria-selected="false"
-      >
-        Convert RInChI to reaction
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button
-        class="nav-link"
-        id="rinchi-tab4"
-        data-bs-toggle="tab"
-        data-bs-target="#rinchi-tab4-pane"
-        type="button"
-        role="tab"
-        aria-controls="rinchi-tab4-pane"
-        aria-selected="false"
-      >
-        Convert RInChI to RXN/RD file
-      </button>
-    </li>
-  </ul>
-
-  <!-- Contents of RInChI tabs -->
-  <div class="tab-content">
-    <!-- Draw reaction and convert to RInChI -->
-    <div
-      class="tab-pane fade show active"
-      id="rinchi-tab1-pane"
-      role="tabpanel"
-      aria-labelledby="rinchi-tab1"
-      tabindex="0"
+<!-- RInChI tabs -->
+<ul class="nav nav-tabs mt-1" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link active"
+      id="rinchi-tab1"
+      data-bs-toggle="tab"
+      data-bs-target="#rinchi-tab1-pane"
+      type="button"
+      role="tab"
+      aria-controls="rinchi-tab1-pane"
+      aria-selected="true"
     >
-      <div class="row mt-1">
-        <div class="col-xl-8">
-          <div class="ratio ketcher">
-            <iframe
-              id="rinchi-tab1-ketcher"
-              class="w-100"
-              src="ketcher/index.html"
-              loading="lazy"
-              onload="onKetcherLoaded('rinchi-tab1-ketcher', () => updateRinchiTab1())"
-            ></iframe>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-4 mt-auto">
-          <span id="rinchi-version"></span>
-        </div>
-        <inchi-result-field
-          id="rinchi-tab1-rinchi"
-          title="RInChI"
-        ></inchi-result-field>
-        <inchi-result-field
-          id="rinchi-tab1-longrinchikey"
-          title="Long-RInChIKey"
-        ></inchi-result-field>
-        <inchi-result-field
-          id="rinchi-tab1-shortrinchikey"
-          title="Short-RInChIKey"
-        ></inchi-result-field>
-        <inchi-result-field
-          id="rinchi-tab1-webrinchikey"
-          title="Web-RInChIKey"
-        ></inchi-result-field>
-        <inchi-result-field
-          id="rinchi-tab1-rauxinfo"
-          title="RAuxInfo"
-        ></inchi-result-field>
-        <inchi-result-field
-          id="rinchi-tab1-logs"
-          title="Log"
-        ></inchi-result-field>      
-      </div>
+      Draw reaction and convert to RInChI
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link"
+      id="rinchi-tab2"
+      data-bs-toggle="tab"
+      data-bs-target="#rinchi-tab2-pane"
+      type="button"
+      role="tab"
+      aria-controls="rinchi-tab2-pane"
+      aria-selected="false"
+    >
+      Convert RXN/RD file to RInChI
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link"
+      id="rinchi-tab3"
+      data-bs-toggle="tab"
+      data-bs-target="#rinchi-tab3-pane"
+      type="button"
+      role="tab"
+      aria-controls="rinchi-tab3-pane"
+      aria-selected="false"
+    >
+      Convert RInChI to reaction
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link"
+      id="rinchi-tab4"
+      data-bs-toggle="tab"
+      data-bs-target="#rinchi-tab4-pane"
+      type="button"
+      role="tab"
+      aria-controls="rinchi-tab4-pane"
+      aria-selected="false"
+    >
+      Convert RInChI to RXN/RD file
+    </button>
+  </li>
+</ul>
 
-      <!-- Convert RXN/RD file to RInChI -->
-      <div
-        class="tab-pane fade"
-        id="rinchi-tab2-pane"
-        role="tabpanel"
-        aria-labelledby="rinchi-tab2"
-        tabindex="0"
-      >
-        <div class="row mt-1">
-          <div class="col-xl-8">
-            <div class="ratio inputtextarea">
-              <div class="w-100">
-                <textarea
-                  id="rinchi-tab2-rxnrdfileTextarea"
-                  class="form-control pe-5 h-100"
-                  style="resize: none"
-                  autocomplete="off"
-                  placeholder="Paste or drag-and-drop a RXN/RD file here"
-                  ondragover="onTextareaDragover(event)"
-                  ondrop="onTextareaDrop(event, () => updateRinchiTab2())"
-                  oninput="updateRinchiTab2()"
-                ></textarea>
-                <button
-                  class="btn btn-outline-secondary border-0"
-                  style="position: absolute; top: 10px; right: 10px"
-                  onclick="document.getElementById('rinchi-tab2-rxnrdfileTextarea').value = '';updateRinchiTab2()"
-                >
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="col-xl-4 mt-auto">
-            <div>
-              <input
-                id="rinchi-tab2-forceequilibrium"
-                class="form-check-input"
-                type="checkbox"
-                onchange="updateRinchiTab2()"
-              />
-              <label class="form-check-label" for="rinchi-tab2-forceequilibrium"
-                >Force equilibrium</label
-              >
-            </div>
-            <span id="rinchi-version"></span>
-          </div>
-        </div>
-        <inchi-result-field
-          id="rinchi-tab2-rinchi"
-          title="RInChI"
-        ></inchi-result-field>
-        <inchi-result-field
-          id="rinchi-tab2-longrinchikey"
-          title="Long-RInChIKey"
-        ></inchi-result-field>
-        <inchi-result-field
-          id="rinchi-tab2-shortrinchikey"
-          title="Short-RInChIKey"
-        ></inchi-result-field>
-        <inchi-result-field
-          id="rinchi-tab2-webrinchikey" 
-          title="Web-RInChIKey"
-        ></inchi-result-field>
-        <inchi-result-field
-          id="rinchi-tab2-rauxinfo"
-          title="RAuxInfo"
-        ></inchi-result-field>
-        <inchi-result-field
-          id="rinchi-tab2-logs"
-          title="Log"
-        ></inchi-result-field>
-      </div>
-
-      <!-- Convert RInChI to reaction -->
-      <div
-        class="tab-pane fade"
-        id="rinchi-tab3-pane"
-        role="tabpanel"
-        aria-labelledby="rinchi-tab3"
-        tabindex="0"
-      >
-        <div class="row mt-1">
-          <div class="col-xl-8">
-            <div class="ratio" style="height: 100px">
-              <div class="w-100">
-                <textarea
-                  id="rinchi-tab3-rinchiTextarea"
-                  class="form-control pe-5 h-100"
-                  style="resize: none"
-                  autocomplete="off"
-                  placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+"
-                  oninput="updateRinchiTab3()"
-                ></textarea>
-              </div>
-            </div>
-            <div class="ratio mt-2" style="height: 100px">
-              <div class="w-100">
-                <textarea
-                  id="rinchi-tab3-rauxinfoTextarea"
-                  class="form-control pe-5 h-100"
-                  style="resize: none"
-                  autocomplete="off"
-                  placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..."
-                  oninput="updateRinchiTab3()"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-          <span id="rinchi-version"></span>
-        </div>
-        <inchi-result-field
-          id="rinchi-tab3-logs"
-          title="Log"
-        ></inchi-result-field>
-        <div class="row mt-1">
-          <div class="col-xl-8">
-            <div class="ratio ketcher">
-              <iframe
-                id="rinchi-tab3-ketcher"
-                class="w-100"
-                src="ketcher/index.html"
-                loading="lazy"
-              ></iframe>
-            </div>
-          </div>
-          <div class="col-xl-4">
-            Please note: The generated RXN file will contain zero atom
-            coordinates in case no RAuxInfo with atom coordinates is provided.
-            Unfortunately, the "clean" function of the Ketcher structure editor
-            cannot properly recalculate the coordinates at the moment.
-          </div>
+<!-- Contents of RInChI tabs -->
+<div class="tab-content">
+  <!-- Tab 1: Draw reaction and convert to RInChI -->
+  <div
+    class="tab-pane fade show active"
+    id="rinchi-tab1-pane"
+    role="tabpanel"
+    aria-labelledby="rinchi-tab1"
+    tabindex="0"
+  >
+    <div class="row mt-1">
+      <div class="col-xl-8">
+        <div class="ratio ketcher">
+          <iframe
+            id="rinchi-tab1-ketcher"
+            class="w-100"
+            src="ketcher/index.html"
+            loading="lazy"
+            onload="onKetcherLoaded('rinchi-tab1-ketcher', () => updateRinchiTab1())"
+          ></iframe>
         </div>
       </div>
-
-      <!-- Convert RInChI to RXN/RD file -->
-      <div
-        class="tab-pane fade"
-        id="rinchi-tab4-pane"
-        role="tabpanel"
-        aria-labelledby="rinchi-tab4"
-        tabindex="0"
-      >
-        <div class="row mt-1">
-          <div class="col-xl-8">
-            <div class="ratio" style="height: 100px">
-              <div class="w-100">
-                <textarea
-                  id="rinchi-tab4-rinchiTextarea"
-                  class="form-control pe-5 h-100"
-                  style="resize: none"
-                  autocomplete="off"
-                  placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+"
-                  oninput="updateRinchiTab4()"
-                ></textarea>
-              </div>
-            </div>
-            <div class="ratio mt-2" style="height: 100px">
-              <div class="w-100">
-                <textarea
-                  id="rinchi-tab4-rauxinfoTextarea"
-                  class="form-control pe-5 h-100"
-                  style="resize: none"
-                  autocomplete="off"
-                  placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..."
-                  oninput="updateRinchiTab4()"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-          <div class="col-xl-4 mt-auto">
-            <div>
-              <label class="form-check-label mb-2">Select output format</label>
-            </div>
-            <div class="form-check">
-              <input
-                id="rinchi-tab4-outputformat-rxn"
-                class="form-check-input"
-                type="radio"
-                name="rinchioutputformatRadio"
-                value="RXN"
-                onchange="updateRinchiTab4()"
-                checked
-              />
-              <label class="form-check-label" for="rinchi-tab4-outputformat-rxn"
-                >RXN file</label
-              >
-            </div>
-            <div class="form-check mb-2">
-              <input
-                id="rinchi-tab4-outputformat-rd"
-                class="form-check-input"
-                type="radio"
-                name="rinchioutputformatRadio"
-                value="RD"
-                onchange="updateRinchiTab4()"
-              />
-              <label class="form-check-label" for="rinchi-tab4-outputformat-rd"
-                >RD file</label
-              >
-            </div>
-            <span id="rinchi-version"></span>
-          </div>
-          <inchi-result-field
-            id="rinchi-tab4-logs"
-            title="Log"
-          ></inchi-result-field>
-          <inchi-result-field
-            id="rinchi-tab4-rxnfile"
-            title="RXN/RD file"
-          ></inchi-result-field>
-        </div>
+      <div class="col-xl-4 mt-auto">
+        <span id="rinchi-version"></span>
       </div>
     </div>
+    <inchi-result-field
+      id="rinchi-tab1-rinchi"
+      title="RInChI"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab1-longrinchikey"
+      title="Long-RInChIKey"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab1-shortrinchikey"
+      title="Short-RInChIKey"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab1-webrinchikey"
+      title="Web-RInChIKey"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab1-rauxinfo"
+      title="RAuxInfo"
+    ></inchi-result-field>
+    <inchi-result-field id="rinchi-tab1-logs" title="Log"></inchi-result-field>
+  </div>
+
+  <!-- Tab 2: Convert RXN/RD file to RInChI -->
+  <div
+    class="tab-pane fade"
+    id="rinchi-tab2-pane"
+    role="tabpanel"
+    aria-labelledby="rinchi-tab2"
+    tabindex="0"
+  >
+    <div class="row mt-1">
+      <div class="col-xl-8">
+        <div class="ratio inputtextarea">
+          <div class="w-100">
+            <textarea
+              id="rinchi-tab2-rxnrdfileTextarea"
+              class="form-control pe-5 h-100"
+              style="resize: none"
+              autocomplete="off"
+              placeholder="Paste or drag-and-drop a RXN/RD file here"
+              ondragover="onTextareaDragover(event)"
+              ondrop="onTextareaDrop(event, () => updateRinchiTab2())"
+              oninput="updateRinchiTab2()"
+            ></textarea>
+            <button
+              class="btn btn-outline-secondary border-0"
+              style="position: absolute; top: 10px; right: 10px"
+              onclick="document.getElementById('rinchi-tab2-rxnrdfileTextarea').value = '';updateRinchiTab2()"
+            >
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-4 mt-auto">
+        <div>
+          <input
+            id="rinchi-tab2-forceequilibrium"
+            class="form-check-input"
+            type="checkbox"
+            onchange="updateRinchiTab2()"
+          />
+          <label class="form-check-label" for="rinchi-tab2-forceequilibrium"
+            >Force equilibrium</label
+          >
+        </div>
+        <span id="rinchi-version"></span>
+      </div>
+    </div>
+    <inchi-result-field
+      id="rinchi-tab2-rinchi"
+      title="RInChI"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab2-longrinchikey"
+      title="Long-RInChIKey"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab2-shortrinchikey"
+      title="Short-RInChIKey"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab2-webrinchikey"
+      title="Web-RInChIKey"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab2-rauxinfo"
+      title="RAuxInfo"
+    ></inchi-result-field>
+    <inchi-result-field id="rinchi-tab2-logs" title="Log"></inchi-result-field>
+  </div>
+
+  <!-- Tab 3: Convert RInChI to reaction -->
+  <div
+    class="tab-pane fade"
+    id="rinchi-tab3-pane"
+    role="tabpanel"
+    aria-labelledby="rinchi-tab3"
+    tabindex="0"
+  >
+    <div class="row mt-1">
+      <div class="col-xl-8">
+        <div class="ratio" style="height: 100px">
+          <div class="w-100">
+            <textarea
+              id="rinchi-tab3-rinchiTextarea"
+              class="form-control pe-5 h-100"
+              style="resize: none"
+              autocomplete="off"
+              placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+"
+              oninput="updateRinchiTab3()"
+            ></textarea>
+          </div>
+        </div>
+        <div class="ratio mt-2" style="height: 100px">
+          <div class="w-100">
+            <textarea
+              id="rinchi-tab3-rauxinfoTextarea"
+              class="form-control pe-5 h-100"
+              style="resize: none"
+              autocomplete="off"
+              placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..."
+              oninput="updateRinchiTab3()"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-4">
+        <span id="rinchi-version"></span>
+      </div>
+    </div>
+    <inchi-result-field id="rinchi-tab3-logs" title="Log"></inchi-result-field>
+    <div class="row mt-1">
+      <div class="col-xl-8">
+        <div class="ratio ketcher">
+          <iframe
+            id="rinchi-tab3-ketcher"
+            class="w-100"
+            src="ketcher/index.html"
+            loading="lazy"
+          ></iframe>
+        </div>
+      </div>
+      <div class="col-xl-4">
+        Please note: The generated RXN file will contain zero atom coordinates
+        in case no RAuxInfo with atom coordinates is provided. Unfortunately,
+        the "clean" function of the Ketcher structure editor cannot properly
+        recalculate the coordinates at the moment.
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 4: Convert RInChI to RXN/RD file -->
+  <div
+    class="tab-pane fade"
+    id="rinchi-tab4-pane"
+    role="tabpanel"
+    aria-labelledby="rinchi-tab4"
+    tabindex="0"
+  >
+    <div class="row mt-1">
+      <div class="col-xl-8">
+        <div class="ratio" style="height: 100px">
+          <div class="w-100">
+            <textarea
+              id="rinchi-tab4-rinchiTextarea"
+              class="form-control pe-5 h-100"
+              style="resize: none"
+              autocomplete="off"
+              placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+"
+              oninput="updateRinchiTab4()"
+            ></textarea>
+          </div>
+        </div>
+        <div class="ratio mt-2" style="height: 100px">
+          <div class="w-100">
+            <textarea
+              id="rinchi-tab4-rauxinfoTextarea"
+              class="form-control pe-5 h-100"
+              style="resize: none"
+              autocomplete="off"
+              placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..."
+              oninput="updateRinchiTab4()"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-4 mt-auto">
+        <div>
+          <label class="form-check-label mb-2">Select output format</label>
+        </div>
+        <div class="form-check">
+          <input
+            id="rinchi-tab4-outputformat-rxn"
+            class="form-check-input"
+            type="radio"
+            name="rinchioutputformatRadio"
+            value="RXN"
+            onchange="updateRinchiTab4()"
+            checked
+          />
+          <label class="form-check-label" for="rinchi-tab4-outputformat-rxn"
+            >RXN file</label
+          >
+        </div>
+        <div class="form-check mb-2">
+          <input
+            id="rinchi-tab4-outputformat-rd"
+            class="form-check-input"
+            type="radio"
+            name="rinchioutputformatRadio"
+            value="RD"
+            onchange="updateRinchiTab4()"
+          />
+          <label class="form-check-label" for="rinchi-tab4-outputformat-rd"
+            >RD file</label
+          >
+        </div>
+        <span id="rinchi-version"></span>
+      </div>
+    </div>
+    <inchi-result-field id="rinchi-tab4-logs" title="Log"></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab4-rxnfile"
+      title="RXN/RD file"
+    ></inchi-result-field>
   </div>
 </div>

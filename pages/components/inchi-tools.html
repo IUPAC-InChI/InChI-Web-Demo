@@ -1,242 +1,234 @@
-<div
-  class="tab-pane fade show active"
-  id="pills-inchi"
-  role="tabpanel"
-  aria-labelledby="pills-inchi-tab"
-  tabindex="0"
->
-  <!-- InChI tabs -->
-  <ul class="nav nav-tabs mt-1" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button
-        class="nav-link active"
-        id="inchi-tab1"
-        data-bs-toggle="tab"
-        data-bs-target="#inchi-tab1-pane"
-        type="button"
-        role="tab"
-        aria-controls="inchi-tab1-pane"
-        aria-selected="true"
-      >
-        Draw structure and convert to InChI
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button
-        class="nav-link"
-        id="inchi-tab2"
-        data-bs-toggle="tab"
-        data-bs-target="#inchi-tab2-pane"
-        type="button"
-        role="tab"
-        aria-controls="inchi-tab2-pane"
-        aria-selected="false"
-      >
-        Convert Molfile to InChI
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button
-        class="nav-link"
-        id="inchi-tab3"
-        data-bs-toggle="tab"
-        data-bs-target="#inchi-tab3-pane"
-        type="button"
-        role="tab"
-        aria-controls="inchi-tab3-pane"
-        aria-selected="false"
-      >
-        Convert InChI or AuxInfo to structure
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button
-        class="nav-link"
-        id="inchi-tab4"
-        data-bs-toggle="tab"
-        data-bs-target="#inchi-tab4-pane"
-        type="button"
-        role="tab"
-        aria-controls="inchi-tab4-pane"
-        aria-selected="false"
-      >
-        Convert SDF to InChIs
-      </button>
-    </li>
-  </ul>
-
-  <!-- Contents of InChI tabs -->
-  <div class="tab-content">
-    <!-- Draw structure and convert to InChI -->
-    <div
-      class="tab-pane fade show active"
-      id="inchi-tab1-pane"
-      role="tabpanel"
-      aria-labelledby="inchi-tab1"
-      tabindex="0"
+<!-- InChI tabs -->
+<ul class="nav nav-tabs mt-1" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link active"
+      id="inchi-tab1"
+      data-bs-toggle="tab"
+      data-bs-target="#inchi-tab1-pane"
+      type="button"
+      role="tab"
+      aria-controls="inchi-tab1-pane"
+      aria-selected="true"
     >
-      <div class="row mt-1">
-        <div class="col-xl-8">
-          <div class="ratio ketcher">
-            <iframe
-              id="inchi-tab1-ketcher"
-              class="w-100"
-              src="ketcher/index.html"
-              loading="lazy"
-              onload="onKetcherLoaded('inchi-tab1-ketcher', () => updateInchiTab1())"
-            ></iframe>
-          </div>
-        </div>
-        <div class="col-xl-4 mt-auto">
-          <inchi-version-selection
-            onVersionChange="onChangeInChIVersionTab1()"
-          ></inchi-version-selection>
-          <div data-inchi-options></div>
+      Draw structure and convert to InChI
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link"
+      id="inchi-tab2"
+      data-bs-toggle="tab"
+      data-bs-target="#inchi-tab2-pane"
+      type="button"
+      role="tab"
+      aria-controls="inchi-tab2-pane"
+      aria-selected="false"
+    >
+      Convert Molfile to InChI
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link"
+      id="inchi-tab3"
+      data-bs-toggle="tab"
+      data-bs-target="#inchi-tab3-pane"
+      type="button"
+      role="tab"
+      aria-controls="inchi-tab3-pane"
+      aria-selected="false"
+    >
+      Convert InChI or AuxInfo to structure
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button
+      class="nav-link"
+      id="inchi-tab4"
+      data-bs-toggle="tab"
+      data-bs-target="#inchi-tab4-pane"
+      type="button"
+      role="tab"
+      aria-controls="inchi-tab4-pane"
+      aria-selected="false"
+    >
+      Convert SDF to InChIs
+    </button>
+  </li>
+</ul>
+
+<!-- Contents of InChI tabs -->
+<div class="tab-content">
+  <!-- Draw structure and convert to InChI -->
+  <div
+    class="tab-pane fade show active"
+    id="inchi-tab1-pane"
+    role="tabpanel"
+    aria-labelledby="inchi-tab1"
+    tabindex="0"
+  >
+    <div class="row mt-1">
+      <div class="col-xl-8">
+        <div class="ratio ketcher">
+          <iframe
+            id="inchi-tab1-ketcher"
+            class="w-100"
+            src="ketcher/index.html"
+            loading="lazy"
+            onload="onKetcherLoaded('inchi-tab1-ketcher', () => updateInchiTab1())"
+          ></iframe>
         </div>
       </div>
-      <inchi-result-field
-        id="inchi-tab1-inchi"
-        title="InChI"
-      ></inchi-result-field>
-      <inchi-result-field
-        id="inchi-tab1-inchikey"
-        title="InChIKey"
-      ></inchi-result-field>
-      <inchi-result-field
-        id="inchi-tab1-auxinfo"
-        title="AuxInfo"
-      ></inchi-result-field>
-      <inchi-result-field id="inchi-tab1-logs" title="Log"></inchi-result-field>
-    </div>
-
-    <!-- Convert Molfile to InChI -->
-    <div
-      class="tab-pane fade"
-      id="inchi-tab2-pane"
-      role="tabpanel"
-      aria-labelledby="inchi-tab2"
-      tabindex="0"
-    >
-      <div class="row mt-1">
-        <div class="col-xl-8">
-          <div class="ratio inputtextarea">
-            <div class="w-100">
-              <textarea
-                id="inchi-tab2-molfileTextarea"
-                class="form-control pe-5 h-100"
-                style="resize: none"
-                autocomplete="off"
-                placeholder="Paste or drag-and-drop a Molfile here"
-                ondragover="onTextareaDragover(event)"
-                ondrop="onTextareaDrop(event, () => updateInchiTab2())"
-                oninput="updateInchiTab2()"
-              ></textarea>
-              <button
-                class="btn btn-outline-secondary border-0"
-                style="position: absolute; top: 10px; right: 10px"
-                onclick="document.getElementById('inchi-tab2-molfileTextarea').value = '';updateInchiTab2()"
-              >
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-4 mt-auto">
-          <inchi-version-selection
-            onVersionChange="onChangeInChIVersionTab2()"
-          ></inchi-version-selection>
-          <div data-inchi-options></div>
-        </div>
-      </div>
-      <inchi-result-field
-        id="inchi-tab2-inchi"
-        title="InChI"
-      ></inchi-result-field>
-      <inchi-result-field
-        id="inchi-tab2-inchikey"
-        title="InChIKey"
-      ></inchi-result-field>
-      <inchi-result-field
-        id="inchi-tab2-auxinfo"
-        title="AuxInfo"
-      ></inchi-result-field>
-      <inchi-result-field id="inchi-tab2-logs" title="Log"></inchi-result-field>
-    </div>
-
-    <!-- Convert InChI or AuxInfo to structure -->
-    <div
-      class="tab-pane fade"
-      id="inchi-tab3-pane"
-      role="tabpanel"
-      aria-labelledby="inchi-tab3"
-      tabindex="0"
-    >
-      <div class="row mt-1">
-        <div class="col-xl-8">
-          <div class="ratio" style="height: 115px">
-            <div class="w-100">
-              <textarea
-                id="inchi-tab3-inputTextarea"
-                class="form-control pe-5 h-100"
-                style="resize: none"
-                autocomplete="off"
-                placeholder="Paste an InChI or AuxInfo string here&#10;e.g. InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H&#10;or AuxInfo=1/0/N:1,3,5,2,6,4/E:(1,2,3,4,5,6)/rA:6nCCCCCC/rB:;d1s2;d2;s1;s4d5;/rC:7.8848,-4.7251,0;9.6152,-4.7246,0;8.7516,-4.225,0;9.6152,-5.7255,0;7.8848,-5.73,0;8.7538,-6.225,0;"
-                oninput="updateInchiTab3()"
-              ></textarea>
-            </div>
-          </div>
-        </div>
-        <div class="col-xl-4 mt-auto">
-          <inchi-version-selection
-            onVersionChange="onChangeInChIVersionTab3()"
-          ></inchi-version-selection>
-        </div>
-      </div>
-      <inchi-result-field id="inchi-tab3-logs" title="Log"></inchi-result-field>
-      <div class="mt-1">
-        <div class="col-xl-8">
-          <div class="ratio ketcher">
-            <iframe
-              id="inchi-tab3-ketcher"
-              class="w-100"
-              src="ketcher/index.html"
-              loading="lazy"
-            ></iframe>
-          </div>
-        </div>
+      <div class="col-xl-4 mt-auto">
+        <inchi-version-selection
+          onVersionChange="onChangeInChIVersionTab1()"
+        ></inchi-version-selection>
+        <div data-inchi-options></div>
       </div>
     </div>
+    <inchi-result-field
+      id="inchi-tab1-inchi"
+      title="InChI"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="inchi-tab1-inchikey"
+      title="InChIKey"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="inchi-tab1-auxinfo"
+      title="AuxInfo"
+    ></inchi-result-field>
+    <inchi-result-field id="inchi-tab1-logs" title="Log"></inchi-result-field>
+  </div>
 
-    <!-- Convert SDF to InChIs -->
-    <div
-      class="tab-pane fade"
-      id="inchi-tab4-pane"
-      role="tabpanel"
-      aria-labelledby="inchi-tab4"
-      tabindex="0"
-    >
-      <div class="row mt-1">
-        <div class="col-xl-8">
-          <div class="w-100 d-flex align-items-center gap-2">
-            <input
-              id="inchi-tab4-sdfFileInput"
-              type="file"
+  <!-- Convert Molfile to InChI -->
+  <div
+    class="tab-pane fade"
+    id="inchi-tab2-pane"
+    role="tabpanel"
+    aria-labelledby="inchi-tab2"
+    tabindex="0"
+  >
+    <div class="row mt-1">
+      <div class="col-xl-8">
+        <div class="ratio inputtextarea">
+          <div class="w-100">
+            <textarea
+              id="inchi-tab2-molfileTextarea"
               class="form-control pe-5 h-100"
-              accept=".sdf"
-              onchange="updateInchiTab4()"
-            />
+              style="resize: none"
+              autocomplete="off"
+              placeholder="Paste or drag-and-drop a Molfile here"
+              ondragover="onTextareaDragover(event)"
+              ondrop="onTextareaDrop(event, () => updateInchiTab2())"
+              oninput="updateInchiTab2()"
+            ></textarea>
+            <button
+              class="btn btn-outline-secondary border-0"
+              style="position: absolute; top: 10px; right: 10px"
+              onclick="document.getElementById('inchi-tab2-molfileTextarea').value = '';updateInchiTab2()"
+            >
+              <i class="bi bi-trash"></i>
+            </button>
           </div>
-          <inchi-result-field
-            id="inchi-tab4-inchis"
-            title="InChIs"
-          ></inchi-result-field>
         </div>
-        <div class="col-xl-4">
-          <inchi-version-selection
-            onVersionChange="onChangeInChIVersionTab4()"
-          ></inchi-version-selection>
-          <div data-inchi-options></div>
+      </div>
+      <div class="col-xl-4 mt-auto">
+        <inchi-version-selection
+          onVersionChange="onChangeInChIVersionTab2()"
+        ></inchi-version-selection>
+        <div data-inchi-options></div>
+      </div>
+    </div>
+    <inchi-result-field
+      id="inchi-tab2-inchi"
+      title="InChI"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="inchi-tab2-inchikey"
+      title="InChIKey"
+    ></inchi-result-field>
+    <inchi-result-field
+      id="inchi-tab2-auxinfo"
+      title="AuxInfo"
+    ></inchi-result-field>
+    <inchi-result-field id="inchi-tab2-logs" title="Log"></inchi-result-field>
+  </div>
+
+  <!-- Convert InChI or AuxInfo to structure -->
+  <div
+    class="tab-pane fade"
+    id="inchi-tab3-pane"
+    role="tabpanel"
+    aria-labelledby="inchi-tab3"
+    tabindex="0"
+  >
+    <div class="row mt-1">
+      <div class="col-xl-8">
+        <div class="ratio" style="height: 115px">
+          <div class="w-100">
+            <textarea
+              id="inchi-tab3-inputTextarea"
+              class="form-control pe-5 h-100"
+              style="resize: none"
+              autocomplete="off"
+              placeholder="Paste an InChI or AuxInfo string here&#10;e.g. InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H&#10;or AuxInfo=1/0/N:1,3,5,2,6,4/E:(1,2,3,4,5,6)/rA:6nCCCCCC/rB:;d1s2;d2;s1;s4d5;/rC:7.8848,-4.7251,0;9.6152,-4.7246,0;8.7516,-4.225,0;9.6152,-5.7255,0;7.8848,-5.73,0;8.7538,-6.225,0;"
+              oninput="updateInchiTab3()"
+            ></textarea>
+          </div>
         </div>
+      </div>
+      <div class="col-xl-4 mt-auto">
+        <inchi-version-selection
+          onVersionChange="onChangeInChIVersionTab3()"
+        ></inchi-version-selection>
+      </div>
+    </div>
+    <inchi-result-field id="inchi-tab3-logs" title="Log"></inchi-result-field>
+    <div class="mt-1">
+      <div class="col-xl-8">
+        <div class="ratio ketcher">
+          <iframe
+            id="inchi-tab3-ketcher"
+            class="w-100"
+            src="ketcher/index.html"
+            loading="lazy"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Convert SDF to InChIs -->
+  <div
+    class="tab-pane fade"
+    id="inchi-tab4-pane"
+    role="tabpanel"
+    aria-labelledby="inchi-tab4"
+    tabindex="0"
+  >
+    <div class="row mt-1">
+      <div class="col-xl-8">
+        <div class="w-100 d-flex align-items-center gap-2">
+          <input
+            id="inchi-tab4-sdfFileInput"
+            type="file"
+            class="form-control pe-5 h-100"
+            accept=".sdf"
+            onchange="updateInchiTab4()"
+          />
+        </div>
+        <inchi-result-field
+          id="inchi-tab4-inchis"
+          title="InChIs"
+        ></inchi-result-field>
+      </div>
+      <div class="col-xl-4">
+        <inchi-version-selection
+          onVersionChange="onChangeInChIVersionTab4()"
+        ></inchi-version-selection>
+        <div data-inchi-options></div>
       </div>
     </div>
   </div>

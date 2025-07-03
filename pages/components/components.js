@@ -10,10 +10,7 @@ class InsertHTMLElement extends HTMLElement {
     if (response.ok) {
       html = await response.text();
     }
-    if (this.parentElement) {
-      this.parentElement.insertAdjacentHTML("beforeend", html);
-    }
-    this.remove();
+    this.innerHTML = html;
   }
 }
 
@@ -57,17 +54,14 @@ class InChIVersionSelectionElement extends HTMLElement {
   }
 
   async connectedCallback() {
-    const html = `<div class="bounding-box">
-    <h4>Version</h4>
-    <select id="version-dropdown" style="display: block;" data-version></select>
-    <span id="version-commit" style="display: block;"></span>
-  </div>`;
+    this.innerHTML = `<div class="bounding-box">
+      <h4>Version</h4>
+      <select id="version-dropdown" style="display: block;" data-version></select>
+      <span id="version-commit" style="display: block;"></span>
+    </div>`;
 
-    const parentElement = this.parentElement;
-    parentElement.insertAdjacentHTML("afterbegin", html);
-
-    const dropdown = parentElement.querySelector("#version-dropdown");
-    const commitLink = parentElement.querySelector("#version-commit");
+    const dropdown = this.querySelector("#version-dropdown");
+    const commitLink = this.querySelector("#version-commit");
 
     for (const [versionName, versionConfig] of Object.entries(
       availableInchiVersions
