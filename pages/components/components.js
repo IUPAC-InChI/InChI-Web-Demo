@@ -77,11 +77,11 @@ class InChIVersionSelectionElement extends HTMLElement {
       const selectedVersion = event.target.value;
       this.onVersionChange();
       const commitHash = availableInchiVersions[selectedVersion].commit;
-      commitLink.innerHTML = `<a href="https://github.com/IUPAC-InChI/InChI/tree/${commitHash}" target="_blank">${commitHash}</a>`;
+      commitLink.innerHTML = `<a href="https://github.com/IUPAC-InChI/InChI/tree/${commitHash}" target="_blank">Browse version on GitHub</a>`;
     });
 
     const commitHash = availableInchiVersions[dropdown.value].commit;
-    commitLink.innerHTML = `<a href="https://github.com/IUPAC-InChI/InChI/tree/${commitHash}" target="_blank">${commitHash}</a>`;
+    commitLink.innerHTML = `<a href="https://github.com/IUPAC-InChI/InChI/tree/${commitHash}" target="_blank">Browse version on GitHub</a>`;
   }
 }
 
