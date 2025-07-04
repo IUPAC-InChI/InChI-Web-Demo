@@ -1,8 +1,8 @@
 // inchi.js assumes global availability of the inchi modules.
 // That's why we need to inject the modules into the global scope before using inchi.js.
 global.inchiModule106 = require("../pages/inchi/inchi-web106.js");
-global.inchiModule107 = require("../pages/inchi/inchi-web107.js");
-global.inchiModule107MoIn = require("../pages/inchi/inchi-web107-moin.js");
+global.inchiModuleLatest = require("../pages/inchi/inchi-web-latest.js");
+global.inchiModuleLatestMoIn = require("../pages/inchi/inchi-web-latest-moin.js");
 
 // Mock availableInchiVersions for global availability during testing.
 const loadInchiVersions = () => {
@@ -77,7 +77,7 @@ const inchiString = "InChI=1S/H2O/h1H2";
 const inchiKey = "XLYOFNOQVPJJNP-UHFFFAOYSA-N";
 const auxinfo = "AuxInfo=1/0/N:1/rA:1nO/rB:/rC:;";
 
-test.each([["1.06"], ["1.07.3"], ["1.07.3 with Molecular inorganics"]])(
+test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
   "InChI string from molfile with version %s",
   async (version) => {
     const result = await inchiFromMolfile(molfile, "", version);
@@ -85,7 +85,7 @@ test.each([["1.06"], ["1.07.3"], ["1.07.3 with Molecular inorganics"]])(
   }
 );
 
-test.each([["1.06"], ["1.07.3"], ["1.07.3 with Molecular inorganics"]])(
+test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
   "InChI key from InChI string with version %s",
   async (version) => {
     const result = await inchikeyFromInchi(inchiString, version);
@@ -93,7 +93,7 @@ test.each([["1.06"], ["1.07.3"], ["1.07.3 with Molecular inorganics"]])(
   }
 );
 
-test.each([["1.06"], ["1.07.3"], ["1.07.3 with Molecular inorganics"]])(
+test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
   "SDF from InChI string with version %s",
   async (version) => {
     const result = await molfileFromInchi(inchiString, "", version);
@@ -101,7 +101,7 @@ test.each([["1.06"], ["1.07.3"], ["1.07.3 with Molecular inorganics"]])(
   }
 );
 
-test.each([["1.06"], ["1.07.3"], ["1.07.3 with Molecular inorganics"]])(
+test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
   "SDF from InChI auxinfo with version %s",
   async (version) => {
     const result = await molfileFromAuxinfo(auxinfo, 0, 0, version);

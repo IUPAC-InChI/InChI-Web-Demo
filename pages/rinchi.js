@@ -1,6 +1,6 @@
 "use strict";
 
-const RINCHI_VERSION = "1.1-dev with InChI 1.07.3";
+const RINCHI_VERSION = "1.1-dev with Latest InChI";
 /*
  * WASM module(s) initialization
  *

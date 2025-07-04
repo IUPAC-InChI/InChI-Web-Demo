@@ -363,7 +363,7 @@ async function updateKetcherOptions(ketcher, inchiVersion) {
     return;
   }
 
-  if (inchiVersion === "1.07.3 with Molecular inorganics") {
+  if (inchiVersion === "Latest with Molecular Inorganics") {
     await ketcher.editor.setOptions('{"showHydrogenLabels": "all"}');
     console.log("showHydrogenLabels: all");
   } else {

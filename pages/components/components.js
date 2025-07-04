@@ -288,7 +288,7 @@ class InChIOptions106Element extends InChIOptionsElement {
     ];
   }
 }
-class InChIOptions107Element extends InChIOptionsElement {
+class InChIOptionsLatestElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
@@ -297,12 +297,12 @@ class InChIOptions107Element extends InChIOptionsElement {
     ];
   }
 }
-class InChIOptions107MoInElement extends InChIOptionsElement {
+class InChIOptionsLatestMoInElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
       "components/tautomer-options.html",
-      "components/107-moin-options.html",
+      "components/latest-moin-options.html",
       "components/base-options.html",
     ];
   }
@@ -314,5 +314,8 @@ customElements.define("inchi-rinchi-tools", RInChIToolsElement);
 customElements.define("inchi-version-selection", InChIVersionSelectionElement);
 customElements.define("inchi-result-field", InChIResultFieldElement);
 customElements.define("inchi-options-106", InChIOptions106Element);
-customElements.define("inchi-options-107", InChIOptions107Element);
-customElements.define("inchi-options-107-moin", InChIOptions107MoInElement);
+customElements.define("inchi-options-latest", InChIOptionsLatestElement);
+customElements.define(
+  "inchi-options-latest-moin",
+  InChIOptionsLatestMoInElement
+);
