@@ -9,7 +9,7 @@
     "module": "inchiModuleLatest",
     "name": "inchi-web-latest",
     "optionsTemplateId": "inchi-options-latest",
-    "commit": "0b3e941d29289f3e5024c9ecfd45186285319420",
+    "commit": "d124ee52b4de0ed3d608d2a3d522b939f01f2549",
     "default": true
   },
   "Latest with Molecular Inorganics": {
