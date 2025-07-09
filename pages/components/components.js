@@ -120,7 +120,7 @@ class InChIResultFieldElement extends HTMLElement {
           </button>
         </div>
       </div>
-      <pre id="${this._id}" class="py-1 px-3 mb-0 inchi-result-text"></pre>
+      <pre id="${this._id}" class="py-1 px-3 mb-0 inchi-result-text" style="max-height: 500px"></pre>
     </div>`;
 
     const resultText = this.querySelector(`#${this._id}`);
