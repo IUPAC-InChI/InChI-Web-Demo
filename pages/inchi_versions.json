@@ -3,19 +3,22 @@
     "module": "inchiModule106",
     "name": "inchi-web106",
     "optionsTemplateId": "inchi-options-106",
-    "commit": "a515b3973d08abe659d0de3e4def3d28d74eeb88"
+    "commit": "a515b3973d08abe659d0de3e4def3d28d74eeb88",
+    "url": "https://github.com/IUPAC-InChI/InChI/releases/tag/v1.06"
   },
   "Latest": {
     "module": "inchiModuleLatest",
     "name": "inchi-web-latest",
     "optionsTemplateId": "inchi-options-latest",
     "commit": "d124ee52b4de0ed3d608d2a3d522b939f01f2549",
+    "url": "https://github.com/IUPAC-InChI/InChI/releases/tag/v1.07.4",
     "default": true
   },
   "Latest with Molecular Inorganics": {
     "module": "inchiModuleLatestMoIn",
     "name": "inchi-web-latest-moin",
     "optionsTemplateId": "inchi-options-latest-moin",
-    "commit": "2d06cfc377bb07dc950735b1fb5de4945d0c3023"
+    "commit": "2d06cfc377bb07dc950735b1fb5de4945d0c3023",
+    "url": "https://github.com/IUPAC-InChI/InChI/pull/107"
   }
 }
