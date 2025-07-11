@@ -294,7 +294,15 @@ async function writeInchisFromSdFileToOutput(
   output
 ) {
   const sdfText = await sdFile.text();
-  const entries = sdfText.split("$$$$\n");
+  
+  const delimiter = getSDFDelimiter(sdfText); 
+  if (!delimiter) {
+    output.innerHTML = "<p>Error: Invalid SDF file format.</p>";
+    return;
+  }
+  const entries = sdfText.split(delimiter).filter((entry) => entry.trim() !== "");
+
+  console.log(entries.length, "entries found in the SD file");
 
   await throttleMap(entries, async (mol, index) => {
     if (mol === "") {
@@ -321,6 +329,18 @@ async function writeInchisFromSdFileToOutput(
       console.error(`Error processing SD file: ${error}`);
       output.innerHTML = `<p>Error processing SD file: ${error.message}</p>`;
     });
+}
+
+function getSDFDelimiter(sdfText) {
+  // Check for the presence of the delimiter
+  if (sdfText.includes("$$$$\r\n")) { // Windows-style line endings
+    return "$$$$\r\n";
+  } else if (sdfText.includes("$$$$\n")) { // Unix-style line endings
+    return "$$$$\n";
+  } else if (sdfText.includes("$$$$\r")) { // Old Mac-style line ending
+    return "$$$$\r"; 
+  }
+  return null; // No valid delimiter found
 }
 
 async function onChangeInChIVersionTab1() {

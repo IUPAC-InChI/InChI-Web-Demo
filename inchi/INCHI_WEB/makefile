@@ -29,7 +29,8 @@ LINKER_OPTIONS = \
 	-sEXPORT_NAME=$(MODULE_NAME) \
 	-sMODULARIZE \
 	-sENVIRONMENT=web,node \
-	-sSTACK_SIZE=1048576
+	-sSTACK_SIZE=2097152 
+# 1048576
 # TODO:
 # closure ...
 # optimize ...
