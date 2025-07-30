@@ -308,6 +308,56 @@ class InChIOptionsLatestMoInElement extends InChIOptionsElement {
   }
 }
 
+class NGLViewerElement extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    this.innerHTML = `<div id="ngl-viewport" style="width: 100%; height: 600px;" /div>`;
+    const viewport = this.querySelector("#ngl-viewport");
+
+    this.stage = new NGL.Stage(viewport, { backgroundColor: "white" });
+
+    const resizeObserver = new window.ResizeObserver(() =>
+      this.stage.handleResize()
+    );
+    resizeObserver.observe(viewport);
+  }
+}
+
+class AtomLabelLegendElement extends HTMLElement {
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    const annotationLegend = document.createElement("div");
+    annotationLegend.style.display = "flex";
+
+    annotationLegend.appendChild(
+      createAnnotation("Original Index", annotationColors.index)
+    );
+    annotationLegend.appendChild(
+      createAnnotation("Canonical Index", annotationColors.canonicalIndex)
+    );
+    annotationLegend.appendChild(
+      createAnnotation("Equivalence Class", annotationColors.equivalenceClass)
+    );
+    annotationLegend.appendChild(
+      createAnnotation("Hydrogen Group", annotationColors.mobileHydrogenGroup)
+    );
+    annotationLegend.appendChild(
+      createAnnotation(
+        "Hydrogen Group Class",
+        annotationColors.mobileHydrogenGroupClass
+      )
+    );
+
+    this.appendChild(annotationLegend);
+  }
+}
+
 customElements.define("inchi-about", AboutElement);
 customElements.define("inchi-inchi-tools", InChIToolsElement);
 customElements.define("inchi-rinchi-tools", RInChIToolsElement);
@@ -319,3 +369,5 @@ customElements.define(
   "inchi-options-latest-moin",
   InChIOptionsLatestMoInElement
 );
+customElements.define("inchi-ngl-viewer", NGLViewerElement);
+customElements.define("inchi-atom-label-legend", AtomLabelLegendElement);

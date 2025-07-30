@@ -141,19 +141,30 @@
         <div data-inchi-options></div>
       </div>
     </div>
-    <inchi-result-field
-      id="inchi-tab2-inchi"
-      title="InChI"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="inchi-tab2-inchikey"
-      title="InChIKey"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="inchi-tab2-auxinfo"
-      title="AuxInfo"
-    ></inchi-result-field>
-    <inchi-result-field id="inchi-tab2-logs" title="Log"></inchi-result-field>
+    <div class="row mt-1">
+      <div class="col">
+        <inchi-result-field
+          id="inchi-tab2-inchi"
+          title="InChI"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="inchi-tab2-inchikey"
+          title="InChIKey"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="inchi-tab2-auxinfo"
+          title="AuxInfo"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="inchi-tab2-logs"
+          title="Log"
+        ></inchi-result-field>
+      </div>
+      <div class="col">
+        <inchi-atom-label-legend></inchi-atom-label-legend>
+        <inchi-ngl-viewer id="inchi-ngl-viewer-tab2"></inchi-ngl-viewer>
+      </div>
+    </div>
   </div>
 
   <!-- Convert InChI or AuxInfo to structure -->

@@ -111,6 +111,193 @@ async function getAllFromMolfile(molfile, options, inchiVersion) {
   };
 }
 
+function parseCoordinates(layer) {
+  // Returns an array of coordinate triplets (x, y, z) for each atom in the molfile.
+  // The array is in the same order as the atoms are listed in the molfile's atom block.
+  const coordinateTriplets = layer.split(";").filter(Boolean);
+  const allCoordinates = [];
+
+  for (const coordinateTriplet of coordinateTriplets) {
+    const coordinates = coordinateTriplet
+      .split(",")
+      .map((coordinate) => coordinate.trim());
+
+    if (coordinates.length !== 3) {
+      return [];
+    }
+
+    const coordinateFloats = coordinates.map((coordinate) =>
+      parseFloat(coordinate)
+    );
+
+    if (coordinateFloats.some((coordinate) => isNaN(coordinate))) {
+      return [];
+    }
+
+    allCoordinates.push(coordinateFloats);
+  }
+
+  return allCoordinates;
+}
+
+function parseCanonicalAtomIndices(layer) {
+  // Returns a map of molfile atom indices (i.e., 1-based line numbers from start of atom block)
+  // to InChI's 1-based canonical atom indices.
+  let originalToCanonicalAtomIndices = new Map();
+
+  const originalAtomIndices = layer
+    .split(",")
+    .map((originalAtomIndex) => parseInt(originalAtomIndex.trim()));
+
+  if (originalAtomIndices.some((atomIndex) => isNaN(atomIndex))) {
+    return originalToCanonicalAtomIndices;
+  }
+
+  originalToCanonicalAtomIndices = originalAtomIndices.reduce(
+    (map, original, canonical) => (map.set(original, canonical + 1), map),
+    originalToCanonicalAtomIndices
+  );
+
+  return originalToCanonicalAtomIndices;
+}
+
+function parseAtomEquivalenceClasses(layer) {
+  // Returns a map of InChI's 1-based canonical atom indices to non-stereo equivalence classes.
+  const canonicalAtomIndicesToEquivalentClasses = new Map();
+
+  const equivalenceClasses = layer.match(/\([^)]+\)/g);
+  if (!equivalenceClasses) return canonicalAtomIndicesToEquivalentClasses;
+
+  equivalenceClasses.forEach((equivalenceClass) => {
+    const equivalenceClassMembers = equivalenceClass.slice(1, -1).split(",");
+    const equivalenceClassId = parseInt(equivalenceClassMembers[0].trim());
+    for (const member of equivalenceClassMembers) {
+      canonicalAtomIndicesToEquivalentClasses.set(
+        parseInt(member.trim()),
+        equivalenceClassId
+      );
+    }
+  });
+
+  return canonicalAtomIndicesToEquivalentClasses;
+}
+
+function parseMobileHydrogenGroups(layer) {
+  // Returns a map of InChI's 1-based canonical atom indices to mobile hydrogen groups.
+  const canonicalAtomIndicesToMobileHydrogenGroups = new Map();
+
+  const mobileHydrogenGroups = layer.match(/\([^)]+\)/g);
+  if (!mobileHydrogenGroups) return canonicalAtomIndicesToMobileHydrogenGroups;
+
+  mobileHydrogenGroups.forEach((mobileHydrogenGroup, index) => {
+    const canonicalAtomIndices = mobileHydrogenGroup
+      .slice(1, -1)
+      .split(",")
+      .slice(1);
+    const groupId = index + 1;
+    canonicalAtomIndices.forEach((canonicalAtomIndex) => {
+      canonicalAtomIndicesToMobileHydrogenGroups.set(
+        parseInt(canonicalAtomIndex),
+        groupId
+      );
+    });
+  });
+
+  return canonicalAtomIndicesToMobileHydrogenGroups;
+}
+
+function parseMobileHydrogenGroupClasses(layer) {
+  // Returns a map of mobile hydrogen groups to mobile hydrogen group classes.
+  // Such a class gives 1-based IDs to sets of equivalent mobile hydrogen groups.
+  const mobileHydrogenGroupsToMobileHydrogenGroupClasses = new Map();
+
+  const mobileHydrogenGroupClasses = layer.match(/\([^)]+\)/g);
+  if (!mobileHydrogenGroupClasses)
+    return mobileHydrogenGroupsToMobileHydrogenGroupClasses;
+
+  mobileHydrogenGroupClasses.forEach((mobileHydrogenGroupClass, index) => {
+    const mobileHydrogenGroups = mobileHydrogenGroupClass
+      .slice(1, -1)
+      .split(",");
+    const mobileHydrogenGroupClassId = index + 1;
+    mobileHydrogenGroups.forEach((mobileHydrogenGroup) => {
+      mobileHydrogenGroupsToMobileHydrogenGroupClasses.set(
+        parseInt(mobileHydrogenGroup),
+        mobileHydrogenGroupClassId
+      );
+    });
+  });
+
+  return mobileHydrogenGroupsToMobileHydrogenGroupClasses;
+}
+
+function mapCanonicalAtomIndicesToMobileHydrogenGroupClasses(
+  canonicalAtomIndicesToMobileHydrogenGroups,
+  mobileHydrogenGroupsToMobileHydrogenGroupClasses
+) {
+  const canonicalAtomIndicesToMobileHydrogenGroupClasses = new Map();
+  if (
+    !canonicalAtomIndicesToMobileHydrogenGroups ||
+    !mobileHydrogenGroupsToMobileHydrogenGroupClasses
+  ) {
+    return undefined;
+  }
+  for (const [
+    canonicalAtomIndex,
+    mobileHydrogenGroup,
+  ] of canonicalAtomIndicesToMobileHydrogenGroups.entries()) {
+    const mobileHydrogenGroupClass =
+      mobileHydrogenGroupsToMobileHydrogenGroupClasses.get(mobileHydrogenGroup);
+    if (mobileHydrogenGroupClass !== undefined) {
+      canonicalAtomIndicesToMobileHydrogenGroupClasses.set(
+        canonicalAtomIndex,
+        mobileHydrogenGroupClass
+      );
+    }
+  }
+  return canonicalAtomIndicesToMobileHydrogenGroupClasses;
+}
+
+function parseInchi(inchi) {
+  const layerParsers = { h: parseMobileHydrogenGroups };
+  const layerNames = Object.keys(layerParsers);
+  const layerResults = new Map();
+  const layers = inchi.split("/");
+
+  for (const layer of layers) {
+    for (const layerName of layerNames) {
+      if (layer.startsWith(layerName)) {
+        const parser = layerParsers[layerName];
+        const layerContent = layer.slice(layerName.length);
+        layerResults.set(layerName, parser(layerContent));
+      }
+    }
+  }
+
+  return layerResults;
+}
+
+function parseAuxinfo(auxinfo) {
+  const layerParsers = {
+    N: parseCanonicalAtomIndices,
+    E: parseAtomEquivalenceClasses,
+    gE: parseMobileHydrogenGroupClasses,
+    rC: parseCoordinates,
+  };
+  const layerResults = new Map();
+  const layers = auxinfo.split("/");
+
+  for (const layer of layers) {
+    const [layerName, layerContent] = layer.split(":", 2);
+    if (layerName in layerParsers) {
+      const parser = layerParsers[layerName];
+      layerResults.set(layerName, parser(layerContent));
+    }
+  }
+
+  return layerResults;
+}
+
 if (typeof module === "object" && module.exports) {
   // Only export functions in Node. See https://github.com/umdjs/umd.
   // Prevents "Uncaught ReferenceError: module is not defined" in browser.
@@ -120,5 +307,8 @@ if (typeof module === "object" && module.exports) {
     molfileFromInchi,
     molfileFromAuxinfo,
     getAllFromMolfile,
+    parseInchi,
+    parseAuxinfo,
+    mapCanonicalAtomIndicesToMobileHydrogenGroupClasses,
   };
 }
