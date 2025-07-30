@@ -294,13 +294,15 @@ async function writeInchisFromSdFileToOutput(
   output
 ) {
   const sdfText = await sdFile.text();
-  
-  const delimiter = getSDFDelimiter(sdfText); 
+
+  const delimiter = getSDFDelimiter(sdfText);
   if (!delimiter) {
     output.innerHTML = "<p>Error: Invalid SDF file format.</p>";
     return;
   }
-  const entries = sdfText.split(delimiter).filter((entry) => entry.trim() !== "");
+  const entries = sdfText
+    .split(delimiter)
+    .filter((entry) => entry.trim() !== "");
 
   console.log(entries.length, "entries found in the SD file");
 
@@ -333,12 +335,15 @@ async function writeInchisFromSdFileToOutput(
 
 function getSDFDelimiter(sdfText) {
   // Check for the presence of the delimiter
-  if (sdfText.includes("$$$$\r\n")) { // Windows-style line endings
+  if (sdfText.includes("$$$$\r\n")) {
+    // Windows-style line endings
     return "$$$$\r\n";
-  } else if (sdfText.includes("$$$$\n")) { // Unix-style line endings
+  } else if (sdfText.includes("$$$$\n")) {
+    // Unix-style line endings
     return "$$$$\n";
-  } else if (sdfText.includes("$$$$\r")) { // Old Mac-style line ending
-    return "$$$$\r"; 
+  } else if (sdfText.includes("$$$$\r")) {
+    // Old Mac-style line ending
+    return "$$$$\r";
   }
   return null; // No valid delimiter found
 }
