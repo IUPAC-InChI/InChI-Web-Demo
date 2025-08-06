@@ -334,6 +334,7 @@ class AtomLabelLegendElement extends HTMLElement {
   connectedCallback() {
     const annotationLegend = document.createElement("div");
     annotationLegend.style.display = "flex";
+    annotationLegend.style.flexWrap = "wrap";
 
     annotationLegend.appendChild(
       createAnnotation("Original Index", annotationColors.index)

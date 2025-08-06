@@ -469,17 +469,20 @@ function createAnnotation(text, color) {
   annotation.textContent = text;
   annotation.style.backgroundColor = color;
   annotation.style.color = "black";
-  annotation.style.opacity = "0.8";
+  annotation.style.fontWeight = "500";
+  annotation.style.paddingLeft = "1%";
+  annotation.style.paddingRight = "1%";
 
   return annotation;
 }
 
+const annotationAlpha = 0.7;
 const annotationColors = {
-  index: "#BDBDBD",
-  canonicalIndex: "#00FF00",
-  equivalenceClass: "#FFFF00",
-  mobileHydrogenGroup: "#FF00FF",
-  mobileHydrogenGroupClass: "#00FFFF",
+  index: `rgb(209, 213, 220, ${annotationAlpha})`,
+  canonicalIndex: `rgb(0, 255, 0, ${annotationAlpha})`,
+  equivalenceClass: `rgb(255, 255, 0, ${annotationAlpha})`,
+  mobileHydrogenGroup: `rgb(255, 102, 255, ${annotationAlpha})`,
+  mobileHydrogenGroupClass: `rgb(0, 255, 255, ${annotationAlpha})`,
 };
 
 async function renderAnnotatedStructure(NGLViewerId, molfile, inchi, auxinfo) {
@@ -506,7 +509,6 @@ async function renderAnnotatedStructure(NGLViewerId, molfile, inchi, auxinfo) {
       const annotations = document.createElement("div");
       annotations.style.display = "flex";
       annotations.style.height = "20px";
-      annotations.style.width = "100%";
 
       const atomIndex = atom.index + 1;
       annotations.appendChild(
