@@ -31,6 +31,7 @@ jobs:
             pages/bootstrap
             pages/bootstrap-icons
             pages/bootstrap-multiselect
+            pages/ngl
           # The hashed script contains the versions of the dependencies.
           key: ${{ hashFiles('pages/download_packages.sh') }}
 
