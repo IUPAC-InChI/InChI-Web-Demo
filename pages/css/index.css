@@ -78,3 +78,39 @@ button.form-select.multiselect:focus {
   background-color: #f9f9f9;
   width: 100%;
 }
+
+.annotation-button {
+  background-color: #fff;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.annotation-button:not([disabled]):hover {
+  border: 3px solid #add8e6;
+}
+
+.annotation-button:not([disabled]):focus-visible {
+  border: 3px solid #add8e6;
+  outline: none;
+}
+
+.annotation-index.active {
+  background-color: rgb(209, 213, 220, 0.7);
+}
+
+.annotation-canonical-index.active {
+  background-color: rgb(0, 255, 0, 0.7);
+}
+
+.annotation-equivalence-class.active {
+  background-color: rgb(255, 255, 0, 0.7);
+}
+
+.annotation-hydrogen-group.active {
+  background-color: rgb(255, 102, 255, 0.7);
+}
+
+.annotation-hydrogen-group-class.active {
+  background-color: rgb(0, 255, 255, 0.7);
+}

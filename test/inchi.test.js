@@ -226,7 +226,7 @@ M  END
     [9, 8],
     [8, 8],
   ]),
-  expectedGE: undefined,
+  expectedGE: new Map(),
   expectedN: new Map([
     [8, 1],
     [6, 2],

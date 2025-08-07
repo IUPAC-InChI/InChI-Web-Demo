@@ -308,54 +308,208 @@ class InChIOptionsLatestMoInElement extends InChIOptionsElement {
   }
 }
 
+function createAnnotation(text, color) {
+  const annotation = document.createElement("div");
+  annotation.textContent = text;
+  annotation.classList.add(color);
+  annotation.classList.add("active");
+  annotation.style.color = "black";
+  annotation.style.fontWeight = "500";
+  annotation.style.paddingLeft = "1%";
+  annotation.style.paddingRight = "1%";
+
+  return annotation;
+}
+
+function getAnnotationData(inchi, auxinfo) {
+  // Returns a map of maps of maps. Innermost maps can be empty.
+  const inchiParsed = parseInchi(inchi);
+  const auxinfoParsed = parseAuxinfo(auxinfo);
+
+  const annotationData = new Map();
+
+  annotationData.set("canonicalIndex", auxinfoParsed.get("N"));
+  annotationData.set("equivalenceClass", auxinfoParsed.get("E"));
+  annotationData.set("hydrogenGroup", inchiParsed.get("h"));
+  annotationData.set(
+    "hydrogenGroupClass",
+    mapCanonicalAtomIndicesToMobileHydrogenGroupClasses(
+      annotationData.get("hydrogenGroup"),
+      auxinfoParsed.get("gE")
+    )
+  );
+
+  return annotationData;
+}
+
 class NGLViewerElement extends HTMLElement {
   constructor() {
     super();
+
+    this.annotationColors = {
+      index: "annotation-index",
+      canonicalIndex: "annotation-canonical-index",
+      equivalenceClass: "annotation-equivalence-class",
+      hydrogenGroup: "annotation-hydrogen-group",
+      hydrogenGroupClass: "annotation-hydrogen-group-class",
+    };
+
+    const annotationButtonTexts = {
+      index: "Index",
+      canonicalIndex: "Canonical Index",
+      equivalenceClass: "Equivalence Class",
+      hydrogenGroup: "Hydrogen Group",
+      hydrogenGroupClass: "Hydrogen Group Class",
+    };
+
+    this.annotationButtons = Object.keys(this.annotationColors).map((id) => ({
+      id,
+      text: annotationButtonTexts[id],
+      color: this.annotationColors[id],
+    }));
+
+    this.annotationSelection = Object.fromEntries(
+      Object.keys(this.annotationColors).map((id) => [id, false])
+    );
+
+    this.innerHTML = `<div id="annotation-selection" class="mt-2"></div>
+      <div id="ngl-viewport" style="width: 100%; height: 600px;"></div>`;
+
+    this.stage = undefined;
+    this.structure = undefined;
+    this.annotationData = undefined;
+    this.annotationSelectionElement = undefined;
   }
 
   connectedCallback() {
-    this.innerHTML = `<div id="ngl-viewport" style="width: 100%; height: 600px;" /div>`;
-    const viewport = this.querySelector("#ngl-viewport");
+    const viewportElement = this.querySelector("#ngl-viewport");
+    this.stage = new NGL.Stage(viewportElement, { backgroundColor: "white" });
+    const resizeObserver = new ResizeObserver(() => this.stage.handleResize());
+    resizeObserver.observe(viewportElement);
 
-    this.stage = new NGL.Stage(viewport, { backgroundColor: "white" });
-
-    const resizeObserver = new window.ResizeObserver(() =>
-      this.stage.handleResize()
+    this.annotationSelectionElement = this.querySelector(
+      "#annotation-selection"
     );
-    resizeObserver.observe(viewport);
+    this.annotationButtons.forEach((button) => {
+      const buttonElement = document.createElement("button");
+      buttonElement.id = button.id;
+      buttonElement.textContent = button.text;
+      buttonElement.classList.add(button.color);
+      buttonElement.classList.add("annotation-button");
+      buttonElement.disabled = true;
+
+      buttonElement.addEventListener("click", () => {
+        const isActive = buttonElement.classList.toggle("active");
+        this.annotationSelection[button.id] = isActive;
+        this.annotateStructure();
+      });
+
+      this.annotationSelectionElement.appendChild(buttonElement);
+    });
   }
-}
 
-class AtomLabelLegendElement extends HTMLElement {
-  constructor() {
-    super();
+  async loadStructure(molfile, inchi, auxinfo) {
+    this.stage.removeAllComponents();
+
+    const molfileBlob = new Blob([molfile], { type: "text/plain" });
+    try {
+      this.structure = await this.stage.loadFile(molfileBlob, { ext: "sdf" });
+      this.structure.addRepresentation("ball+stick", {
+        multipleBond: "symmetric",
+      });
+      this.annotationData = getAnnotationData(inchi, auxinfo);
+      this.annotationButtons.forEach((button) => {
+        const buttonElement = this.annotationSelectionElement.querySelector(
+          `#${button.id}`
+        );
+        const annotationAvailable =
+          button.id === "index"
+            ? true
+            : this.annotationData.get(button.id).size > 0;
+        buttonElement.disabled = !annotationAvailable;
+        buttonElement.classList.remove("active");
+      });
+      this.annotationSelection = Object.fromEntries(
+        Object.keys(this.annotationColors).map((id) => [id, false])
+      );
+
+      this.structure.autoView();
+    } catch (error) {
+      console.log(error);
+      this.structure = undefined;
+      this.annotationData = undefined;
+      this.annotationButtons.forEach((button) => {
+        const buttonElement = this.annotationSelectionElement.querySelector(
+          `#${button.id}`
+        );
+        buttonElement.disabled = true;
+        buttonElement.classList.remove("active");
+      });
+    }
   }
 
-  connectedCallback() {
-    const annotationLegend = document.createElement("div");
-    annotationLegend.style.display = "flex";
-    annotationLegend.style.flexWrap = "wrap";
+  annotateStructure() {
+    if (!(this.structure && this.annotationData)) {
+      return;
+    }
 
-    annotationLegend.appendChild(
-      createAnnotation("Original Index", annotationColors.index)
-    );
-    annotationLegend.appendChild(
-      createAnnotation("Canonical Index", annotationColors.canonicalIndex)
-    );
-    annotationLegend.appendChild(
-      createAnnotation("Equivalence Class", annotationColors.equivalenceClass)
-    );
-    annotationLegend.appendChild(
-      createAnnotation("Hydrogen Group", annotationColors.mobileHydrogenGroup)
-    );
-    annotationLegend.appendChild(
-      createAnnotation(
-        "Hydrogen Group Class",
-        annotationColors.mobileHydrogenGroupClass
-      )
-    );
+    this.structure.removeAllAnnotations();
+    this.structure.structure.eachAtom((atom) => {
+      const annotations = document.createElement("div");
+      annotations.style.display = "flex";
+      annotations.style.height = "20px";
 
-    this.appendChild(annotationLegend);
+      const atomIndex = atom.index + 1;
+      const canonicalIndex = this.annotationData
+        .get("canonicalIndex")
+        .get(atomIndex);
+      const equivalenceClass = this.annotationData
+        .get("equivalenceClass")
+        .get(canonicalIndex);
+      const hydrogenGroup = this.annotationData
+        .get("hydrogenGroup")
+        .get(canonicalIndex);
+      const hydrogenGroupClass = this.annotationData
+        .get("hydrogenGroupClass")
+        .get(canonicalIndex);
+
+      if (this.annotationSelection.index) {
+        annotations.appendChild(
+          createAnnotation(atomIndex, this.annotationColors.index)
+        );
+      }
+
+      if (canonicalIndex && this.annotationSelection.canonicalIndex) {
+        annotations.appendChild(
+          createAnnotation(canonicalIndex, this.annotationColors.canonicalIndex)
+        );
+      }
+
+      if (equivalenceClass && this.annotationSelection.equivalenceClass) {
+        annotations.appendChild(
+          createAnnotation(
+            equivalenceClass,
+            this.annotationColors.equivalenceClass
+          )
+        );
+      }
+      if (hydrogenGroup && this.annotationSelection.hydrogenGroup) {
+        annotations.appendChild(
+          createAnnotation(hydrogenGroup, this.annotationColors.hydrogenGroup)
+        );
+      }
+      if (hydrogenGroupClass && this.annotationSelection.hydrogenGroupClass) {
+        annotations.appendChild(
+          createAnnotation(
+            hydrogenGroupClass,
+            this.annotationColors.hydrogenGroupClass
+          )
+        );
+      }
+
+      this.structure.addAnnotation(atom.positionToVector3(), annotations);
+    });
+    this.structure.setVisibility(true); // Re-render the structure.
   }
 }
 
@@ -371,4 +525,3 @@ customElements.define(
   InChIOptionsLatestMoInElement
 );
 customElements.define("inchi-ngl-viewer", NGLViewerElement);
-customElements.define("inchi-atom-label-legend", AtomLabelLegendElement);

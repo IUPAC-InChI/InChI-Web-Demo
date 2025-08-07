@@ -115,7 +115,7 @@
         <div class="ratio inputtextarea">
           <div class="w-100">
             <textarea
-              id="inchi-tab2-molfileTextarea"
+              id="inchi-tab2-molfile"
               class="form-control pe-5 h-100"
               style="resize: none"
               autocomplete="off"
@@ -127,7 +127,7 @@
             <button
               class="btn btn-outline-secondary border-0"
               style="position: absolute; top: 10px; right: 10px"
-              onclick="document.getElementById('inchi-tab2-molfileTextarea').value = '';updateInchiTab2()"
+              onclick="document.getElementById('inchi-tab2-molfile').value = '';updateInchiTab2()"
             >
               <i class="bi bi-trash"></i>
             </button>
@@ -160,9 +160,8 @@
           title="Log"
         ></inchi-result-field>
       </div>
-      <div class="col-xl-7">
-        <inchi-atom-label-legend></inchi-atom-label-legend>
-        <inchi-ngl-viewer id="inchi-ngl-viewer-tab2"></inchi-ngl-viewer>
+      <div class="col-xl-7 bounding-box">
+        <inchi-ngl-viewer id="inchi-tab2-ngl-viewer"></inchi-ngl-viewer>
       </div>
     </div>
   </div>

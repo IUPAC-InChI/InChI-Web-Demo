@@ -187,12 +187,12 @@ async function updateInchiTab2() {
   );
 
   // collect user input
-  const molfile = document.getElementById("inchi-tab2-molfileTextarea").value;
+  const molfile = document.getElementById("inchi-tab2-molfile").value;
   const options = collectInchiOptions("inchi-tab2-pane");
   const inchiVersion = getVersion("inchi-tab2-pane");
 
   // run conversion
-  await convertMolfileToInchiAndWriteResults(
+  const [inchi, auxinfo] = await convertMolfileToInchiAndWriteResults(
     molfile,
     options,
     inchiVersion,
@@ -202,12 +202,8 @@ async function updateInchiTab2() {
     "inchi-tab2-logs"
   );
 
-  await renderStructure("inchi-ngl-viewer-tab2", molfile);
-  annotateStructure(
-    "inchi-ngl-viewer-tab2",
-    "inchi-tab2-inchi",
-    "inchi-tab2-auxinfo"
-  );
+  const viewer = document.getElementById("inchi-tab2-ngl-viewer");
+  viewer.loadStructure(molfile, inchi, auxinfo);
 }
 
 async function updateInchiTab3() {
@@ -454,129 +450,14 @@ async function convertMolfileToInchiAndWriteResults(
   }
 
   writeResult(log.join("\n"), logTextElementId);
+
+  return [inchi, auxinfo];
 }
 
 function writeResult(text, ...ids) {
   for (let id of ids) {
     document.getElementById(id).textContent = text;
   }
-}
-
-function createAnnotation(text, color) {
-  const annotation = document.createElement("div");
-  annotation.textContent = text;
-  annotation.style.backgroundColor = color;
-  annotation.style.color = "black";
-  annotation.style.fontWeight = "500";
-  annotation.style.paddingLeft = "1%";
-  annotation.style.paddingRight = "1%";
-
-  return annotation;
-}
-
-const annotationAlpha = 0.7;
-const annotationColors = {
-  index: `rgb(209, 213, 220, ${annotationAlpha})`,
-  canonicalIndex: `rgb(0, 255, 0, ${annotationAlpha})`,
-  equivalenceClass: `rgb(255, 255, 0, ${annotationAlpha})`,
-  mobileHydrogenGroup: `rgb(255, 102, 255, ${annotationAlpha})`,
-  mobileHydrogenGroupClass: `rgb(0, 255, 255, ${annotationAlpha})`,
-};
-
-function annotateStructure(NGLViewerId, inchiId, auxinfoId) {
-  const stage = document.getElementById(NGLViewerId).stage;
-  const component = stage.getComponentsByName(NGLViewerId).first;
-
-  const inchi = document.getElementById(inchiId).textContent;
-  const auxinfo = document.getElementById(auxinfoId).textContent;
-  const inchiParsed = parseInchi(inchi);
-  const auxinfoParsed = parseAuxinfo(auxinfo);
-
-  const originalToCanonicalAtomIndices = auxinfoParsed.get("N");
-  const canonicalAtomIndicesToAtomEquivalenceClasses = auxinfoParsed.get("E");
-  const canonicalAtomIndicesToMobileHydrogenGroups = inchiParsed.get("h");
-  const mobileHydrogenGroupsToMobileHydrogenGroupClasses =
-    auxinfoParsed.get("gE");
-  const canonicalAtomIndicesToMobileHydrogenGroupClasses =
-    mapCanonicalAtomIndicesToMobileHydrogenGroupClasses(
-      canonicalAtomIndicesToMobileHydrogenGroups,
-      mobileHydrogenGroupsToMobileHydrogenGroupClasses
-    );
-
-  component.removeAllAnnotations();
-  component.structure.eachAtom(function (atom) {
-    const annotations = document.createElement("div");
-    annotations.style.display = "flex";
-    annotations.style.height = "20px";
-
-    const atomIndex = atom.index + 1;
-    annotations.appendChild(
-      createAnnotation(atomIndex, annotationColors.index)
-    );
-
-    let canonicalAtomIndex;
-    if (
-      originalToCanonicalAtomIndices &&
-      originalToCanonicalAtomIndices.has(atomIndex)
-    ) {
-      canonicalAtomIndex = originalToCanonicalAtomIndices.get(atomIndex);
-      annotations.appendChild(
-        createAnnotation(canonicalAtomIndex, annotationColors.canonicalIndex)
-      );
-    }
-
-    if (canonicalAtomIndex) {
-      if (
-        canonicalAtomIndicesToAtomEquivalenceClasses &&
-        canonicalAtomIndicesToAtomEquivalenceClasses.has(canonicalAtomIndex)
-      ) {
-        annotations.appendChild(
-          createAnnotation(
-            canonicalAtomIndicesToAtomEquivalenceClasses.get(
-              canonicalAtomIndex
-            ),
-            annotationColors.equivalenceClass
-          )
-        );
-      }
-      if (
-        canonicalAtomIndicesToMobileHydrogenGroups &&
-        canonicalAtomIndicesToMobileHydrogenGroups.has(canonicalAtomIndex)
-      ) {
-        annotations.appendChild(
-          createAnnotation(
-            canonicalAtomIndicesToMobileHydrogenGroups.get(canonicalAtomIndex),
-            annotationColors.mobileHydrogenGroup
-          )
-        );
-      }
-      if (
-        canonicalAtomIndicesToMobileHydrogenGroupClasses &&
-        canonicalAtomIndicesToMobileHydrogenGroupClasses.has(canonicalAtomIndex)
-      ) {
-        annotations.appendChild(
-          createAnnotation(
-            canonicalAtomIndicesToMobileHydrogenGroupClasses.get(
-              canonicalAtomIndex
-            ),
-            annotationColors.mobileHydrogenGroupClass
-          )
-        );
-      }
-    }
-
-    component.addAnnotation(atom.positionToVector3(), annotations);
-  });
-}
-
-async function renderStructure(NGLViewerId, molfile) {
-  const stage = document.getElementById(NGLViewerId).stage;
-  stage.removeAllComponents();
-  const molfileBlob = new Blob([molfile], { type: "text/plain" });
-  const component = await stage.loadFile(molfileBlob, { ext: "sdf" });
-  component.addRepresentation("ball+stick", { multipleBond: "symmetric" });
-  component.setName(NGLViewerId);
-  component.autoView();
 }
 
 async function updateRinchiTab1() {
