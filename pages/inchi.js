@@ -259,20 +259,16 @@ function mapCanonicalAtomIndicesToMobileHydrogenGroupClasses(
 }
 
 function parseInchi(inchi) {
-  const layerParsers = { h: parseMobileHydrogenGroups };
+  const parsers = { h: parseMobileHydrogenGroups };
   const layerResults = new Map(
-    Object.keys(layerParsers).map((name) => [name, new Map()])
+    Object.keys(parsers).map((key) => [key, new Map()])
   );
-
   const layers = inchi.split("/");
-  for (const layer of layers) {
-    const parserMatch = Object.entries(layerParsers).find(([layerName]) =>
-      layer.startsWith(layerName)
-    );
-    if (parserMatch) {
-      const [layerName, parser] = parserMatch;
-      const layerContent = layer.slice(layerName.length);
-      layerResults.set(layerName, parser(layerContent));
+
+  for (const [layerName, layerParser] of Object.entries(parsers)) {
+    const layer = layers.find((layer) => layer.startsWith(layerName));
+    if (layer) {
+      layerResults.set(layerName, layerParser(layer.slice(layerName.length)));
     }
   }
 
@@ -280,22 +276,24 @@ function parseInchi(inchi) {
 }
 
 function parseAuxinfo(auxinfo) {
-  const layerParsers = {
+  const parsers = {
     N: parseCanonicalAtomIndices,
     E: parseAtomEquivalenceClasses,
     gE: parseMobileHydrogenGroupClasses,
     rC: parseCoordinates,
   };
   const layerResults = new Map(
-    Object.keys(layerParsers).map((key) => [key, new Map()])
+    Object.keys(parsers).map((key) => [key, new Map()])
   );
   const layers = auxinfo.split("/");
 
-  for (const layer of layers) {
-    const [layerName, layerContent] = layer.split(":", 2);
-    if (layerName in layerParsers) {
-      const parser = layerParsers[layerName];
-      layerResults.set(layerName, parser(layerContent));
+  for (const [layerName, layerParser] of Object.entries(parsers)) {
+    const layer = layers.find((layer) => layer.startsWith(layerName + ":"));
+    if (layer) {
+      layerResults.set(
+        layerName,
+        layerParser(layer.slice(layerName.length + 1))
+      );
     }
   }
 
