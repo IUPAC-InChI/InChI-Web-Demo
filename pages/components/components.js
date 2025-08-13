@@ -342,6 +342,17 @@ function getAnnotationData(inchi, auxinfo) {
   return annotationData;
 }
 
+function getStructureKey(inchi, auxinfo) {
+  if (
+    Object.prototype.toString.call(inchi) !== "[object String]" ||
+    Object.prototype.toString.call(auxinfo) !== "[object String]"
+  ) {
+    return undefined;
+  }
+
+  return inchi + auxinfo;
+}
+
 class NGLViewerElement extends HTMLElement {
   constructor() {
     super();
@@ -377,6 +388,7 @@ class NGLViewerElement extends HTMLElement {
 
     this.stage = undefined;
     this.structure = undefined;
+    this.structureKey = undefined;
     this.annotationData = undefined;
     this.annotationSelectionElement = undefined;
   }
@@ -409,6 +421,10 @@ class NGLViewerElement extends HTMLElement {
   }
 
   async loadStructure(molfile, inchi, auxinfo) {
+    if (this.structureKey === getStructureKey(inchi, auxinfo)) {
+      return;
+    }
+
     this.stage.removeAllComponents();
 
     const molfileBlob = new Blob([molfile], { type: "text/plain" });
@@ -418,6 +434,7 @@ class NGLViewerElement extends HTMLElement {
         multipleBond: "symmetric",
       });
       this.annotationData = getAnnotationData(inchi, auxinfo);
+      this.structureKey = getStructureKey(inchi, auxinfo);
       this.annotationButtons.forEach((button) => {
         const buttonElement = this.annotationSelectionElement.querySelector(
           `#${button.id}`
@@ -437,6 +454,7 @@ class NGLViewerElement extends HTMLElement {
     } catch (error) {
       console.log(error);
       this.structure = undefined;
+      this.structureKey = undefined;
       this.annotationData = undefined;
       this.annotationButtons.forEach((button) => {
         const buttonElement = this.annotationSelectionElement.querySelector(
