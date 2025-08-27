@@ -411,8 +411,8 @@ async function convertMolfileToInchiAndWriteResults(
   auxinfoTextElementId,
   logTextElementId
 ) {
-  const log = [];
-  log.push("InChI options: " + options);
+  const log_entries = [];
+  log_entries.push("InChI options: " + options);
 
   let inchiResult;
   try {
@@ -426,12 +426,12 @@ async function convertMolfileToInchiAndWriteResults(
     return;
   }
 
-  const { inchi, auxinfo, _log, return_code } = inchiResult;
+  const { inchi, auxinfo, log, return_code } = inchiResult;
   writeResult(inchi, inchiTextElementId);
   writeResult(auxinfo, auxinfoTextElementId);
 
-  if (_log !== "") {
-    log.push(_log);
+  if (log !== "") {
+    log_entries.push(log);
   }
 
   if (return_code != -1 && inchi !== "") {
@@ -439,17 +439,17 @@ async function convertMolfileToInchiAndWriteResults(
     try {
       inchikeyResult = await inchikeyFromInchi(inchi, inchiVersion);
     } catch (e) {
-      log.push(`Caught exception from inchikeyFromInchi(): ${e}`);
+      log_entries.push(`Caught exception from inchikeyFromInchi(): ${e}`);
       console.error(e);
     }
     writeResult(inchikeyResult.inchikey, inchikeyTextElementId);
 
     if (inchikeyResult.return_code == -1 && inchikeyResult.message !== "") {
-      log.push(inchikeyResult.message);
+      log_entries.push(inchikeyResult.message);
     }
   }
 
-  writeResult(log.join("\n"), logTextElementId);
+  writeResult(log_entries.join("\n"), logTextElementId);
 
   return [inchi, auxinfo];
 }
