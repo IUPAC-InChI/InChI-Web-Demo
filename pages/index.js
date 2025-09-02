@@ -207,70 +207,44 @@ async function updateInchiTab2() {
 }
 
 async function updateInchiTab3() {
-  const input = document
+  const auxinfo = document
     .getElementById("inchi-tab3-inputTextarea")
     .value.trim();
   const inchiVersion = getVersion("inchi-tab3-pane");
-  const ketcher = getKetcher("inchi-tab3-ketcher");
   const logTextElementId = "inchi-tab3-logs";
 
   // clear outputs
-  ketcher.editor.clear();
   writeResult("", logTextElementId);
 
   // input validation
-  if (!input) {
+  if (!auxinfo) {
     return;
   }
-  if (!input.startsWith("InChI=") && !input.startsWith("AuxInfo=")) {
+  if (!auxinfo.startsWith("AuxInfo=")) {
     writeResult(
-      'The input string should start with "InChI=" or "AuxInfo=".',
+      'The input string should start with "AuxInfo=".',
       logTextElementId
     );
     return;
   }
 
   // run conversion
-  let molfileResult;
-  if (input.startsWith("InChI=")) {
-    try {
-      molfileResult = await molfileFromInchi(input, "", inchiVersion);
-    } catch (e) {
-      writeResult(
-        `Caught exception from molfileFromInchi(): ${e}`,
-        logTextElementId
-      );
-      console.error(e);
-      return;
-    }
-  } else if (input.startsWith("AuxInfo=")) {
-    try {
-      molfileResult = await molfileFromAuxinfo(input, 0, 0, inchiVersion);
-    } catch (e) {
-      writeResult(
-        `Caught exception from molfileFromAuxinfo(): ${e}`,
-        logTextElementId
-      );
-      console.error(e);
-      return;
-    }
-  }
-  const molfile = molfileResult.molfile;
-  if (molfile !== "") {
-    await ketcher.setMolecule(molfile);
-    if (input.startsWith("InChI=")) {
-      await ketcher.layout();
-    }
-  }
+  const molfileResult = await molfileFromAuxinfo(auxinfo, 0, 0, inchiVersion);
+  const { molfile, log, message } = molfileResult;
+  const inchiResult = await inchiFromMolfile(molfile, "", inchiVersion);
+  const { inchi } = inchiResult;
 
-  const log = [];
-  if (molfileResult.log !== "") {
-    log.push(molfileResult.log);
+  const viewer = document.getElementById("inchi-tab3-ngl-viewer");
+  viewer.loadStructure(molfile, inchi, auxinfo);
+
+  const log_entries = [];
+  if (log !== "") {
+    log_entries.push(log);
   }
-  if (molfileResult.message !== "") {
-    log.push(molfileResult.message);
+  if (message !== "") {
+    log_entries.push(message);
   }
-  writeResult(log.join("\n"), logTextElementId);
+  writeResult(log_entries.join("\n"), logTextElementId);
 }
 
 async function updateInchiTab4() {
