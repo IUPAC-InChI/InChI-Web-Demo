@@ -349,12 +349,29 @@ async function onChangeInChIVersionTab4() {
 }
 
 async function updateInchiOptions(tabDivId, updateFunction) {
+  await updateNPZzOptionForMolecularInorganics(tabDivId);  
   const optionsState = getInchiOptionsState(tabDivId);
   await addInchiOptionsForm(tabDivId, () => updateFunction());
   applyInchiOptionsState(tabDivId, optionsState);
 
   await updateFunction();
 }
+
+// Note: It is just a workaround. The NPZz option should be enabled by default for the
+// "Molecular Inorganics" and disabled for other versions.
+async function updateNPZzOptionForMolecularInorganics(tabDivId) {
+  let inchiVersion = getVersion(tabDivId);
+  const npzzInput = document
+      .getElementById(tabDivId)
+      .querySelector('input.form-check-input[data-id="NPZz"]');
+  if (npzzInput) {
+    if (inchiVersion === "Latest with Molecular Inorganics") {
+      npzzInput.checked = true;
+    } else {
+      npzzInput.checked = false;
+    }
+  } 
+} 
 
 /*
  * Update the Ketcher options based on the selected InChI version
