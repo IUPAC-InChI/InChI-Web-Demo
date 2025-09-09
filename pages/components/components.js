@@ -228,6 +228,10 @@ class InChIOptionsElement extends HTMLElement {
         .forEach((input) => {
           input.disabled = !this.checked;
         });
+        document
+        .getElementById(tabDivId)
+        .querySelector('input.form-check-input[data-id="NPZz"]')
+        .checked = this.checked;
     });
 
     /*
