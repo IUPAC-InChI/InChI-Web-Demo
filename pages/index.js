@@ -5,7 +5,7 @@ async function addInchiOptionsForm(tabDivId, updateFunction) {
   const inchiOptions = document.createElement(
     availableInchiVersions[inchiVersion].optionsTemplateId
   );
-  await inchiOptions.postCreate(tabDivId, updateFunction);
+  await inchiOptions.postCreate(tabDivId, updateFunction, inchiVersion);
 
   const targetDiv = document
     .getElementById(tabDivId)
@@ -349,8 +349,8 @@ async function onChangeInChIVersionTab4() {
 }
 
 async function updateInchiOptions(tabDivId, updateFunction) {
-  const optionsState = getInchiOptionsState(tabDivId);
   await addInchiOptionsForm(tabDivId, () => updateFunction());
+  const optionsState = getInchiOptionsState(tabDivId);
   applyInchiOptionsState(tabDivId, optionsState);
 
   await updateFunction();

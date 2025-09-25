@@ -168,7 +168,7 @@ class InChIOptionsElement extends HTMLElement {
     super();
   }
 
-  async postCreate(tabDivId, updateFunction) {
+  async postCreate(tabDivId, updateFunction, inchiVersion) {
     const htmlFragments = await Promise.all(
       this.componentPaths.map(async (path) => {
         try {
@@ -186,6 +186,10 @@ class InChIOptionsElement extends HTMLElement {
     boundingBox.setAttribute("class", "bounding-box");
     boundingBox.innerHTML = "<h4>Options</h4>" + htmlFragments.join("");
     this.appendChild(boundingBox);
+
+    if (inchiVersion === "Latest with Molecular Inorganics") {
+      this.querySelector('input[data-id="NPZz"]').checked = true;
+    }
 
     /*
      * Reassign the name of the "stereoRadio" radio button group.
