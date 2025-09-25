@@ -5842,10 +5842,10 @@ imurmurhash@^0.1.4:
   resolved "https://registry.yarnpkg.com/imurmurhash/-/imurmurhash-0.1.4.tgz#9218b9b2b928a238b13dc4fb6b6d576f231453ea"
   integrity sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==
 
-indigo-ketcher@1.35.0-rc.2:
-  version "1.35.0-rc.2"
-  resolved "https://registry.yarnpkg.com/indigo-ketcher/-/indigo-ketcher-1.35.0-rc.2.tgz#0cebaea61323e4e725d3009cb40d6f788ad71819"
-  integrity sha512-vAP7M530loL39bPHlb1wqy+CB1PI7Pa/2LfcD6NrkMFxF90hZKjzR3XkvguAPSjnyYTVR12dFPzNv5NLg2u69Q==
+indigo-ketcher@1.35.0:
+  version "1.35.0"
+  resolved "https://registry.yarnpkg.com/indigo-ketcher/-/indigo-ketcher-1.35.0.tgz#8afdbda36060ddb6664af2d9d23f320886bce98b"
+  integrity sha512-r41iYvuGOVz8/71rgtYX8bs26JnqupTS/7pKkg2WU8cnJDKKoLwwaL8zVfB5qfLuRE3HT8GNHBaPLomXlHv+iQ==
 
 inflight@^1.0.4:
   version "1.0.6"
@@ -6923,10 +6923,10 @@ jsonpointer@^5.0.0:
     object.assign "^4.1.4"
     object.values "^1.1.6"
 
-ketcher-core@*, ketcher-core@3.7.0-rc.2:
-  version "3.7.0-rc.2"
-  resolved "https://registry.yarnpkg.com/ketcher-core/-/ketcher-core-3.7.0-rc.2.tgz#953cdd74515b3a3890b606d95211228ca87d9bdd"
-  integrity sha512-KX7N6NDddWLX1Yg+KG+JZqWLd3OQUkswymbEDgvhNsg7G5Q9NBDkLhQIZrrgxq0AqGsUZqyjSefDzkU0F6FdPQ==
+ketcher-core@*, ketcher-core@3.7.0:
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/ketcher-core/-/ketcher-core-3.7.0.tgz#d8a105d6ecf185f3ec73e7f5bdc88145a06a96fa"
+  integrity sha512-KWh+9W7ZdQNsemOO8+OiaoI+9yDT57WOSi3sB5jIzGXFm5rz3IvqeC3YUhvxW8mPQbmWTrjNOpKnMFlURh3kSA==
   dependencies:
     "@babel/runtime" "^7.26.10"
     assert "^2.0.0"
@@ -6938,10 +6938,10 @@ ketcher-core@*, ketcher-core@3.7.0-rc.2:
     react-device-detect "^2.2.2"
     svgpath "^2.3.1"
 
-ketcher-react@3.7.0-rc.2:
-  version "3.7.0-rc.2"
-  resolved "https://registry.yarnpkg.com/ketcher-react/-/ketcher-react-3.7.0-rc.2.tgz#4fc4051078eb35a68e8cc5c040a5ad2e330357a3"
-  integrity sha512-Suyn+P3LznDDHHJ6vjHsXTGe6AX0NVUGTVvppVupOnVlqqgjYNT55IwDb9zX+tcV5c7yjbMyW36egqJhsbOYSQ==
+ketcher-react@3.7.0:
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/ketcher-react/-/ketcher-react-3.7.0.tgz#171ad9746a055c35a8b5e6366df5a1b26f913a3e"
+  integrity sha512-BTuPW80lGnbdWdlVyEEGPrEHwJzrGEbU+9MuC1z/VysH0C+9caqovnzopZvlEf/zW5hQ13Uzo65pFXAbtYlolg==
   dependencies:
     "@babel/runtime" "^7.26.10"
     "@emotion/react" "^11.7.1"
@@ -6981,13 +6981,13 @@ ketcher-react@3.7.0-rc.2:
     w3c-keyname "^2.2.4"
     whatwg-fetch "^3.4.1"
 
-ketcher-standalone@3.7.0-rc.2:
-  version "3.7.0-rc.2"
-  resolved "https://registry.yarnpkg.com/ketcher-standalone/-/ketcher-standalone-3.7.0-rc.2.tgz#c9b794facf008a9352fb2e1c69632d6c231e060f"
-  integrity sha512-dMx1aah4QALtiVbIviSme+A0INlSlmoAyud2rwhcUQbrh9DPr9PaqtkvH2r4zYaoiptwPorqknkRLFExY7qxFg==
+ketcher-standalone@3.7.0:
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/ketcher-standalone/-/ketcher-standalone-3.7.0.tgz#b757409a0367837027f72d15c4203a2f743086ca"
+  integrity sha512-s+7wd/3tLVrzZX+jXS3U0zzkMI8JVbCar/bPZ/yjeVLIG8hClodP++mKkBCloP72dFv1x5Z1jTJY4lv4K79xsQ==
   dependencies:
     "@babel/runtime" "^7.26.10"
-    indigo-ketcher "1.35.0-rc.2"
+    indigo-ketcher "1.35.0"
     ketcher-core "*"
 
 keyv@^4.5.3:
