@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>InChI Web Demo</title>
+    <title>InChI Web Demo TEST</title>
 
     <!-- InChI modules -->
     <script type="text/javascript" src="inchi/inchi-web-latest.js"></script>
@@ -57,6 +57,23 @@
       integrity="sha384-sRRK8QIx/nQdgIMFawlqpzKW5yaVcx63vbU82I9nuHAdsQN/blJQNrf6GORupDMI"
       crossorigin="anonymous"
     />
+    <script>
+      var _paq = (window._paq = window._paq || []);
+      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+      _paq.push(["trackPageView"]);
+      _paq.push(["enableLinkTracking"]);
+      (function () {
+        var u = "https://matomo.beilstein.org/";
+        _paq.push(["setTrackerUrl", u + "matomo.php"]);
+        _paq.push(["setSiteId", "10"]);
+        var d = document,
+          g = d.createElement("script"),
+          s = d.getElementsByTagName("script")[0];
+        g.async = true;
+        g.src = u + "matomo.js";
+        s.parentNode.insertBefore(g, s);
+      })();
+    </script>
   </head>
   <body>
     <div class="container-md" style="margin-bottom: 2rem">
