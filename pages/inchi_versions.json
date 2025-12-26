@@ -18,7 +18,7 @@
     "module": "inchiModuleLatestMoIn",
     "name": "inchi-web-latest-moin",
     "optionsTemplateId": "inchi-options-latest-moin",
-    "commit": "4eed1a6df0e3958c29e5539985985139928b0f81",
+    "commit": "359548d0afe5136071c9911a6ddd96950c075033",
     "url": "https://github.com/IUPAC-InChI/InChI/pull/107"
   }
 }
