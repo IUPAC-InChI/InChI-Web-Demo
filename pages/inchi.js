@@ -146,7 +146,7 @@ function parseCanonicalAtomIndices(layer) {
   let originalToCanonicalAtomIndices = new Map();
 
   const originalAtomIndices = layer
-    .split(",")
+    .split(/[,;]/) // parse indices from all components (separated by ";")
     .map((originalAtomIndex) => parseInt(originalAtomIndex.trim()));
 
   if (originalAtomIndices.some((atomIndex) => isNaN(atomIndex))) {
