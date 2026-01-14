@@ -331,8 +331,12 @@ function createAnnotation(text, color) {
 
 function getAnnotationData(inchi, auxinfo) {
   // Returns a map of maps of maps. Innermost maps can be empty.
+
+  const canonicalAtomIndicesByComponents =
+    parseCanonicalAtomIndicesByComponents(auxinfo);
+
   const inchiParsed = parseInchi(inchi);
-  const auxinfoParsed = parseAuxinfo(auxinfo);
+  const auxinfoParsed = parseAuxinfo(auxinfo, canonicalAtomIndicesByComponents);
 
   const annotationData = new Map();
 

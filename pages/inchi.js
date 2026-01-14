@@ -140,6 +140,36 @@ function parseCoordinates(layer) {
   return allCoordinates;
 }
 
+const parseComponentMultiplier = (str) => {
+  const m = str.match(/^([1-9]\d*)\*/);
+  return m ? parseInt(m[1], 10) : 1;
+};
+
+function parseCanonicalAtomIndicesByComponents(auxinfo) {
+  const layers = auxinfo.split("/");
+  const layer = layers.find((layer) => layer.startsWith("N:"));
+
+  if (!layer) return [];
+
+  const components = layer.slice(2).split(";");
+  const componentSizes = components.map(
+    (component) => component.split(",").length
+  );
+
+  const canonicalAtomIndicesByComponents = [];
+  let currentCanonicalIndex = 1;
+
+  for (const componentSize of componentSizes) {
+    const canonicalAtomIndicesCurrentComponent = [];
+    for (let i = 0; i < componentSize; i++) {
+      canonicalAtomIndicesCurrentComponent.push(currentCanonicalIndex++);
+    }
+    canonicalAtomIndicesByComponents.push(canonicalAtomIndicesCurrentComponent);
+  }
+
+  return canonicalAtomIndicesByComponents;
+}
+
 function parseCanonicalAtomIndices(layer) {
   // Returns a map of molfile atom indices (i.e., 1-based line numbers from start of atom block)
   // to InChI's 1-based canonical atom indices.
@@ -161,21 +191,44 @@ function parseCanonicalAtomIndices(layer) {
   return originalToCanonicalAtomIndices;
 }
 
-function parseAtomEquivalenceClasses(layer) {
+function parseAtomEquivalenceClasses(layer, canonicalAtomIndicesByComponents) {
   // Returns a map of InChI's 1-based canonical atom indices to non-stereo equivalence classes.
   const canonicalAtomIndicesToEquivalentClasses = new Map();
 
-  const equivalenceClasses = layer.match(/\([^)]+\)/g);
-  if (!equivalenceClasses) return canonicalAtomIndicesToEquivalentClasses;
+  const components = layer.split(";");
+  if (!components) return canonicalAtomIndicesToEquivalentClasses;
 
-  equivalenceClasses.forEach((equivalenceClass) => {
-    const equivalenceClassMembers = equivalenceClass.slice(1, -1).split(",");
-    const equivalenceClassId = parseInt(equivalenceClassMembers[0].trim());
-    for (const member of equivalenceClassMembers) {
-      canonicalAtomIndicesToEquivalentClasses.set(
-        parseInt(member.trim()),
-        equivalenceClassId
-      );
+  let componentIndex = -1;
+
+  components.forEach((component) => {
+    const multiplier = parseComponentMultiplier(component);
+
+    for (let i = 0; i < multiplier; i++) {
+      componentIndex++;
+
+      const equivalenceClasses = component.match(/\([^)]+\)/g);
+      if (!equivalenceClasses) continue;
+
+      equivalenceClasses.forEach((equivalenceClass) => {
+        const equivalenceClassMembers = equivalenceClass
+          .slice(1, -1)
+          .split(",");
+        const equivalenceClassId =
+          canonicalAtomIndicesByComponents[componentIndex][
+            parseInt(equivalenceClassMembers[0].trim()) - 1
+          ];
+
+        for (const member of equivalenceClassMembers) {
+          canonicalAtomIndicesToEquivalentClasses.set(
+            parseInt(
+              canonicalAtomIndicesByComponents[componentIndex][
+                parseInt(member.trim()) - 1
+              ]
+            ),
+            equivalenceClassId
+          );
+        }
+      });
     }
   });
 
@@ -275,7 +328,7 @@ function parseInchi(inchi) {
   return layerResults;
 }
 
-function parseAuxinfo(auxinfo) {
+function parseAuxinfo(auxinfo, canonicalAtomIndicesByComponents) {
   const parsers = {
     N: parseCanonicalAtomIndices,
     E: parseAtomEquivalenceClasses,
@@ -292,7 +345,10 @@ function parseAuxinfo(auxinfo) {
     if (layer) {
       layerResults.set(
         layerName,
-        layerParser(layer.slice(layerName.length + 1))
+        layerParser(
+          layer.slice(layerName.length + 1),
+          canonicalAtomIndicesByComponents
+        )
       );
     }
   }
@@ -312,5 +368,6 @@ if (typeof module === "object" && module.exports) {
     parseInchi,
     parseAuxinfo,
     mapCanonicalAtomIndicesToMobileHydrogenGroupClasses,
+    parseCanonicalAtomIndicesByComponents,
   };
 }

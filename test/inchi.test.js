@@ -26,6 +26,7 @@ const {
   molfileFromAuxinfo,
   parseInchi,
   parseAuxinfo,
+  parseCanonicalAtomIndicesByComponents,
 } = require("../pages/inchi.js");
 
 const molfile = `https://en.wikipedia.org/wiki/This_Is_Water
@@ -253,10 +254,129 @@ test.each(
     "",
     version
   );
-  const auxinfoParsed = parseAuxinfo(auxinfo);
+  const canonicalAtomIndicesByComponents =
+    parseCanonicalAtomIndicesByComponents(auxinfo);
+  const auxinfoParsed = parseAuxinfo(auxinfo, canonicalAtomIndicesByComponents);
   const inchiParsed = parseInchi(inchi);
   expect(inchiParsed.get("h")).toEqual(testdata.expectedH);
   expect(auxinfoParsed.get("N")).toEqual(testdata.expectedN);
   expect(auxinfoParsed.get("E")).toEqual(testdata.expectedE);
   expect(auxinfoParsed.get("gE")).toEqual(testdata.expectedGE);
 });
+
+const componentsTestdata = {
+  molfile: `
+  Ketcher  1122615412D 1   1.00000     0.00000     0
+
+ 25 23  0  0  0  0  0  0  0  0999 V2000
+    7.4868   -5.5080   -0.5290 O   0  0  0  0  0  0  0  0  0  0  0  0
+    5.1132   -5.5079    0.5289 O   0  0  0  0  0  0  0  0  0  0  0  0
+    7.4895   -7.3206    0.5422 N   0  0  0  0  0  0  0  0  0  0  0  0
+    5.1105   -7.3206   -0.5421 N   0  0  0  0  0  0  0  0  0  0  0  0
+    6.9761   -6.3462   -0.0254 C   0  0  0  0  0  0  0  0  0  0  0  0
+    5.6239   -6.3463    0.0254 C   0  0  0  0  0  0  0  0  0  0  0  0
+    8.4007   -7.4215    0.5773 H   0  0  0  0  0  0  0  0  0  0  0  0
+    6.9867   -7.9736    0.9462 H   0  0  0  0  0  0  0  0  0  0  0  0
+    5.6133   -7.9737   -0.9460 H   0  0  0  0  0  0  0  0  0  0  0  0
+    4.1993   -7.4216   -0.5772 H   0  0  0  0  0  0  0  0  0  0  0  0
+   13.2868   -4.2830   -0.5290 O   0  0  0  0  0  0  0  0  0  0  0  0
+   10.9132   -4.2829    0.5289 O   0  0  0  0  0  0  0  0  0  0  0  0
+   13.2895   -6.0956    0.5422 N   0  0  0  0  0  0  0  0  0  0  0  0
+   10.9105   -6.0956   -0.5421 N   0  0  0  0  0  0  0  0  0  0  0  0
+   12.7761   -5.1212   -0.0254 C   0  0  0  0  0  0  0  0  0  0  0  0
+   11.4239   -5.1213    0.0254 C   0  0  0  0  0  0  0  0  0  0  0  0
+   14.2007   -6.1965    0.5773 H   0  0  0  0  0  0  0  0  0  0  0  0
+   12.7867   -6.7486    0.9462 H   0  0  0  0  0  0  0  0  0  0  0  0
+   11.4133   -6.7487   -0.9460 H   0  0  0  0  0  0  0  0  0  0  0  0
+    9.9993   -6.1966   -0.5772 H   0  0  0  0  0  0  0  0  0  0  0  0
+    7.7000   -2.7463    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    8.5090   -3.3341    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    8.2000   -4.2852    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    7.2000   -4.2852    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+    6.8910   -3.3341    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+  1  5  2  0  0  0  0
+  2  6  2  0  0  0  0
+  3  5  1  0  0  0  0
+  3  7  1  0  0  0  0
+  3  8  1  0  0  0  0
+  4  6  1  0  0  0  0
+  4  9  1  0  0  0  0
+  4 10  1  0  0  0  0
+  5  6  1  0  0  0  0
+ 11 15  2  0  0  0  0
+ 12 16  2  0  0  0  0
+ 13 15  1  0  0  0  0
+ 13 17  1  0  0  0  0
+ 13 18  1  0  0  0  0
+ 14 16  1  0  0  0  0
+ 14 19  1  0  0  0  0
+ 14 20  1  0  0  0  0
+ 15 16  1  0  0  0  0
+ 21 25  1  0     0  0
+ 25 24  1  0     0  0
+ 24 23  1  0     0  0
+ 23 22  1  0     0  0
+ 22 21  1  0     0  0
+M  END
+`,
+  expectedE: new Map([
+    [1, 1],
+    [2, 1],
+    [3, 1],
+    [4, 1],
+    [5, 1],
+    [6, 6],
+    [7, 6],
+    [8, 8],
+    [9, 8],
+    [10, 10],
+    [11, 10],
+    [12, 12],
+    [13, 12],
+    [14, 14],
+    [15, 14],
+    [16, 16],
+    [17, 16],
+  ]),
+  expectedN: new Map([
+    [1, 10],
+    [2, 11],
+    [3, 8],
+    [4, 9],
+    [5, 6],
+    [6, 7],
+    [11, 16],
+    [12, 17],
+    [13, 14],
+    [14, 15],
+    [15, 12],
+    [16, 13],
+    [21, 1],
+    [22, 2],
+    [23, 4],
+    [24, 5],
+    [25, 3],
+  ]),
+};
+
+test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
+  "Parse components with version %s",
+  async (version) => {
+    const { inchi, auxinfo } = await inchiFromMolfile(
+      componentsTestdata.molfile,
+      "",
+      version
+    );
+
+    const canonicalAtomIndicesByComponents =
+      parseCanonicalAtomIndicesByComponents(auxinfo);
+
+    const auxinfoParsed = parseAuxinfo(
+      auxinfo,
+      canonicalAtomIndicesByComponents
+    );
+
+    expect(auxinfoParsed.get("E")).toEqual(componentsTestdata.expectedE);
+    expect(auxinfoParsed.get("N")).toEqual(componentsTestdata.expectedN);
+  }
+);
