@@ -256,8 +256,10 @@ test.each(
   );
   const canonicalAtomIndicesByComponents =
     parseCanonicalAtomIndicesByComponents(auxinfo);
+
   const auxinfoParsed = parseAuxinfo(auxinfo, canonicalAtomIndicesByComponents);
-  const inchiParsed = parseInchi(inchi);
+  const inchiParsed = parseInchi(inchi, canonicalAtomIndicesByComponents);
+
   expect(inchiParsed.get("h")).toEqual(testdata.expectedH);
   expect(auxinfoParsed.get("N")).toEqual(testdata.expectedN);
   expect(auxinfoParsed.get("E")).toEqual(testdata.expectedE);
@@ -357,6 +359,16 @@ M  END
     [24, 5],
     [25, 3],
   ]),
+  expectedH: new Map([
+    [14, 1],
+    [16, 1],
+    [15, 2],
+    [17, 2],
+    [8, 1],
+    [10, 1],
+    [9, 2],
+    [11, 2],
+  ]),
 };
 
 test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
@@ -375,8 +387,10 @@ test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
       auxinfo,
       canonicalAtomIndicesByComponents
     );
+    const inchiParsed = parseInchi(inchi, canonicalAtomIndicesByComponents);
 
     expect(auxinfoParsed.get("E")).toEqual(componentsTestdata.expectedE);
     expect(auxinfoParsed.get("N")).toEqual(componentsTestdata.expectedN);
+    expect(inchiParsed.get("h")).toEqual(componentsTestdata.expectedH);
   }
 );

@@ -335,7 +335,7 @@ function getAnnotationData(inchi, auxinfo) {
   const canonicalAtomIndicesByComponents =
     parseCanonicalAtomIndicesByComponents(auxinfo);
 
-  const inchiParsed = parseInchi(inchi);
+  const inchiParsed = parseInchi(inchi, canonicalAtomIndicesByComponents);
   const auxinfoParsed = parseAuxinfo(auxinfo, canonicalAtomIndicesByComponents);
 
   const annotationData = new Map();

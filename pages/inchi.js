@@ -235,25 +235,42 @@ function parseAtomEquivalenceClasses(layer, canonicalAtomIndicesByComponents) {
   return canonicalAtomIndicesToEquivalentClasses;
 }
 
-function parseMobileHydrogenGroups(layer) {
+function parseMobileHydrogenGroups(layer, canonicalAtomIndicesByComponents) {
   // Returns a map of InChI's 1-based canonical atom indices to mobile hydrogen groups.
   const canonicalAtomIndicesToMobileHydrogenGroups = new Map();
 
-  const mobileHydrogenGroups = layer.match(/\([^)]+\)/g);
-  if (!mobileHydrogenGroups) return canonicalAtomIndicesToMobileHydrogenGroups;
+  const components = layer.split(";");
+  if (!components) return canonicalAtomIndicesToMobileHydrogenGroups;
 
-  mobileHydrogenGroups.forEach((mobileHydrogenGroup, index) => {
-    const canonicalAtomIndices = mobileHydrogenGroup
-      .slice(1, -1)
-      .split(",")
-      .slice(1);
-    const groupId = index + 1;
-    canonicalAtomIndices.forEach((canonicalAtomIndex) => {
-      canonicalAtomIndicesToMobileHydrogenGroups.set(
-        parseInt(canonicalAtomIndex),
-        groupId
-      );
-    });
+  let componentIndex = -1;
+
+  components.forEach((component) => {
+    const multiplier = parseComponentMultiplier(component);
+
+    for (let i = 0; i < multiplier; i++) {
+      componentIndex++;
+
+      const mobileHydrogenGroups = component.match(/\([^)]+\)/g);
+      if (!mobileHydrogenGroups) continue;
+
+      mobileHydrogenGroups.forEach((mobileHydrogenGroup, index) => {
+        const atomIndices = mobileHydrogenGroup
+          .slice(1, -1)
+          .split(",")
+          .slice(1);
+        const groupId = index + 1;
+        atomIndices.forEach((atomIndex) => {
+          const canonicalAtomIndex =
+            canonicalAtomIndicesByComponents[componentIndex][
+              parseInt(atomIndex) - 1
+            ];
+          canonicalAtomIndicesToMobileHydrogenGroups.set(
+            parseInt(canonicalAtomIndex),
+            groupId
+          );
+        });
+      });
+    }
   });
 
   return canonicalAtomIndicesToMobileHydrogenGroups;
@@ -311,7 +328,7 @@ function mapCanonicalAtomIndicesToMobileHydrogenGroupClasses(
   return canonicalAtomIndicesToMobileHydrogenGroupClasses;
 }
 
-function parseInchi(inchi) {
+function parseInchi(inchi, canonicalAtomIndicesByComponents) {
   const parsers = { h: parseMobileHydrogenGroups };
   const layerResults = new Map(
     Object.keys(parsers).map((key) => [key, new Map()])
@@ -321,7 +338,13 @@ function parseInchi(inchi) {
   for (const [layerName, layerParser] of Object.entries(parsers)) {
     const layer = layers.find((layer) => layer.startsWith(layerName));
     if (layer) {
-      layerResults.set(layerName, layerParser(layer.slice(layerName.length)));
+      layerResults.set(
+        layerName,
+        layerParser(
+          layer.slice(layerName.length),
+          canonicalAtomIndicesByComponents
+        )
+      );
     }
   }
 
