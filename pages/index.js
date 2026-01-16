@@ -785,3 +785,227 @@ function throttleMap(inputs, mapper, maxConcurrent = 5) {
     next();
   });
 }
+
+async function openReportMask() {
+  let reportMaskHost = document.querySelector("report-mask");
+
+  initReportMask(reportMaskHost);
+
+  // If host exposes open(), call it directly and pass structure via an event.
+  if (reportMaskHost.open && typeof reportMaskHost.open === "function") {
+    try {
+      reportMaskHost.open();
+      return;
+    } catch (err) {
+      console.error("Error calling reportMaskHost.open():", err);
+    }
+  }
+
+  // If we fall through, wait briefly for init to complete and try again.
+  const start = Date.now();
+  const waitForOpen = () => {
+    if (reportMaskHost.open && typeof reportMaskHost.open === "function") {
+      try {
+        reportMaskHost.open();
+      } catch (err) {
+        console.error("Error calling reportMaskHost.open():", err);
+      }
+    } else if (Date.now() - start < 2000) {
+      setTimeout(waitForOpen, 50);
+    } 
+  };
+  waitForOpen();
+}
+
+function initReportMask(providedHost) {
+  const host = providedHost || document.querySelector("report-mask");
+  if (!host) return;
+  if (host._reportMaskInitialized) return; // idempotent
+
+  // A small helper that tries to find the required internals and complete the init.
+  const attemptInit = () => {
+    const overlay = host.querySelector("#maskOverlay");
+    const dialog = host.querySelector("#maskDialog");
+    const closeBtn = host.querySelector("#closeMaskBtn");
+    const cancelBtn = host.querySelector("#cancelBtn");
+    const form = host.querySelector("#maskForm");
+    const nameInput = host.querySelector("#nameInput");
+    const descriptionInput = host.querySelector("#descriptionInput");
+
+    if (!overlay || !dialog || !closeBtn || !cancelBtn || !form || !nameInput || !descriptionInput) {
+      return false; // not ready yet
+    }
+
+    let lastFocused = null;
+    let structure = null;
+
+    function onKeyDown(e) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        host._realClose && host._realClose();
+        return;
+      }
+
+      if (e.key === "Tab") {
+        const focusable = dialog.querySelectorAll(
+          "a[href], button:not([disabled]), textarea, input, select"
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    function openDialog() {
+      lastFocused = document.activeElement;
+      overlay.classList.add("open");
+      overlay.setAttribute("aria-hidden", "false");
+      nameInput.focus();
+      document.body.style.overflow = "hidden";
+      document.addEventListener("keydown", onKeyDown);
+    }
+
+    function closeDialog() {
+      overlay.classList.remove("open");
+      overlay.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", onKeyDown);
+      if (lastFocused instanceof HTMLElement) lastFocused.focus();
+    }
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeDialog();
+    });
+    closeBtn.addEventListener("click", closeDialog);
+    cancelBtn.addEventListener("click", closeDialog);
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const name = nameInput.value.trim() || null;
+      const description = descriptionInput.value.trim() || null;
+      processReportMaskSubmission({ name, description });
+      form.reset();
+      closeDialog();
+    });
+
+    // Compatibility: listen for the openReportMask event as before.
+    document.addEventListener("openReportMask", function (e) {
+      if (e && e.detail && e.detail.structure) structure = e.detail.structure;
+      openDialog();
+    });
+
+    // Expose real methods.
+    host._realOpen = openDialog;
+    host._realClose = closeDialog;
+    host.open = function () {
+      // If init is done, call real open; otherwise mark pending and return.
+      if (host._reportMaskInitialized && host._realOpen) {
+        host._realOpen();
+      } else {
+        host._pendingOpen = true;
+      }
+    };
+    host.close = function () {
+      if (host._realClose) host._realClose();
+    };
+
+    host._reportMaskInitialized = true;
+
+    // If someone requested open before init completed, honor it now.
+    if (host._pendingOpen) {
+      host._pendingOpen = false;
+      host._realOpen && host._realOpen();
+    }
+
+    return true;
+  };
+
+  // Try immediate initialization; if not ready, observe until structure is present (or timeout).
+  if (!attemptInit()) {
+    const observer = new MutationObserver((_, obs) => {
+      if (attemptInit()) {
+        obs.disconnect();
+      }
+    });
+    observer.observe(host, { childList: true, subtree: true });
+    // Ensure we stop observing after a timeout.
+    setTimeout(() => observer.disconnect(), 2000);
+  }
+}
+document.addEventListener('DOMContentLoaded', initReportMask);
+
+// Process a report-mask form submission (moved from inline fragment)
+async function processReportMaskSubmission(formData = {}) {
+  try {
+    const textOrNull = (id) => {
+      const el = document.getElementById(id);
+      return el && el.textContent && el.textContent.trim() ? el.textContent.trim() : null;
+    };
+
+    // Get mol file from InChI tab
+    const ketcher = getKetcher('inchi-tab1-ketcher');
+    let molfile = null;
+    try {
+      if (ketcher) molfile = await ketcher.getMolfile();
+    } catch (err) {
+      molfile = null;
+    }
+
+    const inchi = textOrNull('inchi-tab1-inchi');
+    const inchikey = textOrNull('inchi-tab1-inchikey');
+    const auxinfo = textOrNull('inchi-tab1-auxinfo');
+    // Remove InChI options from the log 
+    const log = textOrNull('inchi-tab1-logs');
+    const cleanedLog = log && log.startsWith('InChI options: ') 
+      ? log.replace(/^InChI options: [^\n]*\n?/, '')
+      : log;
+    const inchi_version = getVersion('inchi-tab1-pane');
+
+    // Collect InChI options as a string
+    let options = "";
+    try {
+      options = getInchiOptions('inchi-tab1-pane')
+      .map((o) => "-" + o)
+      .join(" ");
+    } catch (err) {
+      options = "";
+    }
+
+    const payload = {
+      input_source: "WebDemo",
+      inchi_version: inchi_version,
+      user: formData.name || null,
+      description: formData.description,
+      molfile: molfile,
+      inchi: inchi,
+      inchikey: inchikey,
+      auxinfo: auxinfo,
+      options: options,
+      log: cleanedLog,
+    };
+
+    console.log('reportMask:json', payload);
+    document.dispatchEvent(new CustomEvent('reportMask:json', { detail: payload }));
+
+    fetch('/api/ingest_issue', { //TODO change endpoint
+      method: 'POST',
+      headers: {"Authorization": "JchSKSAoUUjKXriWdcUlb2a3hIvIgdPs", "Content-Type": "application/json"},
+      body: JSON.stringify(payload),
+    })
+      .then(response => response.json())
+      .then(json => {
+        console.log('reportMask:json', json);
+        document.dispatchEvent(new CustomEvent('reportMask:json', { detail: json }));
+      })
+
+  } catch (err) {
+    console.error('Error assembling report mask JSON', err);
+  }
+}

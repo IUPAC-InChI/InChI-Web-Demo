@@ -1,0 +1,44 @@
+<link href="../css/report-mask.css" rel="stylesheet" />
+
+<div
+  id="maskOverlay"
+  class="mask-overlay"
+  role="presentation"
+  aria-hidden="true"
+>
+  <div
+    id="maskDialog"
+    class="mask-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="maskTitle"
+  >
+    <header>
+      <h2 id="maskTitle">Report structure</h2>
+      <button id="closeMaskBtn" class="mask-close" aria-label="Close dialog">
+        ✕
+      </button>
+    </header>
+
+    <form id="maskForm">
+      <label for="nameInput" class="visually-hidden">Name</label>
+      <input type="text" id="nameInput" placeholder="Name" />
+      <label for="descriptionInput" class="visually-hidden">Description</label>
+      <textarea
+        type="text"
+        rows="5"
+        cols="30"
+        id="descriptionInput"
+        placeholder="Please describe the problem that occurs with the structure."
+        required
+      ></textarea>
+
+      <div class="mask-actions">
+        <button type="button" id="cancelBtn" class="btn-secondary">
+          Cancel
+        </button>
+        <button type="submit" class="btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>

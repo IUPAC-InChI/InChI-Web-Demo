@@ -20,6 +20,12 @@ class AboutElement extends InsertHTMLElement {
   }
 }
 
+class ReportMaskElement extends InsertHTMLElement {
+  constructor() {
+    super("components/report-mask.html");
+  }
+}
+
 class InChIToolsElement extends InsertHTMLElement {
   constructor() {
     super("components/inchi-tools.html");
@@ -571,6 +577,7 @@ class NGLViewerElement extends HTMLElement {
 
 customElements.define("inchi-about", AboutElement);
 customElements.define("inchi-inchi-tools", InChIToolsElement);
+customElements.define("report-mask", ReportMaskElement);
 customElements.define("inchi-rinchi-tools", RInChIToolsElement);
 customElements.define("inchi-version-selection", InChIVersionSelectionElement);
 customElements.define("inchi-result-field", InChIResultFieldElement);
