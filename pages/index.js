@@ -786,8 +786,11 @@ function throttleMap(inputs, mapper, maxConcurrent = 5) {
   });
 }
 
-async function openReportMask() {
+async function openReportMask(tabIdentifier = 'inchi-tab1') {
   let reportMaskHost = document.querySelector("report-mask");
+
+  // Store the tab identifier for use in processReportMaskSubmission
+  reportMaskHost._activeTab = tabIdentifier;
 
   initReportMask(reportMaskHost);
 
@@ -939,39 +942,52 @@ function initReportMask(providedHost) {
     setTimeout(() => observer.disconnect(), 2000);
   }
 }
+
 document.addEventListener('DOMContentLoaded', initReportMask);
 
 // Process a report-mask form submission (moved from inline fragment)
 async function processReportMaskSubmission(formData = {}) {
   try {
+    const reportMaskHost = document.querySelector("report-mask");
+    const tabIdentifier = reportMaskHost._activeTab || 'inchi-tab1';
+    const paneId = `${tabIdentifier}-pane`;
+
     const textOrNull = (id) => {
       const el = document.getElementById(id);
       return el && el.textContent && el.textContent.trim() ? el.textContent.trim() : null;
     };
 
-    // Get mol file from InChI tab
-    const ketcher = getKetcher('inchi-tab1-ketcher');
+    // Get mol file
     let molfile = null;
-    try {
-      if (ketcher) molfile = await ketcher.getMolfile();
-    } catch (err) {
-      molfile = null;
+
+    if (tabIdentifier === 'inchi-tab1') {
+      // from ketcher for InChI Tab
+      const ketcher = getKetcher(`${tabIdentifier}-ketcher`);
+      
+      try {
+        if (ketcher) molfile = await ketcher.getMolfile();
+      } catch (err) {
+        molfile = null;
+      }
+    } else if(tabIdentifier === 'inchi-tab2') {
+      // from molfile for Molfile Tab
+      molfile = document.getElementById("inchi-tab2-molfile").value;
     }
 
-    const inchi = textOrNull('inchi-tab1-inchi');
-    const inchikey = textOrNull('inchi-tab1-inchikey');
-    const auxinfo = textOrNull('inchi-tab1-auxinfo');
+    const inchi = textOrNull(`${tabIdentifier}-inchi`);
+    const inchikey = textOrNull(`${tabIdentifier}-inchikey`);
+    const auxinfo = textOrNull(`${tabIdentifier}-auxinfo`);
     // Remove InChI options from the log 
-    const log = textOrNull('inchi-tab1-logs');
+    const log = textOrNull(`${tabIdentifier}-logs`);
     const cleanedLog = log && log.startsWith('InChI options: ') 
       ? log.replace(/^InChI options: [^\n]*\n?/, '')
       : log;
-    const inchi_version = getVersion('inchi-tab1-pane');
+    const inchi_version = getVersion(paneId);
 
     // Collect InChI options as a string
     let options = "";
     try {
-      options = getInchiOptions('inchi-tab1-pane')
+      options = getInchiOptions(paneId)
       .map((o) => "-" + o)
       .join(" ");
     } catch (err) {
@@ -993,10 +1009,11 @@ async function processReportMaskSubmission(formData = {}) {
 
     console.log('reportMask:json', payload);
     document.dispatchEvent(new CustomEvent('reportMask:json', { detail: payload }));
+    const token = "JchSKSAoUUjKXriWdcUlb2a3hIvIgdPs";
 
-    fetch('/api/ingest_issue', { //TODO change endpoint
+    fetch('.../ingest_issue', { //TODO: change
       method: 'POST',
-      headers: {"Authorization": "JchSKSAoUUjKXriWdcUlb2a3hIvIgdPs", "Content-Type": "application/json"},
+      headers: {"Access-Control-Allow-Origin": "*",  "Authorization": token, "Content-Type": "application/json"},
       body: JSON.stringify(payload),
     })
       .then(response => response.json())

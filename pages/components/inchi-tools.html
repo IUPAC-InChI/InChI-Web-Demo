@@ -76,7 +76,9 @@
             class="w-100"
             src="ketcher/index.html"
             loading="lazy"
-            onload="onKetcherLoaded('inchi-tab1-ketcher', () => updateInchiTab1())"
+            onload="
+              onKetcherLoaded('inchi-tab1-ketcher', () => updateInchiTab1())
+            "
           ></iframe>
         </div>
       </div>
@@ -100,7 +102,13 @@
       title="AuxInfo"
     ></inchi-result-field>
     <inchi-result-field id="inchi-tab1-logs" title="Log"></inchi-result-field>
-    <button class="btn btn-primary mt-2" onclick="openReportMask()" aria-haspopup="dialog">Report</button>
+    <button
+      class="btn btn-primary mt-2"
+      onclick="openReportMask('inchi-tab1')"
+      aria-haspopup="dialog"
+    >
+      Report
+    </button>
   </div>
 
   <!-- Convert Molfile to InChI -->
@@ -128,7 +136,10 @@
             <button
               class="btn btn-outline-secondary border-0"
               style="position: absolute; top: 10px; right: 10px"
-              onclick="document.getElementById('inchi-tab2-molfile').value = '';updateInchiTab2()"
+              onclick="
+                document.getElementById('inchi-tab2-molfile').value = '';
+                updateInchiTab2();
+              "
             >
               <i class="bi bi-trash"></i>
             </button>
@@ -160,6 +171,13 @@
           id="inchi-tab2-logs"
           title="Log"
         ></inchi-result-field>
+        <button
+          class="btn btn-primary mt-2"
+          onclick="openReportMask('inchi-tab2')"
+          aria-haspopup="dialog"
+        >
+          Report
+        </button>
       </div>
       <div class="col-xl-7 bounding-box">
         <inchi-ngl-viewer id="inchi-tab2-ngl-viewer"></inchi-ngl-viewer>
