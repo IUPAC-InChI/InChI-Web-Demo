@@ -1011,17 +1011,14 @@ async function processReportMaskSubmission(formData = {}) {
     document.dispatchEvent(new CustomEvent('reportMask:json', { detail: payload }));
     const token = "JchSKSAoUUjKXriWdcUlb2a3hIvIgdPs";
 
-    fetch('.../ingest_issue', { //TODO: change
+    fetch('.../ingest_issue?token=' + token, { //TODO: change
       method: 'POST',
-      headers: {"Access-Control-Allow-Origin": "*",  "Authorization": token, "Content-Type": "application/json"},
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify(payload),
     })
       .then(response => response.json())
-      .then(json => {
-        console.log('reportMask:json', json);
-        document.dispatchEvent(new CustomEvent('reportMask:json', { detail: json }));
-      })
-
+      .then(data => console.log("Success:", data))
+      .catch(error => console.error("Error:", error));
   } catch (err) {
     console.error('Error assembling report mask JSON', err);
   }

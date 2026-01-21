@@ -32,7 +32,20 @@
         placeholder="Please describe the problem that occurs with the structure."
         required
       ></textarea>
-
+      <div class="disclaimer-section">
+        <label for="disclaimerCheckbox" class="disclaimer-label">
+          <input
+            type="checkbox"
+            id="disclaimerCheckbox"
+            class="disclaimer-checkbox"
+            required
+          />
+          <span
+            >I acknowledge that this report will be submitted for review and may
+            be publicly shared to improve the InChI library.</span
+          >
+        </label>
+      </div>
       <div class="mask-actions">
         <button type="button" id="cancelBtn" class="btn-secondary">
           Cancel

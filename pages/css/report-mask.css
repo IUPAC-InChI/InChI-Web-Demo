@@ -79,3 +79,24 @@
 .visually-hidden {
   display: none !important;
 }
+
+.disclaimer-section {
+  margin: 15px 0;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.disclaimer-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.disclaimer-checkbox {
+  margin-top: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
