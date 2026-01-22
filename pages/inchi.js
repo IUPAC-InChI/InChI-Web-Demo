@@ -281,20 +281,29 @@ function parseMobileHydrogenGroupClasses(layer) {
   // Such a class gives 1-based IDs to sets of equivalent mobile hydrogen groups.
   const mobileHydrogenGroupsToMobileHydrogenGroupClasses = new Map();
 
-  const mobileHydrogenGroupClasses = layer.match(/\([^)]+\)/g);
-  if (!mobileHydrogenGroupClasses)
-    return mobileHydrogenGroupsToMobileHydrogenGroupClasses;
+  const components = layer.split(";");
+  if (!components) return mobileHydrogenGroupsToMobileHydrogenGroupClasses;
 
-  mobileHydrogenGroupClasses.forEach((mobileHydrogenGroupClass, index) => {
-    const mobileHydrogenGroups = mobileHydrogenGroupClass
-      .slice(1, -1)
-      .split(",");
-    const mobileHydrogenGroupClassId = index + 1;
-    mobileHydrogenGroups.forEach((mobileHydrogenGroup) => {
-      mobileHydrogenGroupsToMobileHydrogenGroupClasses.set(
-        parseInt(mobileHydrogenGroup),
-        mobileHydrogenGroupClassId
-      );
+  // We can ignore component-multipliers ("<int>*" prepended to component),
+  // since the hydrogen group classes aren't unique to a component.
+  // That is, an AuxInfo can contain multiple components that have hydrogen groups
+  // which all map to the same hydrogen group class;
+  // e.g., in "/gE:(1,2,3,4);2*(1,2)" all three components' hydrogen groups map to class 1.
+  components.forEach((component) => {
+    const mobileHydrogenGroupClasses = component.match(/\([^)]+\)/g);
+    if (!mobileHydrogenGroupClasses) return;
+
+    mobileHydrogenGroupClasses.forEach((mobileHydrogenGroupClass, index) => {
+      const mobileHydrogenGroups = mobileHydrogenGroupClass
+        .slice(1, -1)
+        .split(",");
+      const mobileHydrogenGroupClassId = index + 1;
+      mobileHydrogenGroups.forEach((mobileHydrogenGroup) => {
+        mobileHydrogenGroupsToMobileHydrogenGroupClasses.set(
+          parseInt(mobileHydrogenGroup),
+          mobileHydrogenGroupClassId
+        );
+      });
     });
   });
 
