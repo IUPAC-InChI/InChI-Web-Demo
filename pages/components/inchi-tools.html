@@ -102,13 +102,7 @@
       title="AuxInfo"
     ></inchi-result-field>
     <inchi-result-field id="inchi-tab1-logs" title="Log"></inchi-result-field>
-    <button
-      class="btn btn-primary mt-2"
-      onclick="openReportMask('inchi-tab1')"
-      aria-haspopup="dialog"
-    >
-      Report
-    </button>
+    <report-mask tabId="inchi-tab1"></report-mask>
   </div>
 
   <!-- Convert Molfile to InChI -->
@@ -171,13 +165,7 @@
           id="inchi-tab2-logs"
           title="Log"
         ></inchi-result-field>
-        <button
-          class="btn btn-primary mt-2"
-          onclick="openReportMask('inchi-tab2')"
-          aria-haspopup="dialog"
-        >
-          Report
-        </button>
+        <report-mask tabId="inchi-tab2"></report-mask>
       </div>
       <div class="col-xl-7 bounding-box">
         <inchi-ngl-viewer id="inchi-tab2-ngl-viewer"></inchi-ngl-viewer>

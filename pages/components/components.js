@@ -23,6 +23,127 @@ class AboutElement extends InsertHTMLElement {
 class ReportMaskElement extends InsertHTMLElement {
   constructor() {
     super("components/report-mask.html");
+
+    this.tabId = this.getAttribute("tabId");
+  }
+
+  async connectedCallback() {
+    await super.connectedCallback();
+
+    this.overlay = this.querySelector("#maskOverlay");
+    this.openBtn = this.querySelector("#openBtn");
+    this.closeBtn = this.querySelector("#closeMaskBtn");
+    this.cancelBtn = this.querySelector("#cancelBtn");
+    this.form = this.querySelector("#maskForm");
+    this.nameInput = this.querySelector("#nameInput");
+    this.descriptionInput = this.querySelector("#descriptionInput");
+
+    this.openBtn.addEventListener("click", () => this.open());
+    this.closeBtn.addEventListener("click", () => this.close());
+    this.cancelBtn.addEventListener("click", () => this.close());
+    this.form.addEventListener("submit", (event) => this.submit(event));
+  }
+
+  open() {
+    this.overlay.classList.add("open");
+    this.overlay.setAttribute("aria-hidden", "false");
+    this.nameInput.focus();
+  }
+
+  close() {
+    this.overlay.classList.remove("open");
+    this.overlay.setAttribute("aria-hidden", "true");
+  }
+
+  async postData(data = {}) {
+    const paneId = `${this.tabId}-pane`;
+
+    const textOrNull = (id) => {
+      const el = document.getElementById(id);
+      return el && el.textContent && el.textContent.trim()
+        ? el.textContent.trim()
+        : null;
+    };
+
+    let molfile = null;
+    if (this.tabId === "inchi-tab1") {
+      // from ketcher for InChI Tab
+      const ketcher = getKetcher(`${this.tabId}-ketcher`);
+
+      try {
+        if (ketcher) molfile = await ketcher.getMolfile();
+      } catch (err) {
+        molfile = null;
+      }
+    } else if (this.tabId === "inchi-tab2") {
+      // from molfile for Molfile Tab
+      molfile = document.getElementById("inchi-tab2-molfile").value;
+    }
+
+    const inchi = textOrNull(`${this.tabId}-inchi`);
+    const inchikey = textOrNull(`${this.tabId}-inchikey`);
+    const auxinfo = textOrNull(`${this.tabId}-auxinfo`);
+    // Remove InChI options from the log
+    const log = textOrNull(`${this.tabId}-logs`);
+    const cleanedLog =
+      log && log.startsWith("InChI options: ")
+        ? log.replace(/^InChI options: [^\n]*\n?/, "")
+        : log;
+    const inchi_version = getVersion(paneId);
+
+    // Collect InChI options as a string
+    let options = "";
+    try {
+      options = getInchiOptions(paneId)
+        .map((o) => "-" + o)
+        .join(" ");
+    } catch (err) {
+      options = "";
+    }
+
+    const { user, description } = data;
+
+    const payload = {
+      input_source: "WebDemo",
+      inchi_version: inchi_version,
+      user: user || null,
+      description: description,
+      molfile: molfile,
+      inchi: inchi,
+      inchikey: inchikey,
+      auxinfo: auxinfo,
+      options: options,
+      log: cleanedLog,
+    };
+
+    console.log("reportMask:json", payload);
+
+    document.dispatchEvent(
+      new CustomEvent("reportMask:json", { detail: payload })
+    );
+    const token = "JchSKSAoUUjKXriWdcUlb2a3hIvIgdPs";
+
+    fetch(".../ingest_issue?token=" + token, {
+      //TODO: change
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((response) => response.json())
+      .then((data) => console.log("Success:", data))
+      .catch((error) => console.error("Error:", error));
+  }
+  catch(err) {
+    console.error("Error assembling report mask JSON", err);
+  }
+
+  async submit(event) {
+    event.preventDefault();
+    const name = this.nameInput.value.trim() || null;
+    const description = this.descriptionInput.value.trim() || null;
+    await this.postData({ name, description });
+    this.form.reset();
+    this.close();
   }
 }
 
