@@ -385,10 +385,22 @@ class NGLViewerElement extends HTMLElement {
       hydrogenGroupClass: "Hydrogen Group Class",
     };
 
+    const annotationButtonInfo = {
+      index: "Order of atoms in the molfile's atom block.",
+      canonicalIndex: "Indices assigned by the canonicalization.",
+      equivalenceClass:
+        "Atoms within an equivalence class are indistinguishable, ignoring stereochemistry; a class is identified by the smallest canonical index in the class.",
+      hydrogenGroup:
+        "If there are multiple components, groups start at 1 for each component.",
+      hydrogenGroupClass:
+        "If there are multiple components, group-classes start at 1 for each component.",
+    };
+
     this.annotationButtons = Object.keys(this.annotationColors).map((id) => ({
       id,
       text: annotationButtonTexts[id],
       color: this.annotationColors[id],
+      info: annotationButtonInfo[id],
     }));
 
     this.annotationSelection = Object.fromEntries(
@@ -421,6 +433,7 @@ class NGLViewerElement extends HTMLElement {
       buttonElement.classList.add(button.color);
       buttonElement.classList.add("annotation-button");
       buttonElement.disabled = true;
+      buttonElement.title = button.info;
 
       buttonElement.addEventListener("click", () => {
         const isActive = buttonElement.classList.toggle("active");
