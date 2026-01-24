@@ -25,7 +25,19 @@
                 "files.associations": {
                     "*.yml": "github-actions-workflow"
                 },
-                "[js][yml][json][html][css]": {
+                "[js]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[yml]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[json]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[html]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[css]": {
                     "editor.defaultFormatter": "esbenp.prettier-vscode"
                 },
                 "[c]": {
