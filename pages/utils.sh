@@ -92,7 +92,7 @@ build_inchi_wasm() {
         emcmake cmake -B build \
             -DINCHI_WEB_NAME="$artifact_name" \
             -DMODULE_NAME="$module_name" \
-            -DARTIFACT_DIR="$"
+            -DARTIFACT_DIR="$artifact_dir"
 
         ## Build
         cmake --build build --parallel
