@@ -59,6 +59,7 @@
                 "esbenp.prettier-vscode",
                 "ms-vscode.cpptools",
                 "ms-vscode.makefile-tools",
+                "ms-vscode.cmake-tools",
                 "timonwong.shellcheck"
             ]
         }

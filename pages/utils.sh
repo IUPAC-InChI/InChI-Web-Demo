@@ -88,9 +88,14 @@ build_inchi_wasm() {
         # Build JavaScript and WASM modules
         cp -R "${_root_dir}/inchi/INCHI_WEB" INCHI-1-SRC
         cd INCHI-1-SRC/INCHI_WEB || exit
-        make -j -f makefile INCHI_WEB_NAME="$artifact_name" MODULE_NAME="$module_name"
-        make -f makefile clean
-        cp "${artifact_name}.js" "${artifact_name}.wasm" "$artifact_dir"
+        ## Configure (Variablen setzen)
+        emcmake cmake -B build \
+            -DINCHI_WEB_NAME="$artifact_name" \
+            -DMODULE_NAME="$module_name" \
+            -DARTIFACT_DIR="$"
+
+        ## Build
+        cmake --build build --parallel
     )
 }
 
