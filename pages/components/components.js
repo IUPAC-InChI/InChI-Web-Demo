@@ -121,10 +121,9 @@ class ReportMaskElement extends InsertHTMLElement {
     document.dispatchEvent(
       new CustomEvent("reportMask:json", { detail: payload })
     );
-    const token = "JchSKSAoUUjKXriWdcUlb2a3hIvIgdPs";
+    const token = "HtEZnZMm3Nwez1nPb3Y53QpcdKscG5B";
 
-    fetch(".../ingest_issue?token=" + token, {
-      //TODO: change
+    fetch("https://cheminfo.beilstein.org/report/ingest_issue?token=" + token, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
