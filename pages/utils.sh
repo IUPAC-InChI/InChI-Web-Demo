@@ -68,6 +68,7 @@ build_inchi_wasm() {
         local commit artifact_name module_name
         read -r commit artifact_name module_name <<< "$params"
 
+        # Get InChI source
         local source_dir="${_root_dir}/source/inchi"
         readonly source_dir
         local artifact_dir="${_root_dir}/pages/inchi"
@@ -80,6 +81,7 @@ build_inchi_wasm() {
 
         clone_inchi_source "$commit" "${source_dir}/${artifact_name}"
 
+        # Apply patches
         if [ "$patch_file" != "no_patch" ]; then
             echo "Applying patch: $patch_file"
             git apply "$patch_file"
@@ -88,13 +90,10 @@ build_inchi_wasm() {
         # Build JavaScript and WASM modules
         cp -R "${_root_dir}/inchi/INCHI_WEB" INCHI-1-SRC
         cd INCHI-1-SRC/INCHI_WEB || exit
-        ## Configure (Variablen setzen)
         emcmake cmake -B build \
             -DINCHI_WEB_NAME="$artifact_name" \
             -DMODULE_NAME="$module_name" \
             -DARTIFACT_DIR="$artifact_dir"
-
-        ## Build
         cmake --build build --parallel
     )
 }
