@@ -316,6 +316,16 @@ class InChIOptionsLatestMoInElement extends InChIOptionsElement {
   }
 }
 
+class InChIOptionsLatestEnhancedStereoElement extends InChIOptionsElement {
+  constructor() {
+    super();
+    this.componentPaths = [
+      "components/tautomer-options.html",
+      "components/latest-enhanced-stereo-options.html",
+    ];
+  }
+}
+
 function createAnnotation(text, color) {
   const annotation = document.createElement("div");
   annotation.textContent = text;
@@ -570,4 +580,9 @@ customElements.define(
   "inchi-options-latest-moin",
   InChIOptionsLatestMoInElement,
 );
+customElements.define(
+  "inchi-options-latest-enhanced-stereo",
+  InChIOptionsLatestEnhancedStereoElement,
+)
 customElements.define("inchi-ngl-viewer", NGLViewerElement);
+
