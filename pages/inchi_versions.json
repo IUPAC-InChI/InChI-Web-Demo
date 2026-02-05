@@ -20,5 +20,12 @@
     "optionsTemplateId": "inchi-options-latest-moin",
     "commit": "35059dc4d1065224b3fd46df1a3094a98ed69b4d",
     "url": "https://github.com/IUPAC-InChI/InChI/pull/107"
+  },
+  "Latest with Enhanced Stereochemistry": {
+    "module": "inchiModuleLatestEnhancedStereo",
+    "name": "inchi-web-latest-enhanced-stereo",
+    "optionsTemplateId": "inchi-options-latest-enhanced-stereo",
+    "commit": "cf6d7ce3c5de92fe4382f70875783192b760c629",
+    "url": "https://github.com/IUPAC-InChI/InChI/pull/185"
   }
 }
