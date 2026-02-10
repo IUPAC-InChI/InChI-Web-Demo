@@ -3,6 +3,7 @@
 global.inchiModule106 = require("../pages/inchi/inchi-web106.js");
 global.inchiModuleLatest = require("../pages/inchi/inchi-web-latest.js");
 global.inchiModuleLatestMoIn = require("../pages/inchi/inchi-web-latest-moin.js");
+global.inchiModuleLatestEnhancedStereo = require("../pages/inchi/inchi-web-latest-enhanced-stereo.js");
 
 // Mock availableInchiVersions for global availability during testing.
 const loadInchiVersions = () => {
@@ -14,10 +15,17 @@ const loadInchiVersions = () => {
         ...cfg,
         module: global[cfg.module](),
       },
-    ])
+    ]),
   );
 };
 global.availableInchiVersions = loadInchiVersions();
+
+const versions = [
+  ["1.06"],
+  ["Latest"],
+  ["Latest with Molecular Inorganics"],
+  ["Latest with Enhanced Stereochemistry"],
+];
 
 const {
   inchiFromMolfile,
@@ -80,36 +88,36 @@ const inchiString = "InChI=1S/H2O/h1H2";
 const inchiKey = "XLYOFNOQVPJJNP-UHFFFAOYSA-N";
 const auxinfo = "AuxInfo=1/0/N:1/rA:1nO/rB:/rC:;";
 
-test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
+test.each(versions)(
   "InChI string from molfile with version %s",
   async (version) => {
     const result = await inchiFromMolfile(molfile, "", version);
     expect(result.inchi).toBe(inchiString);
-  }
+  },
 );
 
-test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
+test.each(versions)(
   "InChI key from InChI string with version %s",
   async (version) => {
     const result = await inchikeyFromInchi(inchiString, version);
     expect(result.inchikey).toBe(inchiKey);
-  }
+  },
 );
 
-test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
+test.each(versions)(
   "SDF from InChI string with version %s",
   async (version) => {
     const result = await molfileFromInchi(inchiString, "", version);
     expect(result.molfile).toBe(sdf);
-  }
+  },
 );
 
-test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
+test.each(versions)(
   "SDF from InChI auxinfo with version %s",
   async (version) => {
     const result = await molfileFromAuxinfo(auxinfo, 0, 0, version);
     expect(result.molfile).toBe(sdf);
-  }
+  },
 );
 
 test("Sufficient stack size", async () => {
@@ -117,7 +125,7 @@ test("Sufficient stack size", async () => {
     await inchiFromMolfile(
       molfileZZP059,
       "-Polymers -FoldCRU -NPZZ -AuxNone -OutErrINCHI -NoLabels",
-      "1.06"
+      "1.06",
     );
   } catch (error) {
     expect(error.message).not.toBe("memory access out of bounds");
@@ -242,17 +250,17 @@ M  END
 };
 
 test.each(
-  ["1.06", "Latest", "Latest with Molecular Inorganics"].flatMap((version) =>
+  versions.flatMap(([version]) =>
     [oxamideTestdata, benzoicAcidTestdata].map((testdata) => [
       version,
       testdata,
-    ])
-  )
+    ]),
+  ),
 )("Parse layers with version %s", async (version, testdata) => {
   const { inchi, auxinfo } = await inchiFromMolfile(
     testdata.molfile,
     "",
-    version
+    version,
   );
   const canonicalAtomIndicesByComponents =
     parseCanonicalAtomIndicesByComponents(auxinfo);
@@ -375,31 +383,25 @@ M  END
   ]),
 };
 
-test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
-  "Parse components with version %s",
-  async (version) => {
-    const { inchi, auxinfo } = await inchiFromMolfile(
-      componentsTestdata.molfile,
-      "",
-      version
-    );
+test.each(versions)("Parse components with version %s", async (version) => {
+  const { inchi, auxinfo } = await inchiFromMolfile(
+    componentsTestdata.molfile,
+    "",
+    version,
+  );
 
-    const canonicalAtomIndicesByComponents =
-      parseCanonicalAtomIndicesByComponents(auxinfo);
+  const canonicalAtomIndicesByComponents =
+    parseCanonicalAtomIndicesByComponents(auxinfo);
 
-    const auxinfoParsed = parseAuxinfo(
-      auxinfo,
-      canonicalAtomIndicesByComponents
-    );
-    const inchiParsed = parseInchi(inchi, canonicalAtomIndicesByComponents);
+  const auxinfoParsed = parseAuxinfo(auxinfo, canonicalAtomIndicesByComponents);
+  const inchiParsed = parseInchi(inchi, canonicalAtomIndicesByComponents);
 
-    expect(auxinfoParsed.get("E")).toEqual(componentsTestdata.expectedE);
-    expect(auxinfoParsed.get("N")).toEqual(componentsTestdata.expectedN);
-    expect(inchiParsed.get("h")).toEqual(componentsTestdata.expectedH);
-  }
-);
+  expect(auxinfoParsed.get("E")).toEqual(componentsTestdata.expectedE);
+  expect(auxinfoParsed.get("N")).toEqual(componentsTestdata.expectedN);
+  expect(inchiParsed.get("h")).toEqual(componentsTestdata.expectedH);
+});
 
-test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
+test.each(versions)(
   "Parse multiple different components containing hydrogen groups with version %s",
   async (version) => {
     const { inchi, auxinfo } = await inchiFromMolfile(
@@ -505,7 +507,7 @@ test.each([["1.06"], ["Latest"], ["Latest with Molecular Inorganics"]])(
 M  END
 `,
       "",
-      version
+      version,
     );
 
     const canonicalAtomIndicesByComponents =
@@ -513,7 +515,7 @@ M  END
 
     const auxinfoParsed = parseAuxinfo(
       auxinfo,
-      canonicalAtomIndicesByComponents
+      canonicalAtomIndicesByComponents,
     );
 
     expect(auxinfoParsed.get("gE")).toEqual(
@@ -522,7 +524,7 @@ M  END
         [2, 1],
         [3, 1],
         [4, 1],
-      ])
+      ]),
     );
-  }
+  },
 );
