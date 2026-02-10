@@ -116,7 +116,7 @@ build_rinchi_wasm() {
         clone_inchi_source $(jq -r '."Latest".commit' "${_root_dir}/pages/inchi_versions.json")  "${source_dir}/InChI"
 
         # Get RInChI source
-        git clone --no-checkout --depth 1 --branch "main" --single-branch https://github.com/IUPAC-InChI/RInChI.git "${source_dir}/RInChI"
+        git clone --no-checkout --branch "main" --single-branch https://github.com/IUPAC-InChI/RInChI.git "${source_dir}/RInChI"
         cd "${source_dir}/RInChI" || exit
         # Use specific commit for reproducibility
         git checkout "46643428f8a547114466dc34ab847bfb890b836a"
