@@ -59,7 +59,7 @@
   margin-top: 10px;
 }
 
-.btn-primary {
+.btn.btn-primary {
   background: #00612c;
   color: white;
   border: none;
@@ -68,7 +68,7 @@
   cursor: pointer;
 }
 
-.btn-secondary {
+btn.btn-secondary {
   background: transparent;
   border: 1px solid #ccc;
   padding: 8px 14px;
