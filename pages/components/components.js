@@ -65,19 +65,31 @@ class ReportMaskElement extends InsertHTMLElement {
         : null;
     };
 
-    let molfile = null;
+    let molfile_v2 = null;
+    let molfile_v3 = null;
     if (this.tabId === "inchi-tab1") {
       // from ketcher for InChI Tab
       const ketcher = getKetcher(`${this.tabId}-ketcher`);
 
       try {
-        if (ketcher) molfile = await ketcher.getMolfile();
+        if (ketcher) {
+          molfile_v2 = await ketcher.getMolfile("v2000");
+          molfile_v3 = await ketcher.getMolfile("v3000");
+        }
       } catch (err) {
-        molfile = null;
+        molfile_v2 = null;
+        molfile_v3 = null;
       }
     } else if (this.tabId === "inchi-tab2") {
+      let tab2Data = document.getElementById("inchi-tab2-molfile").value;
       // from molfile for Molfile Tab
-      molfile = document.getElementById("inchi-tab2-molfile").value;
+      if (tab2Data.includes("V3000")) {
+        molfile_v2 = null;
+        molfile_v3 = document.getElementById("inchi-tab2-molfile").value;
+      } else {
+        molfile_v2 = document.getElementById("inchi-tab2-molfile").value;
+        molfile_v3 = null;
+      }
     }
 
     const inchi = textOrNull(`${this.tabId}-inchi`);
@@ -101,19 +113,20 @@ class ReportMaskElement extends InsertHTMLElement {
       options = "";
     }
 
-    const { user, description } = data;
+    const { name, description } = data;
 
     const payload = {
       input_source: "WebDemo",
       inchi_version: inchi_version,
-      user: user || null,
+      user: name || null,
       description: description,
-      molfile: molfile,
+      molfile_v2: molfile_v2,
+      molfile_v3: molfile_v3,
       inchi: inchi,
       inchikey: inchikey,
       auxinfo: auxinfo,
       options: options,
-      log: cleanedLog,
+      logs: cleanedLog,
     };
 
     console.log("reportMask:json", payload);
