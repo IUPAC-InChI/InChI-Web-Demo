@@ -430,8 +430,9 @@ class InChIOptions106Element extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
-      "components/106-options.html",
-      "components/base-options.html",
+      "components/options/106-options.html",
+      "components/options/stereo-base-options.html",
+      "components/options/base-options.html",
     ];
   }
 }
@@ -439,8 +440,9 @@ class InChIOptionsLatestElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
-      "components/tautomer-options.html",
-      "components/base-options.html",
+      "components/options/tautomer-options.html",
+      "components/options/stereo-base-options.html",
+      "components/options/base-options.html",
     ];
   }
 }
@@ -448,9 +450,10 @@ class InChIOptionsLatestMoInElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
-      "components/tautomer-options.html",
-      "components/latest-moin-options.html",
-      "components/base-options.html",
+      "components/options/tautomer-options.html",
+      "components/options/latest-moin-options.html",
+      "components/options/stereo-base-options.html",
+      "components/options/base-options.html",
     ];
   }
 }
@@ -459,8 +462,8 @@ class InChIOptionsLatestEnhancedStereoElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
-      "components/tautomer-options.html",
-      "components/latest-enhanced-stereo-options.html",
+      "components/options/tautomer-options.html",
+      "components/options/latest-enhanced-stereo-options.html",
     ];
   }
 }
