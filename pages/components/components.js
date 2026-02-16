@@ -464,6 +464,7 @@ class InChIOptionsLatestEnhancedStereoElement extends InChIOptionsElement {
     this.componentPaths = [
       "components/options/tautomer-options.html",
       "components/options/latest-enhanced-stereo-options.html",
+      "components/options/base-options.html",
     ];
   }
 }
