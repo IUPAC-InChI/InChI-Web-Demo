@@ -10,8 +10,8 @@
     "module": "inchiModuleLatest",
     "name": "inchi-web-latest",
     "optionsTemplateId": "inchi-options-latest",
-    "commit": "d124ee52b4de0ed3d608d2a3d522b939f01f2549",
-    "url": "https://github.com/IUPAC-InChI/InChI/releases/tag/v1.07.4",
+    "commit": "11a87982bb518f57ac013f0b258c283655e1ea1d",
+    "url": "https://github.com/IUPAC-InChI/InChI/releases/tag/v1.07.5",
     "default": true
   },
   "Latest with Molecular Inorganics": {
