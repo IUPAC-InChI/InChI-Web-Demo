@@ -161,7 +161,11 @@ async function updateInchiTab1() {
     // no structure
     return;
   } else {
-    molfile = await ketcher.getMolfile();
+    if (inchiVersion == "Latest with Enhanced Stereochemistry") {
+      molfile = await ketcher.getMolfile("v3000"); 
+    } else {
+      molfile = await ketcher.getMolfile();
+    }
   }
 
   // run conversion
