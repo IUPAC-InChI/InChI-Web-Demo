@@ -18,14 +18,14 @@
     "module": "inchiModuleLatestMoIn",
     "name": "inchi-web-latest-moin",
     "optionsTemplateId": "inchi-options-latest-moin",
-    "commit": "35059dc4d1065224b3fd46df1a3094a98ed69b4d",
+    "commit": "3a730b50365b2d70a00bda66178cc8bd9043ecd4",
     "url": "https://github.com/IUPAC-InChI/InChI/pull/107"
   },
   "Latest with Enhanced Stereochemistry": {
     "module": "inchiModuleLatestEnhancedStereo",
     "name": "inchi-web-latest-enhanced-stereo",
     "optionsTemplateId": "inchi-options-latest-enhanced-stereo",
-    "commit": "a07d46bf5fa0bc08f1f78ae915dec35f73ff1de5",
+    "commit": "3a730b50365b2d70a00bda66178cc8bd9043ecd4",
     "url": "https://github.com/IUPAC-InChI/InChI/pull/185"
   }
 }
