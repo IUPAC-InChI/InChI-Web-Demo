@@ -55,6 +55,43 @@ class ReportMaskElement extends InsertHTMLElement {
     this.overlay.setAttribute("aria-hidden", "true");
   }
 
+  hasMolfileAtomsBonds(molfile) {
+    if (!molfile || typeof molfile !== "string") {
+      return false;
+    }
+    const lines = molfile.trim().split("\n");
+    if (lines.length < 4) {
+      return false;
+    }
+    const isV3000 = molfile.includes("V3000");  
+    let atomCount = 0;
+    if (isV3000) {
+      const parts = lines[4].split(/\s+/);
+      atomCount = parseInt(parts[3], 10) || 0;
+    } else {
+      atomCount = parseInt(lines[2].substring(0, 3).trim(), 10) || 0;
+    }
+    return atomCount > 0 ;
+  }
+
+  validatePayload(payload) {  
+    // At least one of molfile_v2 or molfile_v3 must be not null
+    if (payload.molfile_v2 === null && payload.molfile_v3 === null) {
+      throw new Error("Mol file is required.");
+    }
+    let resultV2 = false;
+    let resultV3 = false;
+    if (payload.molfile_v2) {
+      resultV2 = this.hasMolfileAtomsBonds(payload.molfile_v2);
+    }
+    if (payload.molfile_v3) {
+      resultV3 = this.hasMolfileAtomsBonds(payload.molfile_v3);
+    }
+    if (!resultV2 && !resultV3) {
+      throw new Error("Molfile must contain at least one atom.");
+    }
+  }
+
   async postData(data = {}) {
     const paneId = `${this.tabId}-pane`;
 
@@ -129,6 +166,12 @@ class ReportMaskElement extends InsertHTMLElement {
       logs: cleanedLog,
     };
 
+    try {
+      this.validatePayload(payload)
+    } catch (error) {
+      return {"status": "error", "msg": error};
+    }
+
     console.log("reportMask:json", payload);
 
     document.dispatchEvent(
@@ -136,14 +179,19 @@ class ReportMaskElement extends InsertHTMLElement {
     );
     const token = "HtEZnZMm3Nwez1nPb3Y53QpcdKscG5B";
 
-    fetch("https://cheminfo.beilstein.org/report/ingest_issue?token=" + token, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then((response) => response.json())
-      .then((data) => console.log("Success:", data))
-      .catch((error) => console.error("Error:", error));
+    try {
+      const response = await fetch("https://cheminfo.beilstein.org/report/ingest_issue?token=" + token, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const responseData = await response.json();
+      console.log("Success: ", responseData);
+      return {"status": "success", "msg": null};
+    } catch (error) {
+      console.log("Error: ", error);
+      return {"status": "error", "msg": error};
+    }
   }
   catch(err) {
     console.error("Error assembling report mask JSON", err);
@@ -153,9 +201,82 @@ class ReportMaskElement extends InsertHTMLElement {
     event.preventDefault();
     const name = this.nameInput.value.trim() || null;
     const description = this.descriptionInput.value.trim() || null;
-    await this.postData({ name, description });
+    const feedback = await this.postData({ name, description });
     this.form.reset();
     this.close();
+    //open feedback dialog with status
+    const feedbackDialog = document.querySelector("feedback-dialog");
+    if (feedbackDialog) {
+      feedbackDialog.open(feedback);
+    }
+  }
+}
+
+class FeedbackDialogElement extends InsertHTMLElement {
+  constructor() {
+    super("components/report-feedback.html");
+  }
+
+  async connectedCallback() {
+    await super.connectedCallback();
+
+    this.overlay = this.querySelector("#feedbackOverlay");
+    this.iconEl = this.querySelector("#feedbackIcon");
+    this.titleEl = this.querySelector("#feedbackTitle");
+    this.messageEl = this.querySelector("#feedbackMessage");
+    this.confirmBtn = this.querySelector("#feedbackConfirmBtn");
+
+    this.confirmBtn.addEventListener("click", () => this.close());
+
+    this.overlay.addEventListener("click", (e) => {
+      if (e.target === this.overlay) this.close();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && this.overlay.classList.contains("open")) {
+        this.close();
+      }
+    });
+  }
+
+  static get states() {
+    return {
+      success: {
+        iconClass: "success",
+        icon: "✓",
+        title: "Report submitted",
+        message:
+          "Thank you for your report. It has been received and will be reviewed shortly.",
+      },
+      error: {
+        iconClass: "error",
+        icon: "✕",
+        title: "Submission failed",
+        message:
+          "Your report could not be submitted.",
+      },
+    };
+  }
+
+  open(feedback) {
+    const status = feedback["status"];
+    const msg = feedback["msg"];
+    const s = FeedbackDialogElement.states[status];
+    this.iconEl.className = `feedback-icon ${s.iconClass}`;
+    this.iconEl.textContent = s.icon;
+    this.titleEl.textContent = s.title;
+    this.messageEl.textContent = s.message;
+    if (msg) {
+      this.messageEl.textContent = this.messageEl.textContent.concat(" ", msg);
+    }
+    this.overlay.classList.add("open");
+    this.overlay.setAttribute("aria-hidden", "false");
+    this.confirmBtn.focus();
+  }
+
+  close() {
+    this.overlay.classList.remove("open");
+    this.overlay.setAttribute("aria-hidden", "true");
   }
 }
 
@@ -715,6 +836,7 @@ class NGLViewerElement extends HTMLElement {
 customElements.define("inchi-about", AboutElement);
 customElements.define("inchi-inchi-tools", InChIToolsElement);
 customElements.define("report-mask", ReportMaskElement);
+customElements.define("feedback-dialog", FeedbackDialogElement);
 customElements.define("inchi-rinchi-tools", RInChIToolsElement);
 customElements.define("inchi-version-selection", InChIVersionSelectionElement);
 customElements.define("inchi-result-field", InChIResultFieldElement);

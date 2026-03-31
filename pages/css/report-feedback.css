@@ -1,0 +1,71 @@
+.btn-primary {
+  background: #00612c;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.btn-primary:hover {
+  background: #004d22;
+}
+
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+.feedback-overlay.open {
+  display: flex;
+}
+
+.feedback-dialog {
+  background: #fff;
+  padding: 28px 24px 24px;
+  width: 90%;
+  max-width: 380px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.feedback-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.feedback-icon.success {
+  background: #e6f4ec;
+  color: #00612c;
+}
+.feedback-icon.error {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.feedback-dialog h2 {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-family: inherit;
+}
+.feedback-dialog p {
+  margin: 0 0 22px;
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+.feedback-dialog .btn-primary {
+  min-width: 100px;
+}
