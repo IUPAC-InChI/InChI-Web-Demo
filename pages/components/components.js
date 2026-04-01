@@ -55,13 +55,13 @@ class ReportMaskElement extends InsertHTMLElement {
     this.overlay.setAttribute("aria-hidden", "true");
   }
 
-  hasMolfileAtomsBonds(molfile) {
+  molfileIsEmpty(molfile) {
     if (!molfile || typeof molfile !== "string") {
-      return false;
+      return true;
     }
     const lines = molfile.trim().split("\n");
     if (lines.length < 4) {
-      return false;
+      return true;
     }
     const isV3000 = molfile.includes("V3000");
     let atomCount = 0;
@@ -71,22 +71,16 @@ class ReportMaskElement extends InsertHTMLElement {
     } else {
       atomCount = parseInt(lines[2].substring(0, 3).trim(), 10) || 0;
     }
-    return atomCount > 0;
+    return atomCount === 0;
   }
 
   validatePayload(payload) {
     if (payload.molfile_v2 === null && payload.molfile_v3 === null) {
       throw new Error("Molfile is required.");
     }
-    let resultV2 = false;
-    let resultV3 = false;
-    if (payload.molfile_v2) {
-      resultV2 = this.hasMolfileAtomsBonds(payload.molfile_v2);
-    }
-    if (payload.molfile_v3) {
-      resultV3 = this.hasMolfileAtomsBonds(payload.molfile_v3);
-    }
-    if (!resultV2 && !resultV3) {
+    const v2IsEmpty = payload.molfile_v2 ? this.molfileIsEmpty(payload.molfile_v2) : true;
+    const v3IsEmpty = payload.molfile_v3 ? this.molfileIsEmpty(payload.molfile_v3) : true;
+    if (v2IsEmpty && v3IsEmpty) {
       throw new Error("Molfile must contain at least one atom.");
     }
   }
