@@ -63,7 +63,7 @@ class ReportMaskElement extends InsertHTMLElement {
     if (lines.length < 4) {
       return false;
     }
-    const isV3000 = molfile.includes("V3000");  
+    const isV3000 = molfile.includes("V3000");
     let atomCount = 0;
     if (isV3000) {
       const parts = lines[4].split(/\s+/);
@@ -71,10 +71,10 @@ class ReportMaskElement extends InsertHTMLElement {
     } else {
       atomCount = parseInt(lines[2].substring(0, 3).trim(), 10) || 0;
     }
-    return atomCount > 0 ;
+    return atomCount > 0;
   }
 
-  validatePayload(payload) {  
+  validatePayload(payload) {
     // At least one of molfile_v2 or molfile_v3 must be not null
     if (payload.molfile_v2 === null && payload.molfile_v3 === null) {
       throw new Error("Mol file is required.");
@@ -167,30 +167,33 @@ class ReportMaskElement extends InsertHTMLElement {
     };
 
     try {
-      this.validatePayload(payload)
+      this.validatePayload(payload);
     } catch (error) {
-      return {"status": "error", "msg": error};
+      return { status: "error", msg: error };
     }
 
     console.log("reportMask:json", payload);
 
     document.dispatchEvent(
-      new CustomEvent("reportMask:json", { detail: payload })
+      new CustomEvent("reportMask:json", { detail: payload }),
     );
     const token = "HtEZnZMm3Nwez1nPb3Y53QpcdKscG5B";
 
     try {
-      const response = await fetch("https://cheminfo.beilstein.org/report/ingest_issue?token=" + token, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "https://cheminfo.beilstein.org/report/ingest_issue?token=" + token,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
       const responseData = await response.json();
       console.log("Success: ", responseData);
-      return {"status": "success", "msg": null};
+      return { status: "success", msg: null };
     } catch (error) {
       console.log("Error: ", error);
-      return {"status": "error", "msg": error};
+      return { status: "error", msg: error };
     }
   }
   catch(err) {
@@ -252,8 +255,7 @@ class FeedbackDialogElement extends InsertHTMLElement {
         iconClass: "error",
         icon: "✕",
         title: "Submission failed",
-        message:
-          "Your report could not be submitted.",
+        message: "Your report could not be submitted.",
       },
     };
   }
@@ -849,6 +851,5 @@ customElements.define(
 customElements.define(
   "inchi-options-latest-enhanced-stereo",
   InChIOptionsLatestEnhancedStereoElement,
-)
+);
 customElements.define("inchi-ngl-viewer", NGLViewerElement);
-
