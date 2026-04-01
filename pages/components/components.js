@@ -257,8 +257,7 @@ class FeedbackDialogElement extends InsertHTMLElement {
   }
 
   open(feedback) {
-    const status = feedback.status;
-    const msg = feedback.msg;
+    const { status, msg } = feedback;
     const s =
       FeedbackDialogElement.states[status] ??
       FeedbackDialogElement.states.error;
