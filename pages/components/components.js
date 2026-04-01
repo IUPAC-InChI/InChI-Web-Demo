@@ -78,8 +78,12 @@ class ReportMaskElement extends InsertHTMLElement {
     if (payload.molfile_v2 === null && payload.molfile_v3 === null) {
       throw new Error("Molfile is required.");
     }
-    const v2IsEmpty = payload.molfile_v2 ? this.molfileIsEmpty(payload.molfile_v2) : true;
-    const v3IsEmpty = payload.molfile_v3 ? this.molfileIsEmpty(payload.molfile_v3) : true;
+    const v2IsEmpty = payload.molfile_v2
+      ? this.molfileIsEmpty(payload.molfile_v2)
+      : true;
+    const v3IsEmpty = payload.molfile_v3
+      ? this.molfileIsEmpty(payload.molfile_v3)
+      : true;
     if (v2IsEmpty && v3IsEmpty) {
       throw new Error("Molfile must contain at least one atom.");
     }
@@ -200,7 +204,6 @@ class ReportMaskElement extends InsertHTMLElement {
     const feedback = await this.postData({ name, description });
     this.form.reset();
     this.close();
-    //open feedback dialog with status
     const feedbackDialog = document.querySelector("feedback-dialog");
     if (feedbackDialog) {
       feedbackDialog.open(feedback);
