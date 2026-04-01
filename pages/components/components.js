@@ -76,7 +76,7 @@ class ReportMaskElement extends InsertHTMLElement {
 
   validatePayload(payload) {
     if (payload.molfile_v2 === null && payload.molfile_v3 === null) {
-      throw new Error("Mol file is required.");
+      throw new Error("Molfile is required.");
     }
     let resultV2 = false;
     let resultV3 = false;
