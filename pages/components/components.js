@@ -78,12 +78,8 @@ class ReportMaskElement extends InsertHTMLElement {
     if (molfile_v2 === null && molfile_v3 === null) {
       throw new Error("Molfile is required.");
     }
-    const v2IsEmpty = molfile_v2
-      ? this.molfileIsEmpty(molfile_v2)
-      : true;
-    const v3IsEmpty = molfile_v3
-      ? this.molfileIsEmpty(molfile_v3)
-      : true;
+    const v2IsEmpty = this.molfileIsEmpty(molfile_v2);
+    const v3IsEmpty = this.molfileIsEmpty(molfile_v3);
     if (v2IsEmpty && v3IsEmpty) {
       throw new Error("Molfile must contain at least one atom.");
     }
