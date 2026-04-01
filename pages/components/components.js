@@ -259,7 +259,9 @@ class FeedbackDialogElement extends InsertHTMLElement {
   open(feedback) {
     const status = feedback.status;
     const msg = feedback.msg;
-    const s = FeedbackDialogElement.states[status];
+    const s =
+      FeedbackDialogElement.states[status] ??
+      FeedbackDialogElement.states.error;
     this.iconEl.className = `feedback-icon ${s.iconClass}`;
     this.iconEl.textContent = s.icon;
     this.titleEl.textContent = s.title;
