@@ -32,3 +32,9 @@ pages/rinchi
 pages/ngl
 
 source
+
+# AI tooling
+.claude
+.codegraph
+AGENTS.md
+CLAUDE.md
