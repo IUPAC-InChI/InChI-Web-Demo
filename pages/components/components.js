@@ -562,6 +562,16 @@ class InChIOptions1075Element extends InChIOptionsElement {
     ];
   }
 }
+class InChIOptionsDevElement extends InChIOptionsElement {
+  constructor() {
+    super();
+    this.componentPaths = [
+      "components/options/tautomer-options.html",
+      "components/options/stereo-base-options.html",
+      "components/options/base-options.html",
+    ];
+  }
+}
 class InChIOptionsLatestMoInElement extends InChIOptionsElement {
   constructor() {
     super();
@@ -837,6 +847,7 @@ customElements.define("inchi-version-selection", InChIVersionSelectionElement);
 customElements.define("inchi-result-field", InChIResultFieldElement);
 customElements.define("inchi-options-106", InChIOptions106Element);
 customElements.define("inchi-options-1075", InChIOptions1075Element);
+customElements.define("inchi-options-dev", InChIOptionsDevElement);
 customElements.define(
   "inchi-options-latest-moin",
   InChIOptionsLatestMoInElement,

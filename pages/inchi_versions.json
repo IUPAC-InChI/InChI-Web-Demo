@@ -14,6 +14,13 @@
     "url": "https://github.com/IUPAC-InChI/InChI/releases/tag/v1.07.5",
     "default": true
   },
+  "Dev": {
+    "module": "inchiModuleDev",
+    "name": "inchi-web-dev",
+    "optionsTemplateId": "inchi-options-dev",
+    "commit": "dev",
+    "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
+  },
   "Latest with Molecular Inorganics": {
     "module": "inchiModuleLatestMoIn",
     "name": "inchi-web-latest-moin",
