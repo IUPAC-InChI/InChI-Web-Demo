@@ -4,7 +4,7 @@ project(InchiWeb C)
 # Enable POSIX extensions for strdup and newer InChI features
 add_definitions(-D_GNU_SOURCE)
 
-set(INCHI_WEB_NAME "inchi-web-latest" CACHE STRING "Output filename")
+set(INCHI_WEB_NAME "inchi-web-1075" CACHE STRING "Output filename")
 set(MODULE_NAME "inchiModule" CACHE STRING "Emscripten module export name")
 
 set(P_BASE "${CMAKE_CURRENT_SOURCE_DIR}/../INCHI_BASE/src")

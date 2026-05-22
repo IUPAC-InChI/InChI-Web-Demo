@@ -1,7 +1,7 @@
 // inchi.js assumes global availability of the inchi modules.
 // That's why we need to inject the modules into the global scope before using inchi.js.
 global.inchiModule106 = require("../pages/inchi/inchi-web106.js");
-global.inchiModuleLatest = require("../pages/inchi/inchi-web-latest.js");
+global.inchiModule1075 = require("../pages/inchi/inchi-web-1075.js");
 global.inchiModuleLatestMoIn = require("../pages/inchi/inchi-web-latest-moin.js");
 global.inchiModuleLatestEnhancedStereo = require("../pages/inchi/inchi-web-latest-enhanced-stereo.js");
 
@@ -22,7 +22,7 @@ global.availableInchiVersions = loadInchiVersions();
 
 const versions = [
   ["1.06"],
-  ["Latest"],
+  ["1.07.5"],
   ["Latest with Molecular Inorganics"],
   ["Latest with Enhanced Stereochemistry"],
 ];

@@ -6,10 +6,10 @@
     "commit": "a515b3973d08abe659d0de3e4def3d28d74eeb88",
     "url": "https://github.com/IUPAC-InChI/InChI/releases/tag/v1.06"
   },
-  "Latest": {
-    "module": "inchiModuleLatest",
-    "name": "inchi-web-latest",
-    "optionsTemplateId": "inchi-options-latest",
+  "1.07.5": {
+    "module": "inchiModule1075",
+    "name": "inchi-web-1075",
+    "optionsTemplateId": "inchi-options-1075",
     "commit": "11a87982bb518f57ac013f0b258c283655e1ea1d",
     "url": "https://github.com/IUPAC-InChI/InChI/releases/tag/v1.07.5",
     "default": true

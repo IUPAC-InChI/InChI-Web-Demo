@@ -36,5 +36,6 @@ source
 # AI tooling
 .claude
 .codegraph
+.planning
 AGENTS.md
 CLAUDE.md

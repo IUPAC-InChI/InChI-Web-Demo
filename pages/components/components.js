@@ -552,7 +552,7 @@ class InChIOptions106Element extends InChIOptionsElement {
     ];
   }
 }
-class InChIOptionsLatestElement extends InChIOptionsElement {
+class InChIOptions1075Element extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
@@ -836,7 +836,7 @@ customElements.define("inchi-rinchi-tools", RInChIToolsElement);
 customElements.define("inchi-version-selection", InChIVersionSelectionElement);
 customElements.define("inchi-result-field", InChIResultFieldElement);
 customElements.define("inchi-options-106", InChIOptions106Element);
-customElements.define("inchi-options-latest", InChIOptionsLatestElement);
+customElements.define("inchi-options-1075", InChIOptions1075Element);
 customElements.define(
   "inchi-options-latest-moin",
   InChIOptionsLatestMoInElement,
