@@ -378,6 +378,7 @@ async function updateKetcherOptions(ketcher, inchiVersion) {
     );
     console.log("showHydrogenLabels: Terminal and Hetero");
   }
+  console.log(inchiVersion);
 }
 
 async function convertMolfileToInchiAndWriteResults(
