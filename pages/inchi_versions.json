@@ -6,26 +6,33 @@
     "commit": "a515b3973d08abe659d0de3e4def3d28d74eeb88",
     "url": "https://github.com/IUPAC-InChI/InChI/releases/tag/v1.06"
   },
-  "Latest": {
-    "module": "inchiModuleLatest",
-    "name": "inchi-web-latest",
-    "optionsTemplateId": "inchi-options-latest",
+  "1.07.5": {
+    "module": "inchiModule1075",
+    "name": "inchi-web-1075",
+    "optionsTemplateId": "inchi-options-1075",
     "commit": "11a87982bb518f57ac013f0b258c283655e1ea1d",
     "url": "https://github.com/IUPAC-InChI/InChI/releases/tag/v1.07.5",
     "default": true
   },
-  "Latest with Molecular Inorganics": {
-    "module": "inchiModuleLatestMoIn",
-    "name": "inchi-web-latest-moin",
-    "optionsTemplateId": "inchi-options-latest-moin",
-    "commit": "3a730b50365b2d70a00bda66178cc8bd9043ecd4",
-    "url": "https://github.com/IUPAC-InChI/InChI/pull/107"
+  "Dev": {
+    "module": "inchiModuleDev",
+    "name": "inchi-web-dev",
+    "optionsTemplateId": "inchi-options-dev",
+    "commit": "dev",
+    "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
   },
-  "Latest with Enhanced Stereochemistry": {
-    "module": "inchiModuleLatestEnhancedStereo",
-    "name": "inchi-web-latest-enhanced-stereo",
-    "optionsTemplateId": "inchi-options-latest-enhanced-stereo",
-    "commit": "3a730b50365b2d70a00bda66178cc8bd9043ecd4",
-    "url": "https://github.com/IUPAC-InChI/InChI/pull/185"
+  "Dev with Molecular Inorganics": {
+    "module": "inchiModuleDevMoIn",
+    "name": "inchi-web-dev-moin",
+    "optionsTemplateId": "inchi-options-dev-moin",
+    "commit": "dev",
+    "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
+  },
+  "Dev with Enhanced Stereochemistry": {
+    "module": "inchiModuleDevEnhancedStereo",
+    "name": "inchi-web-dev-enhanced-stereo",
+    "optionsTemplateId": "inchi-options-dev-enhanced-stereo",
+    "commit": "dev",
+    "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
   }
 }

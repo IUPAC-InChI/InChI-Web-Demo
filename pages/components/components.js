@@ -442,7 +442,7 @@ class InChIOptionsElement extends HTMLElement {
     boundingBox.innerHTML = "<h4>Options</h4>" + htmlFragments.join("");
     this.appendChild(boundingBox);
 
-    if (inchiVersion === "Latest with Molecular Inorganics") {
+    if (inchiVersion === "Dev with Molecular Inorganics") {
       this.querySelector('input[data-id="NPZz"]').checked = true;
     }
 
@@ -552,7 +552,7 @@ class InChIOptions106Element extends InChIOptionsElement {
     ];
   }
 }
-class InChIOptionsLatestElement extends InChIOptionsElement {
+class InChIOptions1075Element extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
@@ -562,7 +562,17 @@ class InChIOptionsLatestElement extends InChIOptionsElement {
     ];
   }
 }
-class InChIOptionsLatestMoInElement extends InChIOptionsElement {
+class InChIOptionsDevElement extends InChIOptionsElement {
+  constructor() {
+    super();
+    this.componentPaths = [
+      "components/options/tautomer-options.html",
+      "components/options/stereo-base-options.html",
+      "components/options/base-options.html",
+    ];
+  }
+}
+class InChIOptionsDevMoInElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
@@ -574,7 +584,7 @@ class InChIOptionsLatestMoInElement extends InChIOptionsElement {
   }
 }
 
-class InChIOptionsLatestEnhancedStereoElement extends InChIOptionsElement {
+class InChIOptionsDevEnhancedStereoElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
@@ -836,13 +846,14 @@ customElements.define("inchi-rinchi-tools", RInChIToolsElement);
 customElements.define("inchi-version-selection", InChIVersionSelectionElement);
 customElements.define("inchi-result-field", InChIResultFieldElement);
 customElements.define("inchi-options-106", InChIOptions106Element);
-customElements.define("inchi-options-latest", InChIOptionsLatestElement);
+customElements.define("inchi-options-1075", InChIOptions1075Element);
+customElements.define("inchi-options-dev", InChIOptionsDevElement);
 customElements.define(
-  "inchi-options-latest-moin",
-  InChIOptionsLatestMoInElement,
+  "inchi-options-dev-moin",
+  InChIOptionsDevMoInElement,
 );
 customElements.define(
-  "inchi-options-latest-enhanced-stereo",
-  InChIOptionsLatestEnhancedStereoElement,
+  "inchi-options-dev-enhanced-stereo",
+  InChIOptionsDevEnhancedStereoElement,
 );
 customElements.define("inchi-ngl-viewer", NGLViewerElement);
