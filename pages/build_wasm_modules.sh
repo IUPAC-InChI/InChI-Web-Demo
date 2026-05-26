@@ -19,7 +19,7 @@ build_inchi_wasm "1.06" "$inchi_versions_file" "$root_dir" "${root_dir}/inchi/ut
 build_inchi_wasm "1.07.5" "$inchi_versions_file" "$root_dir"
 build_inchi_wasm "Dev" "$inchi_versions_file" "$root_dir"
 build_inchi_wasm "Dev with Molecular Inorganics" "$inchi_versions_file" "$root_dir"
-build_inchi_wasm "Latest with Enhanced Stereochemistry" "$inchi_versions_file" "$root_dir"
+build_inchi_wasm "Dev with Enhanced Stereochemistry" "$inchi_versions_file" "$root_dir"
 
 # Build RInChI
 build_rinchi_wasm "$root_dir"
