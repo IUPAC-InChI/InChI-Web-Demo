@@ -584,7 +584,7 @@ class InChIOptionsDevMoInElement extends InChIOptionsElement {
   }
 }
 
-class InChIOptionsLatestEnhancedStereoElement extends InChIOptionsElement {
+class InChIOptionsDevEnhancedStereoElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
@@ -853,7 +853,7 @@ customElements.define(
   InChIOptionsDevMoInElement,
 );
 customElements.define(
-  "inchi-options-latest-enhanced-stereo",
-  InChIOptionsLatestEnhancedStereoElement,
+  "inchi-options-dev-enhanced-stereo",
+  InChIOptionsDevEnhancedStereoElement,
 );
 customElements.define("inchi-ngl-viewer", NGLViewerElement);
