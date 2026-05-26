@@ -21,12 +21,12 @@
     "commit": "dev",
     "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
   },
-  "Latest with Molecular Inorganics": {
-    "module": "inchiModuleLatestMoIn",
-    "name": "inchi-web-latest-moin",
-    "optionsTemplateId": "inchi-options-latest-moin",
-    "commit": "c39308288ba2746451072ee3f65b611c2b223808",
-    "url": "https://github.com/IUPAC-InChI/InChI/pull/107"
+  "Dev with Molecular Inorganics": {
+    "module": "inchiModuleDevMoIn",
+    "name": "inchi-web-dev-moin",
+    "optionsTemplateId": "inchi-options-dev-moin",
+    "commit": "4d37db2c024b932f02b6c0be8c83f876053de606",
+    "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
   },
   "Latest with Enhanced Stereochemistry": {
     "module": "inchiModuleLatestEnhancedStereo",

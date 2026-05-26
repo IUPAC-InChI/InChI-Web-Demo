@@ -3,7 +3,7 @@
 global.inchiModule106 = require("../pages/inchi/inchi-web106.js");
 global.inchiModule1075 = require("../pages/inchi/inchi-web-1075.js");
 global.inchiModuleDev = require("../pages/inchi/inchi-web-dev.js");
-global.inchiModuleLatestMoIn = require("../pages/inchi/inchi-web-latest-moin.js");
+global.inchiModuleDevMoIn = require("../pages/inchi/inchi-web-dev-moin.js");
 global.inchiModuleLatestEnhancedStereo = require("../pages/inchi/inchi-web-latest-enhanced-stereo.js");
 
 // Mock availableInchiVersions for global availability during testing.
@@ -25,7 +25,7 @@ const versions = [
   ["1.06"],
   ["1.07.5"],
   ["dev"],
-  ["Latest with Molecular Inorganics"],
+  ["Dev with Molecular Inorganics"],
   ["Latest with Enhanced Stereochemistry"],
 ];
 
