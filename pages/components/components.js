@@ -442,7 +442,7 @@ class InChIOptionsElement extends HTMLElement {
     boundingBox.innerHTML = "<h4>Options</h4>" + htmlFragments.join("");
     this.appendChild(boundingBox);
 
-    if (inchiVersion === "Latest with Molecular Inorganics") {
+    if (inchiVersion === "Dev with Molecular Inorganics") {
       this.querySelector('input[data-id="NPZz"]').checked = true;
     }
 
@@ -572,7 +572,7 @@ class InChIOptionsDevElement extends InChIOptionsElement {
     ];
   }
 }
-class InChIOptionsLatestMoInElement extends InChIOptionsElement {
+class InChIOptionsDevMoInElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
@@ -849,8 +849,8 @@ customElements.define("inchi-options-106", InChIOptions106Element);
 customElements.define("inchi-options-1075", InChIOptions1075Element);
 customElements.define("inchi-options-dev", InChIOptionsDevElement);
 customElements.define(
-  "inchi-options-latest-moin",
-  InChIOptionsLatestMoInElement,
+  "inchi-options-dev-moin",
+  InChIOptionsDevMoInElement,
 );
 customElements.define(
   "inchi-options-latest-enhanced-stereo",
