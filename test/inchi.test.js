@@ -24,7 +24,7 @@ global.availableInchiVersions = loadInchiVersions();
 const versions = [
   ["1.06"],
   ["1.07.5"],
-  ["dev"],
+  ["Dev"],
   ["Dev with Molecular Inorganics"],
   ["Dev with Enhanced Stereochemistry"],
 ];
