@@ -113,7 +113,7 @@ build_rinchi_wasm() {
         rm -rf "$artifact_dir" && mkdir -p "$artifact_dir"
 
         # RInChI needs InChI source
-        clone_inchi_source $(jq -r '."Latest".commit' "${_root_dir}/pages/inchi_versions.json")  "${source_dir}/InChI"
+        clone_inchi_source $(jq -r '."1.07.5".commit' "${_root_dir}/pages/inchi_versions.json")  "${source_dir}/InChI"
 
         # Get RInChI source
         git clone --no-checkout --branch "main" --single-branch https://github.com/IUPAC-InChI/RInChI.git "${source_dir}/RInChI"
