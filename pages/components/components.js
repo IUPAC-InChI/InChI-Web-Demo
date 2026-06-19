@@ -869,5 +869,5 @@ customElements.define(
 customElements.define(
   "inchi-options-no-metal-h",
   InChIOptionsNoMetalH,
-)
+);
 customElements.define("inchi-ngl-viewer", NGLViewerElement);
