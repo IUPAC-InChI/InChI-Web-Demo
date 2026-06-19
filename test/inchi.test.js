@@ -5,6 +5,7 @@ global.inchiModule1075 = require("../pages/inchi/inchi-web-1075.js");
 global.inchiModuleDev = require("../pages/inchi/inchi-web-dev.js");
 global.inchiModuleDevMoIn = require("../pages/inchi/inchi-web-dev-moin.js");
 global.inchiModuleDevEnhancedStereo = require("../pages/inchi/inchi-web-dev-enhanced-stereo.js");
+global.inchiModuleNoMetalH = require("../pages/inchi/inchi-web-no-metal-h.js");
 
 // Mock availableInchiVersions for global availability during testing.
 const loadInchiVersions = () => {
@@ -27,6 +28,7 @@ const versions = [
   ["Dev"],
   ["Dev with Molecular Inorganics"],
   ["Dev with Enhanced Stereochemistry"],
+  ["No Metal Hydrogens"],
 ];
 
 const {

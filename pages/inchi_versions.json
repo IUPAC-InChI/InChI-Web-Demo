@@ -34,5 +34,12 @@
     "optionsTemplateId": "inchi-options-dev-enhanced-stereo",
     "commit": "dev",
     "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
+  },
+  "No Metal Hydrogens": {
+    "module": "inchiModuleNoMetalH",
+    "name": "inchi-web-no-metal-h",
+    "optionsTemplateId": "inchi-options-no-metal-h",
+    "commit": "5198244803e37116def21814f42b90b1fe42930f",
+    "url": "https://github.com/IUPAC-InChI/InChI/pull/228"
   }
 }

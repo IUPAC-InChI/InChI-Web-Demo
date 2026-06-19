@@ -583,13 +583,23 @@ class InChIOptionsDevMoInElement extends InChIOptionsElement {
     ];
   }
 }
-
 class InChIOptionsDevEnhancedStereoElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
       "components/options/tautomer-options.html",
       "components/options/latest-enhanced-stereo-options.html",
+      "components/options/base-options.html",
+    ];
+  }
+}
+class InChIOptionsNoMetalH extends InChIOptionsElement {
+  constructor() {
+    super();
+    this.componentPaths = [
+      "components/options/tautomer-options.html",
+      "components/options/latest-moin-options.html",
+      "components/options/stereo-base-options.html",
       "components/options/base-options.html",
     ];
   }
@@ -856,4 +866,8 @@ customElements.define(
   "inchi-options-dev-enhanced-stereo",
   InChIOptionsDevEnhancedStereoElement,
 );
+customElements.define(
+  "inchi-options-no-metal-h",
+  InChIOptionsNoMetalH,
+)
 customElements.define("inchi-ngl-viewer", NGLViewerElement);
