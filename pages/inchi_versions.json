@@ -40,7 +40,7 @@
     "name": "inchi-web-no-metal-h",
     "optionsTemplateId": "inchi-options-no-metal-h",
     "commit": "dev",
-    "url": "https://github.com/IUPAC-InChI/InChI/pull/dev"
+    "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
   },
   "Explicit Zero Valence": {
     "module": "inchiModuleExplicitZeroValence",
