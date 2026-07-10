@@ -39,7 +39,14 @@
     "module": "inchiModuleNoMetalH",
     "name": "inchi-web-no-metal-h",
     "optionsTemplateId": "inchi-options-no-metal-h",
-    "commit": "5198244803e37116def21814f42b90b1fe42930f",
-    "url": "https://github.com/IUPAC-InChI/InChI/pull/228"
+    "commit": "dev",
+    "url": "https://github.com/IUPAC-InChI/InChI/pull/dev"
+  },
+  "Explicit Zero Valence": {
+    "module": "inchiModuleExplicitZeroValence",
+    "name": "inchi-web-explicit-zero-valence",
+    "optionsTemplateId": "inchi-options-explicit-zero-valence",
+    "commit": "5c499d356c10e408d441f2ff79438cea092da7d1",
+    "url": "https://github.com/IUPAC-InChI/InChI/pull/230"
   }
 }

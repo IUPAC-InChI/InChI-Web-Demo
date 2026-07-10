@@ -604,6 +604,17 @@ class InChIOptionsNoMetalH extends InChIOptionsElement {
     ];
   }
 }
+class InChIOptionsExplicitZeroValence extends InChIOptionsElement {
+  constructor() {
+    super();
+    this.componentPaths = [
+      "components/options/tautomer-options.html",
+      "components/options/latest-moin-options.html",
+      "components/options/stereo-base-options.html",
+      "components/options/base-options.html",
+    ];
+  }
+}
 
 function createAnnotation(text, color) {
   const annotation = document.createElement("div");
@@ -869,5 +880,9 @@ customElements.define(
 customElements.define(
   "inchi-options-no-metal-h",
   InChIOptionsNoMetalH,
+);
+customElements.define(
+  "inchi-options-explicit-zero-valence",
+  InChIOptionsExplicitZeroValence
 );
 customElements.define("inchi-ngl-viewer", NGLViewerElement);
