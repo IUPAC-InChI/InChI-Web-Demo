@@ -20,11 +20,11 @@ jobs:
       - name: Install yarn
         run: npm install -g yarn
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Cache dependencies
         id: cache-dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             pages/jquery
@@ -41,7 +41,7 @@ jobs:
 
       - name: Cache Ketcher
         id: cache-ketcher
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: pages/ketcher
           key: ${{ hashFiles('ketcher/react-app/**/*') }}
@@ -55,7 +55,7 @@ jobs:
 
       - name: Cache WASM modules
         id: cache-wasm-modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             pages/inchi
@@ -75,9 +75,9 @@ jobs:
           yarn install
           yarn test
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           retention-days: 30
           path: pages
@@ -90,4 +90,4 @@ jobs:
     needs: build-and-test
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
