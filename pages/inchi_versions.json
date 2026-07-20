@@ -25,8 +25,8 @@
     "module": "inchiModuleDevMoIn",
     "name": "inchi-web-dev-moin",
     "optionsTemplateId": "inchi-options-dev-moin",
-    "commit": "dev",
-    "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
+    "commit": "cf3d80578b76ef9711eb1dd626afd2b95aaeee0c",
+    "url": "https://github.com/IUPAC-InChI/InChI/tree/Extension/Bond_handling"
   },
   "Dev with Enhanced Stereochemistry": {
     "module": "inchiModuleDevEnhancedStereo",
