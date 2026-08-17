@@ -1,22 +1,22 @@
-<div
-  id="feedbackOverlay"
-  class="feedback-overlay"
-  role="presentation"
-  aria-hidden="true"
+<!--
+  Native <dialog> for the same reasons as report-mask.html. role="alertdialog"
+  marks it as an interruption that needs acknowledgement; the icon is decorative
+  because the title and message already carry the outcome.
+-->
+<dialog
+  class="inchi-dialog feedback-dialog"
+  role="alertdialog"
+  aria-labelledby="feedbackTitle"
+  aria-describedby="feedbackMessage"
 >
-  <div
-    id="feedbackDialog"
-    class="feedback-dialog"
-    role="alertdialog"
-    aria-modal="true"
-    aria-labelledby="feedbackTitle"
-    aria-describedby="feedbackMessage"
-  >
-    <div id="feedbackIcon" class="feedback-icon" aria-hidden="true"></div>
+  <div class="inchi-dialog-body">
+    <div class="feedback-icon">
+      <i class="feedback-glyph" aria-hidden="true"></i>
+    </div>
 
     <h2 id="feedbackTitle"></h2>
     <p id="feedbackMessage"></p>
 
-    <button id="feedbackConfirmBtn" class="btn-primary">OK</button>
+    <button type="button" class="btn btn-primary feedback-confirm">OK</button>
   </div>
-</div>
+</dialog>

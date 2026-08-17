@@ -1,6 +1,126 @@
 "use strict";
 
+/*
+ * Load a script on demand, once, and resolve when it has run.
+ *
+ * The heavy parts of this app — one WebAssembly module per InChI version, the
+ * RInChI module, the NGL viewer — used to be fetched and compiled during page
+ * load whether or not the visitor ever reached the tab that needs them. They
+ * are pulled in through here instead, at the point where something is about to
+ * use them (or when opening a tab signals that intent; see warmUp below).
+ */
+const loadedScripts = new Map();
+
+function loadScriptOnce(src) {
+  if (!loadedScripts.has(src)) {
+    loadedScripts.set(
+      src,
+      new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = false;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Could not load ${src}`));
+        document.head.appendChild(script);
+      })
+    );
+  }
+  return loadedScripts.get(src);
+}
+
+/*
+ * Fetch the heavy modules on intent rather than on demand, so that deferring
+ * them off the page load does not turn into a wait at the moment of use.
+ *
+ * - the default InChI version once the page has loaded and gone idle, because
+ *   the first tab converts as soon as the visitor draws something;
+ * - the RInChI module and the 3D viewer when their tab is opened, seconds
+ *   before either is needed.
+ */
+function warmUp() {
+  const warm = (promise) =>
+    Promise.resolve(promise).catch((error) =>
+      console.error("Warm-up failed", error)
+    );
+
+  /*
+   * After "load", not just when idle: drawing needs the structure editor, so
+   * there is nothing to gain from competing with it for bandwidth.
+   */
+  const idle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 1500));
+  window.addEventListener("load", () => idle(warmDefaultInchiVersion));
+
+  async function warmDefaultInchiVersion() {
+    try {
+      await window.inchiVersionsReady;
+    } catch {
+      return; // The version selector reports this to the visitor.
+    }
+    const defaultVersion = Object.entries(availableInchiVersions).find(
+      ([, config]) => config.default
+    )?.[0];
+    if (defaultVersion) {
+      warm(availableInchiVersions[defaultVersion].module);
+    }
+  }
+
+  document.addEventListener("shown.bs.tab", (event) => {
+    const target = event.target.dataset.bsTarget;
+    if (target === "#pills-rinchi") {
+      warm(rinchiModule());
+    }
+    if (target === "#inchi-tab2-pane" || target === "#inchi-tab3-pane") {
+      warm(document.querySelector(`${target} inchi-ngl-viewer`)?.ensureStage());
+    }
+  });
+}
+warmUp();
+
+/*
+ * Behaviour that differs per InChI version, keyed by the display names in
+ * inchi_versions.json.
+ *
+ * Kept in one place because these used to be string comparisons spread over the
+ * code: renaming a version in inchi_versions.json silently disabled the
+ * behaviour instead of breaking anything visibly. assertVersionBehavior() now
+ * reports a key that no longer matches a version.
+ */
+const VERSION_BEHAVIOR = {
+  "Dev with Molecular Inorganics": {
+    // Molecular inorganics need every hydrogen label drawn in Ketcher.
+    showAllHydrogenLabels: true,
+    checkNPZzByDefault: true,
+  },
+  "Dev with Enhanced Stereochemistry": {
+    // Enhanced stereochemistry is only representable in V3000.
+    molfileFormat: "v3000",
+  },
+};
+
+function versionBehavior(inchiVersion) {
+  return VERSION_BEHAVIOR[inchiVersion] ?? {};
+}
+
+async function assertVersionBehavior() {
+  try {
+    await window.inchiVersionsReady;
+  } catch {
+    // The version selector reports a missing version list to the user.
+    return;
+  }
+  Object.keys(VERSION_BEHAVIOR)
+    .filter((versionName) => !(versionName in availableInchiVersions))
+    .forEach((versionName) => {
+      console.error(
+        `VERSION_BEHAVIOR has no matching InChI version: "${versionName}". ` +
+          `Rename it to one of: ${Object.keys(availableInchiVersions).join(", ")}.`,
+      );
+    });
+}
+assertVersionBehavior();
+
 async function addInchiOptionsForm(tabDivId, updateFunction) {
+  await window.inchiVersionsReady;
   const inchiVersion = getVersion(tabDivId);
   const inchiOptions = document.createElement(
     availableInchiVersions[inchiVersion].optionsTemplateId
@@ -154,18 +274,26 @@ async function updateInchiTab1() {
 
   let molfile;
   const ketcher = getKetcher("inchi-tab1-ketcher");
-  if (ketcher.containsReaction()) {
-    writeResult("Cannot convert reactions to InChI", "inchi-tab1-logs");
+  if (!ketcher) {
+    writeResult(
+      "The structure editor is not ready yet. Please reload the page (CTRL + F5) if this persists.",
+      "inchi-tab1-logs",
+    );
+    return;
+  } else if (ketcher.containsReaction()) {
+    writeResult(
+      "InChI describes single structures, not reactions. Switch to the RInChI tab to convert this reaction.",
+      "inchi-tab1-logs"
+    );
     return;
   } else if (ketcher.editor.struct().isBlank()) {
     // no structure
     return;
   } else {
-    if (inchiVersion == "Latest with Enhanced Stereochemistry") {
-      molfile = await ketcher.getMolfile("v3000"); 
-    } else {
-      molfile = await ketcher.getMolfile();
-    }
+    const molfileFormat = versionBehavior(inchiVersion).molfileFormat;
+    molfile = molfileFormat
+      ? await ketcher.getMolfile(molfileFormat)
+      : await ketcher.getMolfile();
   }
 
   // run conversion
@@ -226,17 +354,30 @@ async function updateInchiTab3() {
   }
   if (!auxinfo.startsWith("AuxInfo=")) {
     writeResult(
-      'The input string should start with "AuxInfo=".',
+      'This does not look like an AuxInfo string: it should start with "AuxInfo=".',
       logTextElementId
     );
     return;
   }
 
   // run conversion
-  const molfileResult = await molfileFromAuxinfo(auxinfo, 0, 0, inchiVersion);
-  const { molfile, log, message } = molfileResult;
-  const inchiResult = await inchiFromMolfile(molfile, "", inchiVersion);
-  const { inchi } = inchiResult;
+  let molfile, log, message, inchi;
+  try {
+    ({ molfile, log, message } = await molfileFromAuxinfo(
+      auxinfo,
+      0,
+      0,
+      inchiVersion
+    ));
+    ({ inchi } = await inchiFromMolfile(molfile, "", inchiVersion));
+  } catch (e) {
+    writeResult(
+      `This AuxInfo could not be converted to a structure.\nDetail: ${e}`,
+      logTextElementId
+    );
+    console.error(e);
+    return;
+  }
 
   const viewer = document.getElementById("inchi-tab3-ngl-viewer");
   viewer.loadStructure(molfile, inchi, auxinfo);
@@ -258,9 +399,20 @@ async function updateInchiTab4() {
   const options = collectInchiOptions("inchi-tab4-pane");
   const inchiVersion = getVersion("inchi-tab4-pane");
   const sdFile = document.getElementById("inchi-tab4-sdfFileInput").files[0];
-  if (!sdFile || sdFile.size === 0 || sdFile.name.endsWith(".sdf") === false) {
-    // no file selected or not a valid SDF file
-    writeResult("No SD file selected.", "inchi-tab4-inchis");
+  if (!sdFile) {
+    writeResult("Choose an SD file to convert.", "inchi-tab4-inchis");
+    return;
+  }
+  // Case-insensitive: Windows tools routinely write ".SDF".
+  if (!sdFile.name.toLowerCase().endsWith(".sdf")) {
+    writeResult(
+      `"${sdFile.name}" is not an SD file. Please choose a file with the .sdf extension.`,
+      "inchi-tab4-inchis"
+    );
+    return;
+  }
+  if (sdFile.size === 0) {
+    writeResult(`"${sdFile.name}" is empty.`, "inchi-tab4-inchis");
     return;
   }
 
@@ -277,41 +429,59 @@ async function writeInchisFromSdFileToOutput(
   const sdfText = await sdFile.text();
 
   const delimiter = getSDFDelimiter(sdfText);
-  if (!delimiter) {
-    output.innerHTML = "<p>Error: Invalid SDF file format.</p>";
+  /*
+   * A single-record file exported as .sdf often has no "$$$$" terminator. That
+   * is still something we can convert, so treat the whole text as one record
+   * instead of rejecting the file.
+   */
+  const entries = (delimiter ? sdfText.split(delimiter) : [sdfText]).filter(
+    (entry) => entry.trim() !== ""
+  );
+
+  if (entries.length === 0) {
+    writeResult(
+      `No records found in "${sdFile.name}". Records are separated by "$$$$".`,
+      output.id
+    );
     return;
   }
-  const entries = sdfText
-    .split(delimiter)
-    .filter((entry) => entry.trim() !== "");
 
-  console.log(entries.length, "entries found in the SD file");
-
-  await throttleMap(entries, async (mol, index) => {
-    if (mol === "") {
-      return `<p>Error processing entry ${index + 1}: empty entry</p>`;
+  let completed = 0;
+  const reportProgress = () => {
+    completed++;
+    // Coarse enough not to thrash layout on a file with thousands of records.
+    if (completed % 20 === 0) {
+      output.textContent = `Converted ${completed} of ${entries.length} records…`;
     }
-    try {
-      const inchiResult = await getAllFromMolfile(mol, options, inchiVersion);
-      if (inchiResult.inchi !== "") {
-        return `<p>${inchiResult.inchi}\n${inchiResult.auxinfo}\n${inchiResult.inchikey}\n</p>`;
-      } else {
-        return `<p>Error processing entry ${index + 1}:\n ${
-          inchiResult.log
-        }; </p>`;
+  };
+  output.textContent = `Converting ${entries.length} record${
+    entries.length === 1 ? "" : "s"
+  }…`;
+
+  try {
+    const results = await throttleMap(entries, async (mol, index) => {
+      try {
+        const inchiResult = await getAllFromMolfile(mol, options, inchiVersion);
+        if (inchiResult.inchi !== "") {
+          return `${inchiResult.inchi}\n${inchiResult.auxinfo}\n${inchiResult.inchikey}\n`;
+        }
+        return `Record ${index + 1} could not be converted.\nDetail: ${inchiResult.log}\n`;
+      } catch (e) {
+        console.error(`Caught exception from inchiFromMolfile(): ${e}`);
+        return `Record ${index + 1} could not be converted.\nDetail: ${e.message}\n`;
+      } finally {
+        reportProgress();
       }
-    } catch (e) {
-      console.error(`Caught exception from inchiFromMolfile(): ${e}`);
-      return `<p>Error processing entry ${index + 1}: ${e.message}</p>`;
-    }
-  })
-    .then((results) => {
-      output.innerHTML = results.join("");
-    })
-    .catch((error) => {
-      console.error(`Error processing SD file: ${error}`);
-      output.innerHTML = `<p>Error processing SD file: ${error.message}</p>`;
     });
+    /*
+     * textContent, not innerHTML: the records come from a file the user was
+     * given by someone else, and the <pre> renders the line breaks anyway.
+     */
+    output.textContent = results.join("\n");
+  } catch (error) {
+    console.error(`Error processing SD file: ${error}`);
+    output.textContent = `The SD file could not be processed.\nDetail: ${error.message}`;
+  }
 }
 
 function getSDFDelimiter(sdfText) {
@@ -341,11 +511,8 @@ async function onChangeInChIVersionTab2() {
 }
 
 async function onChangeInChIVersionTab3() {
+  // This tab renders into the NGL viewer, so there is no Ketcher to reconfigure.
   await updateInchiTab3();
-  await updateKetcherOptions(
-    getKetcher("inchi-tab3-ketcher"),
-    getVersion("inchi-tab3-pane")
-  );
 }
 
 async function onChangeInChIVersionTab4() {
@@ -365,20 +532,16 @@ async function updateInchiOptions(tabDivId, updateFunction) {
  */
 async function updateKetcherOptions(ketcher, inchiVersion) {
   if (!ketcher) {
-    console.log("Ketcher not found");
+    console.error("Ketcher not found");
     return;
   }
 
-  if (inchiVersion === "Dev with Molecular Inorganics") {
-    await ketcher.editor.setOptions('{"showHydrogenLabels": "all"}');
-    console.log("showHydrogenLabels: all");
-  } else {
-    await ketcher.editor.setOptions(
-      '{"showHydrogenLabels": "Terminal and Hetero"}'
-    );
-    console.log("showHydrogenLabels: Terminal and Hetero");
-  }
-  console.log(inchiVersion);
+  const showHydrogenLabels = versionBehavior(inchiVersion).showAllHydrogenLabels
+    ? "all"
+    : "Terminal and Hetero";
+  await ketcher.editor.setOptions(
+    JSON.stringify({ showHydrogenLabels: showHydrogenLabels })
+  );
 }
 
 async function convertMolfileToInchiAndWriteResults(
@@ -398,11 +561,12 @@ async function convertMolfileToInchiAndWriteResults(
     inchiResult = await inchiFromMolfile(molfile, options, inchiVersion);
   } catch (e) {
     writeResult(
-      `Caught exception from inchiFromMolfile(): ${e}`,
+      `The InChI library could not process this structure.\nDetail: inchiFromMolfile() threw ${e}`,
       logTextElementId
     );
     console.error(e);
-    return;
+    // Callers destructure the result, so an error still has to return a pair.
+    return ["", ""];
   }
 
   const { inchi, auxinfo, log, return_code } = inchiResult;
@@ -418,13 +582,19 @@ async function convertMolfileToInchiAndWriteResults(
     try {
       inchikeyResult = await inchikeyFromInchi(inchi, inchiVersion);
     } catch (e) {
-      log_entries.push(`Caught exception from inchikeyFromInchi(): ${e}`);
+      log_entries.push(
+        `The InChIKey could not be generated.\nDetail: inchikeyFromInchi() threw ${e}`
+      );
       console.error(e);
     }
-    writeResult(inchikeyResult.inchikey, inchikeyTextElementId);
 
-    if (inchikeyResult.return_code == -1 && inchikeyResult.message !== "") {
-      log_entries.push(inchikeyResult.message);
+    // Nothing to write when the call above threw.
+    if (inchikeyResult) {
+      writeResult(inchikeyResult.inchikey, inchikeyTextElementId);
+
+      if (inchikeyResult.return_code == -1 && inchikeyResult.message !== "") {
+        log_entries.push(inchikeyResult.message);
+      }
     }
   }
 
@@ -454,11 +624,20 @@ async function updateRinchiTab1() {
   // collect user input
   let rxnfile;
   const ketcher = getKetcher("rinchi-tab1-ketcher");
-  if (ketcher.editor.struct().isBlank()) {
+  if (!ketcher) {
+    writeResult(
+      "The reaction editor is not ready yet. Please reload the page (CTRL + F5) if this persists.",
+      "rinchi-tab1-logs"
+    );
+    return;
+  } else if (ketcher.editor.struct().isBlank()) {
     // no structure
     return;
   } else if (!ketcher.containsReaction()) {
-    writeResult("No reaction was drawn.", "rinchi-tab1-logs");
+    writeResult(
+      "This drawing is not a reaction yet. Add a reaction arrow to convert it to a RInChI.",
+      "rinchi-tab1-logs"
+    );
     return;
   } else {
     rxnfile = await ketcher.getRxn();
@@ -544,7 +723,7 @@ async function convertRxnfileToRinchiAndWriteResults(
     rinchiResult = await rinchiFromRxnfile(rxnfile, forceEquilibrium);
   } catch (e) {
     writeResult(
-      `Caught exception from rinchiFromRxnfile(): ${e}`,
+      `The reaction could not be converted to a RInChI.\nDetail: rinchiFromRxnfile() threw ${e}`,
       logTextElementId
     );
     console.error(e);
@@ -555,29 +734,38 @@ async function convertRxnfileToRinchiAndWriteResults(
 
   if (rinchiResult.error !== "") {
     log.push(
-      "Error from rinchilib_file_text_from_rinchi() call: " + rinchiResult.error
+      "The reaction could not be converted to a RInChI.\nDetail: " +
+        "rinchilib_rinchi_from_file_text returned: " +
+        rinchiResult.error
     );
   }
 
   if (rinchiResult.return_code == 0 && rinchiResult.rinchi !== "") {
-    convertRinchiToRinchikeyAndWriteResult(
-      rinchiResult.rinchi,
-      "Long",
-      longRinchikeyTextElementId,
-      log
-    );
-    convertRinchiToRinchikeyAndWriteResult(
-      rinchiResult.rinchi,
-      "Short",
-      shortRinchikeyTextElementId,
-      log
-    );
-    convertRinchiToRinchikeyAndWriteResult(
-      rinchiResult.rinchi,
-      "Web",
-      webRinchikeyTextElementId,
-      log
-    );
+    /*
+     * Awaited: these push their errors onto `log`, which is written out below.
+     * Without the await the writes happened after the log had been rendered, so
+     * a failing key conversion left no trace anywhere in the UI.
+     */
+    await Promise.all([
+      convertRinchiToRinchikeyAndWriteResult(
+        rinchiResult.rinchi,
+        "Long",
+        longRinchikeyTextElementId,
+        log
+      ),
+      convertRinchiToRinchikeyAndWriteResult(
+        rinchiResult.rinchi,
+        "Short",
+        shortRinchikeyTextElementId,
+        log
+      ),
+      convertRinchiToRinchikeyAndWriteResult(
+        rinchiResult.rinchi,
+        "Web",
+        webRinchikeyTextElementId,
+        log
+      ),
+    ]);
   }
 
   writeResult(log.join("\n"), logTextElementId);
@@ -593,7 +781,9 @@ async function convertRinchiToRinchikeyAndWriteResult(
   try {
     rinchikeyResult = await rinchikeyFromRinchi(rinchi, keyType);
   } catch (e) {
-    log.push(`Caught exception from rinchikeyFromRinchi(): ${e}`);
+    log.push(
+      `The ${keyType}-RInChIKey could not be generated.\nDetail: rinchikeyFromRinchi() threw ${e}`
+    );
     console.error(e);
     return;
   }
@@ -601,8 +791,9 @@ async function convertRinchiToRinchikeyAndWriteResult(
 
   if (rinchikeyResult.return_code != 0 && rinchikeyResult.error !== "") {
     log.push(
-      "Error from rinchilib_rinchikey_from_rinchi() call: " +
-        inchikeyResult.error
+      `The ${keyType}-RInChIKey could not be generated.\nDetail: ` +
+        "rinchilib_rinchikey_from_rinchi returned: " +
+        rinchikeyResult.error
     );
   }
 }
@@ -616,6 +807,13 @@ async function updateRinchiTab3() {
     .value.trim();
   const logTextElementId = "rinchi-tab3-logs";
   const ketcher = getKetcher("rinchi-tab3-ketcher");
+  if (!ketcher) {
+    writeResult(
+      "The reaction editor is not ready yet. Please reload the page (CTRL + F5) if this persists.",
+      logTextElementId
+    );
+    return;
+  }
 
   ketcher.editor.clear();
   writeResult("", logTextElementId);
@@ -669,14 +867,14 @@ async function convertRinchiToTextfile(
   }
   if (rinchi !== "" && !rinchi.startsWith("RInChI=")) {
     writeResult(
-      'The RInChI string should start with "RInChI=".',
+      'This does not look like a RInChI string: it should start with "RInChI=".',
       logTextElementId
     );
     return;
   }
   if (rauxinfo !== "" && !rauxinfo.startsWith("RAuxInfo=")) {
     writeResult(
-      'The RAuxInfo string should start with "RAuxInfo=".',
+      'This does not look like a RAuxInfo string: it should start with "RAuxInfo=".',
       logTextElementId
     );
     return;
@@ -687,7 +885,7 @@ async function convertRinchiToTextfile(
     rinchiResult = await fileTextFromRinchi(rinchi, rauxinfo, format);
   } catch (e) {
     writeResult(
-      `Caught exception from fileTextFromRinchi(): ${e}`,
+      `This RInChI could not be converted to a file.\nDetail: fileTextFromRinchi() threw ${e}`,
       logTextElementId
     );
     console.error(e);
@@ -695,7 +893,8 @@ async function convertRinchiToTextfile(
   }
   if (rinchiResult.error !== "") {
     writeResult(
-      "Error from rinchilib_file_text_from_rinchi() call: " +
+      "This RInChI could not be converted to a file.\nDetail: " +
+        "rinchilib_file_text_from_rinchi returned: " +
         rinchiResult.error,
       logTextElementId
     );
@@ -708,18 +907,31 @@ async function convertRinchiToTextfile(
  * Ketcher
  */
 function getKetcher(iframeId) {
-  return document.getElementById(iframeId).contentWindow.ketcher;
+  // Undefined until the iframe exists and its bundle has run; callers check.
+  return document.getElementById(iframeId)?.contentWindow?.ketcher;
 }
 
-function onKetcherLoaded(iframeId, updateFunction) {
+function onKetcherLoaded(iframeId, updateFunction, attemptsLeft = 300) {
   const ketcher = getKetcher(iframeId);
 
   // Chrome fires the onload event too early, so we have to wait until 'ketcher' exists.
   if (ketcher) {
     ketcher.editor.subscribe("change", updateFunction);
-  } else {
-    setTimeout(() => onKetcherLoaded(iframeId, updateFunction), 0);
+    return;
   }
+  /*
+   * Bounded, and on a timer rather than a 0 ms loop: if the editor never turns
+   * up (a failed or blocked iframe) the old version spun a core for the
+   * lifetime of the page.
+   */
+  if (attemptsLeft <= 0) {
+    console.error(`Ketcher in "${iframeId}" did not initialize within 30 s.`);
+    return;
+  }
+  setTimeout(
+    () => onKetcherLoaded(iframeId, updateFunction, attemptsLeft - 1),
+    100
+  );
 }
 
 /*
@@ -767,6 +979,12 @@ function throttleMap(inputs, mapper, maxConcurrent = 5) {
   let active = 0;
 
   return new Promise((resolve) => {
+    // Without this the loop below never runs, so the promise never settles.
+    if (inputs.length === 0) {
+      resolve(results);
+      return;
+    }
+
     function next() {
       while (active < maxConcurrent && i < inputs.length) {
         const currentIndex = i++;

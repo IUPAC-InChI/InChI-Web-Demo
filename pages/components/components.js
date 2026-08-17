@@ -1,3 +1,30 @@
+/*
+ * Suffix every id below `root` and rewrite the attributes that point at them.
+ * Components that are rendered once per tab ship the same static markup several
+ * times; "for" and "aria-labelledby" resolve to the first matching id in the
+ * document, so without scoping the second instance's label would drive the
+ * first instance's control.
+ */
+function scopeIds(root, suffix) {
+  root.querySelectorAll("[id]").forEach((element) => {
+    element.id = `${element.id}-${suffix}`;
+  });
+
+  ["for", "aria-labelledby", "aria-describedby", "aria-controls"].forEach(
+    (attribute) => {
+      root.querySelectorAll(`[${attribute}]`).forEach((element) => {
+        const scoped = element
+          .getAttribute(attribute)
+          .split(/\s+/)
+          .filter((id) => id)
+          .map((id) => `${id}-${suffix}`)
+          .join(" ");
+        element.setAttribute(attribute, scoped);
+      });
+    },
+  );
+}
+
 class InsertHTMLElement extends HTMLElement {
   constructor(htmlPath) {
     super();
@@ -5,12 +32,25 @@ class InsertHTMLElement extends HTMLElement {
   }
 
   async connectedCallback() {
-    let html = `<p>Error loading ${this.tagName}.</p>`;
-    const response = await fetch(this.htmlPath);
-    if (response.ok) {
-      html = await response.text();
+    try {
+      const response = await fetch(this.htmlPath);
+      if (!response.ok) {
+        throw new Error(`${response.status} ${response.statusText}`);
+      }
+      this.innerHTML = await response.text();
+    } catch (error) {
+      /*
+       * Reloading is the only recovery: these fragments are part of the
+       * deployment, so a failure here means an interrupted download or a stale
+       * cache rather than anything the user can fix in place.
+       */
+      console.error(`Error loading ${this.htmlPath}`, error);
+      this.innerHTML =
+        `<p class="alert alert-warning mt-2" role="alert">This part of the ` +
+        `page could not be loaded. Please reload the page (CTRL + F5) to try ` +
+        `again.</p>`;
+      throw error;
     }
-    this.innerHTML = html;
   }
 }
 
@@ -23,36 +63,43 @@ class AboutElement extends InsertHTMLElement {
 class ReportMaskElement extends InsertHTMLElement {
   constructor() {
     super("components/report-mask.html");
-
-    this.tabId = this.getAttribute("tabId");
   }
 
   async connectedCallback() {
-    await super.connectedCallback();
+    /*
+     * Attributes are read here rather than in the constructor: a custom element
+     * constructor must not touch attributes, because it also runs for elements
+     * that are upgraded before their attributes are parsed.
+     */
+    this.tabId = this.getAttribute("tabId");
 
-    this.overlay = this.querySelector("#maskOverlay");
-    this.openBtn = this.querySelector("#openBtn");
-    this.closeBtn = this.querySelector("#closeMaskBtn");
-    this.cancelBtn = this.querySelector("#cancelBtn");
-    this.form = this.querySelector("#maskForm");
-    this.nameInput = this.querySelector("#nameInput");
-    this.descriptionInput = this.querySelector("#descriptionInput");
+    await super.connectedCallback();
+    scopeIds(this, this.tabId);
+
+    this.dialog = this.querySelector("dialog");
+    this.openBtn = this.querySelector(".mask-open");
+    this.submitBtn = this.querySelector(".mask-submit");
+    this.form = this.querySelector("form");
+    this.nameInput = this.querySelector(".mask-name");
+    this.descriptionInput = this.querySelector(".mask-description");
 
     this.openBtn.addEventListener("click", () => this.open());
-    this.closeBtn.addEventListener("click", () => this.close());
-    this.cancelBtn.addEventListener("click", () => this.close());
+    this.querySelector(".mask-close").addEventListener("click", () =>
+      this.dialog.close(),
+    );
+    this.querySelector(".mask-cancel").addEventListener("click", () =>
+      this.dialog.close(),
+    );
     this.form.addEventListener("submit", (event) => this.submit(event));
   }
 
   open() {
-    this.overlay.classList.add("open");
-    this.overlay.setAttribute("aria-hidden", "false");
+    /*
+     * showModal() traps focus, closes on Escape, makes the rest of the page
+     * inert and restores focus to the trigger on close.
+     */
+    this.dialog.showModal();
     this.nameInput.focus();
-  }
-
-  close() {
-    this.overlay.classList.remove("open");
-    this.overlay.setAttribute("aria-hidden", "true");
   }
 
   molfileIsEmpty(molfile) {
@@ -60,15 +107,21 @@ class ReportMaskElement extends InsertHTMLElement {
       return true;
     }
     const lines = molfile.trim().split("\n");
-    if (lines.length < 4) {
-      return true;
-    }
-    const isV3000 = molfile.includes("V3000");
     let atomCount = 0;
-    if (isV3000) {
-      const parts = lines[4].split(/\s+/);
-      atomCount = parseInt(parts[3], 10) || 0;
+    if (molfile.includes("V3000")) {
+      /*
+       * "M  V30 COUNTS <atoms> <bonds> ..." — located by content, not by line
+       * number: the block before it varies in length between writers.
+       */
+      const countsLine = lines.find((line) => line.includes("V30 COUNTS"));
+      atomCount = countsLine
+        ? parseInt(countsLine.trim().split(/\s+/)[3], 10) || 0
+        : 0;
     } else {
+      // V2000 keeps the atom count in the first three columns of the counts line.
+      if (lines.length < 4) {
+        return true;
+      }
       atomCount = parseInt(lines[2].substring(0, 3).trim(), 10) || 0;
     }
     return atomCount === 0;
@@ -162,14 +215,18 @@ class ReportMaskElement extends InsertHTMLElement {
     try {
       this.validatePayload(payload);
     } catch (error) {
-      return { status: "error", msg: error };
+      return { status: "error", msg: error.message };
     }
-
-    console.log("reportMask:json", payload);
 
     document.dispatchEvent(
       new CustomEvent("reportMask:json", { detail: payload }),
     );
+
+    /*
+     * The token is public by construction — this is a static site, so anything
+     * the browser needs to send is readable in the page source. Abuse handling
+     * belongs on the ingest endpoint.
+     */
     const token = "HtEZnZMm3Nwez1nPb3Y53QpcdKscG5B";
 
     try {
@@ -181,25 +238,63 @@ class ReportMaskElement extends InsertHTMLElement {
           body: JSON.stringify(payload),
         },
       );
-      const responseData = await response.json();
-      console.log("Success: ", responseData);
+      if (!response.ok) {
+        console.error("Report ingest failed", response.status, response.statusText);
+        return {
+          status: "error",
+          msg:
+            `The report service answered with ${response.status} ` +
+            `${response.statusText}. Please try again later or send the ` +
+            `structure to inchi@ac.rwth-aachen.de.`,
+        };
+      }
       return { status: "success", msg: null };
     } catch (error) {
-      console.log("Error: ", error);
-      return { status: "error", msg: error };
+      console.error("Report ingest failed", error);
+      return {
+        status: "error",
+        msg: "Please check your internet connection and try again.",
+      };
     }
-  }
-  catch(err) {
-    console.error("Error assembling report mask JSON", err);
   }
 
   async submit(event) {
     event.preventDefault();
-    const name = this.nameInput.value.trim() || null;
-    const description = this.descriptionInput.value.trim() || null;
-    const feedback = await this.postData({ name, description });
-    this.form.reset();
-    this.close();
+
+    // Guard against a second submission while the first request is in flight.
+    if (this.submitBtn.disabled) {
+      return;
+    }
+    const submitLabel = this.submitBtn.textContent;
+    this.submitBtn.disabled = true;
+    this.submitBtn.textContent = "Submitting…";
+
+    let feedback;
+    try {
+      feedback = await this.postData({
+        name: this.nameInput.value.trim() || null,
+        description: this.descriptionInput.value.trim() || null,
+      });
+    } catch (error) {
+      console.error("Error assembling the report", error);
+      feedback = {
+        status: "error",
+        msg: "The report could not be assembled from this tab.",
+      };
+    } finally {
+      this.submitBtn.disabled = false;
+      this.submitBtn.textContent = submitLabel;
+    }
+
+    /*
+     * Keep the user's text when the report did not go through, so a failed
+     * submission can be retried without retyping the description.
+     */
+    if (feedback.status === "success") {
+      this.form.reset();
+    }
+    this.dialog.close();
+
     const feedbackDialog = document.querySelector("feedback-dialog");
     if (feedbackDialog) {
       feedbackDialog.open(feedback);
@@ -215,21 +310,18 @@ class FeedbackDialogElement extends InsertHTMLElement {
   async connectedCallback() {
     await super.connectedCallback();
 
-    this.overlay = this.querySelector("#feedbackOverlay");
-    this.iconEl = this.querySelector("#feedbackIcon");
+    this.dialog = this.querySelector("dialog");
+    this.iconEl = this.querySelector(".feedback-icon");
+    this.glyphEl = this.querySelector(".feedback-glyph");
     this.titleEl = this.querySelector("#feedbackTitle");
     this.messageEl = this.querySelector("#feedbackMessage");
-    this.confirmBtn = this.querySelector("#feedbackConfirmBtn");
+    this.confirmBtn = this.querySelector(".feedback-confirm");
 
-    this.confirmBtn.addEventListener("click", () => this.close());
-
-    this.overlay.addEventListener("click", (e) => {
-      if (e.target === this.overlay) this.close();
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && this.overlay.classList.contains("open")) {
-        this.close();
+    // Escape and focus handling come from <dialog>.showModal().
+    this.confirmBtn.addEventListener("click", () => this.dialog.close());
+    this.dialog.addEventListener("click", (event) => {
+      if (event.target === this.dialog) {
+        this.dialog.close();
       }
     });
   }
@@ -238,14 +330,14 @@ class FeedbackDialogElement extends InsertHTMLElement {
     return {
       success: {
         iconClass: "success",
-        icon: "✓",
+        glyph: "bi bi-check-lg",
         title: "Report submitted",
         message:
           "Thank you for your report. It has been received and will be reviewed shortly.",
       },
       error: {
         iconClass: "error",
-        icon: "✕",
+        glyph: "bi bi-x-lg",
         title: "Submission failed",
         message: "Your report could not be submitted.",
       },
@@ -253,25 +345,18 @@ class FeedbackDialogElement extends InsertHTMLElement {
   }
 
   open(feedback) {
-    const { status, msg } = feedback;
-    const s =
+    const { status, msg } = feedback ?? {};
+    const state =
       FeedbackDialogElement.states[status] ??
       FeedbackDialogElement.states.error;
-    this.iconEl.className = `feedback-icon ${s.iconClass}`;
-    this.iconEl.textContent = s.icon;
-    this.titleEl.textContent = s.title;
-    this.messageEl.textContent = s.message;
-    if (msg) {
-      this.messageEl.textContent = this.messageEl.textContent.concat(" ", msg);
-    }
-    this.overlay.classList.add("open");
-    this.overlay.setAttribute("aria-hidden", "false");
+    this.iconEl.className = `feedback-icon ${state.iconClass}`;
+    this.glyphEl.className = `feedback-glyph ${state.glyph}`;
+    this.titleEl.textContent = state.title;
+    this.messageEl.textContent = msg
+      ? `${state.message} ${msg}`
+      : state.message;
+    this.dialog.showModal();
     this.confirmBtn.focus();
-  }
-
-  close() {
-    this.overlay.classList.remove("open");
-    this.overlay.setAttribute("aria-hidden", "true");
   }
 }
 
@@ -296,8 +381,8 @@ class RInChIToolsElement extends InsertHTMLElement {
 
   async connectedCallback() {
     await super.connectedCallback();
-    [...document.querySelectorAll("#rinchi-version")].map((span) => {
-      span.innerText = `Results computed with RInChI version ${RINCHI_VERSION}`;
+    this.querySelectorAll(".rinchi-version").forEach((span) => {
+      span.textContent = `Results computed with RInChI version ${RINCHI_VERSION}`;
     });
   }
 }
@@ -309,94 +394,154 @@ class InChIVersionSelectionElement extends HTMLElement {
   }
 
   async connectedCallback() {
+    /*
+     * The version list is fetched, so it may not be on `window` yet when this
+     * element connects. Awaiting the promise instead of reading the global
+     * removes a race that renders an empty version selector on a cold cache.
+     */
+    try {
+      await window.inchiVersionsReady;
+    } catch (error) {
+      console.error("Error loading inchi_versions.json", error);
+      this.innerHTML =
+        `<div class="bounding-box"><p class="mb-0" role="alert">The InChI ` +
+        `version list could not be loaded. Please reload the page ` +
+        `(CTRL + F5).</p></div>`;
+      return;
+    }
+
+    // Unique per tab, so that the <label> binds to this tab's <select>.
+    const suffix = this.closest(".tab-pane")?.id ?? "";
+    const dropdownId = `version-dropdown-${suffix}`;
+
     this.innerHTML = `<div class="bounding-box">
-      <h4>Version</h4>
-      <select id="version-dropdown" style="display: block;" data-version></select>
-      <span id="version-commit" style="display: block;"></span>
+      <label class="h4 d-block" for="${dropdownId}">Version</label>
+      <select id="${dropdownId}" style="display: block;" data-version></select>
+      <span class="version-commit" style="display: block;"></span>
     </div>`;
 
-    const dropdown = this.querySelector("#version-dropdown");
-    const commitLink = this.querySelector("#version-commit");
+    const dropdown = this.querySelector("select[data-version]");
+    const commitLink = this.querySelector(".version-commit");
 
     for (const [versionName, versionConfig] of Object.entries(
       availableInchiVersions,
     )) {
       const option = document.createElement("option");
-      option.innerHTML = versionName;
+      option.textContent = versionName;
       option.value = versionName;
       option.selected = Boolean(versionConfig.default);
       dropdown.appendChild(option);
     }
 
+    const showCommitLink = (versionName) => {
+      const url = availableInchiVersions[versionName].url;
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.textContent = url;
+      commitLink.replaceChildren(link);
+    };
+
     dropdown.addEventListener("change", (event) => {
-      const selectedVersion = event.target.value;
       this.onVersionChange();
-      const url = availableInchiVersions[selectedVersion].url;
-      commitLink.innerHTML = `<a href=${url} target="_blank">${url}</a>`;
+      showCommitLink(event.target.value);
     });
 
-    const url = availableInchiVersions[dropdown.value].url;
-    commitLink.innerHTML = `<a href=${url} target="_blank">${url}</a>`;
+    showCommitLink(dropdown.value);
   }
 }
 
 class InChIResultFieldElement extends HTMLElement {
   constructor() {
     super();
-    this.title = this.getAttribute("title");
+    /*
+     * Not `this.title`: HTMLElement reflects that property to the title
+     * attribute, which would put a browser tooltip on the whole result panel
+     * and add a stray accessible description.
+     */
+    this.fieldTitle = this.getAttribute("title");
     this._id = this.getAttribute("id");
     this.setAttribute("id", `${this._id}-wrapper`); // Avoid "id" attribute name conflict with the pre element.
   }
 
   connectedCallback() {
+    /*
+     * Results are written without any user action (drawing in Ketcher triggers a
+     * conversion), so the fields that carry the outcome announce themselves. It
+     * is opt-in: marking every field live would make one edit produce four
+     * announcements, and AuxInfo or a full key list is not worth reading aloud.
+     */
+    const live = this.hasAttribute("live")
+      ? ' aria-live="polite" aria-atomic="true"'
+      : "";
+
     this.innerHTML = `<div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
       <div
         class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
       >
-        <small class="font-monospace">${this.title}</small>
+        <small class="font-monospace">${this.fieldTitle}</small>
         <div class="btn-group" role="group">
           <button
-            id=copy-button-${this._id}
             type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto"
+            class="btn btn-sm btn-outline-secondary ms-auto result-copy"
             title="Copy to clipboard"
+            aria-label="Copy ${this.fieldTitle} to clipboard"
             disabled
           >
-            <i class="bi bi-clipboard"></i>
+            <i class="bi bi-clipboard" aria-hidden="true"></i>
           </button>
           <button
-            id=download-button-${this._id}
             type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto"
+            class="btn btn-sm btn-outline-secondary ms-auto result-download"
             title="Download to text file"
+            aria-label="Download ${this.fieldTitle} as a text file"
             disabled
           >
-            <i class="bi bi-download"></i>
+            <i class="bi bi-download" aria-hidden="true"></i>
           </button>
         </div>
       </div>
-      <pre id="${this._id}" class="py-1 px-3 mb-0 inchi-result-text" style="max-height: 500px"></pre>
+      <pre id="${this._id}" class="py-1 px-3 mb-0 inchi-result-text" style="max-height: 500px"${live}></pre>
     </div>`;
 
     const resultText = this.querySelector(`#${this._id}`);
-    const copyButton = this.querySelector(`#copy-button-${this._id}`);
-    const downloadButton = this.querySelector(`#download-button-${this._id}`);
+    const copyButton = this.querySelector(".result-copy");
+    const downloadButton = this.querySelector(".result-download");
 
-    copyButton.addEventListener("click", () => {
-      navigator.clipboard.writeText(resultText.innerText.trim());
+    copyButton.addEventListener("click", async () => {
+      const icon = copyButton.querySelector("i");
+      try {
+        await navigator.clipboard.writeText(resultText.innerText.trim());
+        icon.className = "bi bi-clipboard-check";
+        copyButton.title = "Copied";
+      } catch (error) {
+        /*
+         * Blocked permission or an insecure context: say so instead of leaving
+         * the user to wonder whether the copy worked.
+         */
+        console.error("Copy to clipboard failed", error);
+        icon.className = "bi bi-clipboard-x";
+        copyButton.title = "Copying failed — select the text and copy manually";
+      }
+      setTimeout(() => {
+        icon.className = "bi bi-clipboard";
+        copyButton.title = "Copy to clipboard";
+      }, 2000);
     });
 
     downloadButton.addEventListener("click", () => {
       const text = resultText.innerText.trim();
       if (!text) {
-        alert("No InChI results to download.");
         return;
       }
       const blob = new Blob([text], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${this.title}_${new Date().toISOString()}.txt`; // Default filename
+      // Colons are not allowed in Windows filenames, so strip them from the stamp.
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      a.download = `${this.fieldTitle}_${timestamp}.txt`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -409,9 +554,13 @@ class InChIResultFieldElement extends HTMLElement {
       downloadButton.disabled = !resultAvailable;
     };
 
+    /*
+     * Only text changes matter here. Watching attributes as well meant every
+     * result field reacted to mutations that can never change its content.
+     */
     const observer = new MutationObserver(toggleButtonState);
     observer.observe(resultText, {
-      attributes: true,
+      characterData: true,
       childList: true,
       subtree: true,
     });
@@ -437,12 +586,40 @@ class InChIOptionsElement extends HTMLElement {
       }),
     );
 
-    const boundingBox = document.createElement("div");
+    /*
+     * A <details> rather than a plain panel. Below 992px the grid is still one
+     * column, so these twenty-odd checkboxes sit between the editor and the
+     * results — measured at 500px of scrolling on a portrait tablet. It starts
+     * collapsed there and open on the wide layout that has room for a sidebar.
+     * Closed inputs stay in the DOM, so getInchiOptions() still reads them.
+     */
+    const boundingBox = document.createElement("details");
     boundingBox.setAttribute("class", "bounding-box");
-    boundingBox.innerHTML = "<h4>Options</h4>" + htmlFragments.join("");
+    boundingBox.innerHTML =
+      '<summary class="h4">Options</summary>' + htmlFragments.join("");
+
+    /*
+     * Follow the layout until the visitor expresses a preference: rotating a
+     * tablet into portrait should collapse the panel, but reopening it by hand
+     * has to stick.
+     */
+    const stacked = window.matchMedia("(max-width: 991.98px)");
+    boundingBox.open = !stacked.matches;
+    let visitorDecided = false;
+    boundingBox.addEventListener("toggle", () => {
+      if (boundingBox.open !== !stacked.matches) {
+        visitorDecided = true;
+      }
+    });
+    stacked.addEventListener("change", (event) => {
+      if (!visitorDecided) {
+        boundingBox.open = !event.matches;
+      }
+    });
+
     this.appendChild(boundingBox);
 
-    if (inchiVersion === "Dev with Molecular Inorganics") {
+    if (versionBehavior(inchiVersion).checkNPZzByDefault) {
       this.querySelector('input[data-id="NPZz"]').checked = true;
     }
 
@@ -461,7 +638,8 @@ class InChIOptionsElement extends HTMLElement {
      */
     this.querySelector(
       'input.form-check-input[data-id="includeStereo"]',
-    ).addEventListener("change", function () {
+      // Optional: an options template is free to leave the checkbox out.
+    )?.addEventListener("change", function () {
       document
         .getElementById(tabDivId)
         .querySelectorAll("input.form-check-input[data-inchi-stereo-option]")
@@ -476,7 +654,7 @@ class InChIOptionsElement extends HTMLElement {
      */
     this.querySelector(
       'input.form-check-input[data-id="treatPolymers"]',
-    ).addEventListener("change", function () {
+    )?.addEventListener("change", function () {
       document
         .getElementById(tabDivId)
         .querySelectorAll("input.form-check-input[data-inchi-polymer-option]")
@@ -492,7 +670,7 @@ class InChIOptionsElement extends HTMLElement {
     /*
      * Register an on-click event on the "Reset InChI Options" link.
      */
-    this.querySelector("a[data-reset-inchi-options]").addEventListener(
+    this.querySelector("[data-reset-inchi-options]")?.addEventListener(
       "click",
       function () {
         resetInchiOptions(tabDivId);
@@ -507,7 +685,12 @@ class InChIOptionsElement extends HTMLElement {
      */
     this.querySelectorAll("input.form-check-input").forEach((input) => {
       input.id = input.dataset.id + "-" + tabDivId;
-      input.nextElementSibling.htmlFor = input.id;
+      const label = input.nextElementSibling;
+      if (label instanceof HTMLLabelElement) {
+        label.htmlFor = input.id;
+      } else {
+        console.error(`No label follows the "${input.dataset.id}" option.`);
+      }
 
       input.addEventListener("change", updateFunction);
     });
@@ -707,8 +890,13 @@ class NGLViewerElement extends HTMLElement {
       Object.keys(this.annotationColors).map((id) => [id, false]),
     );
 
-    this.innerHTML = `<div id="annotation-selection" class="mt-2"></div>
-      <div id="ngl-viewport" style="width: 100%; height: 600px;"></div>`;
+    /*
+     * Classes, not ids: this component is rendered in more than one tab, and
+     * duplicate ids in a document are invalid and resolve to the first match.
+     */
+    // Sizing lives in css/index.css so it can respond to the viewport.
+    this.innerHTML = `<div class="annotation-selection mt-2"></div>
+      <div class="ngl-viewport"></div>`;
 
     this.stage = undefined;
     this.structure = undefined;
@@ -717,26 +905,66 @@ class NGLViewerElement extends HTMLElement {
     this.annotationSelectionElement = undefined;
   }
 
-  connectedCallback() {
-    const viewportElement = this.querySelector("#ngl-viewport");
-    this.stage = new NGL.Stage(viewportElement, { backgroundColor: "white" });
-    const resizeObserver = new ResizeObserver(() => this.stage.handleResize());
-    resizeObserver.observe(viewportElement);
+  /*
+   * NGL is 1.3 MB and only two of the eight tabs render a structure, so the
+   * library and its stage are created the first time one is actually needed.
+   * Returns false when the viewer cannot run at all.
+   */
+  async ensureStage() {
+    if (this.stagePromise === undefined) {
+      this.stagePromise = (async () => {
+        const viewportElement = this.querySelector(".ngl-viewport");
+        try {
+          await loadScriptOnce("ngl/ngl.js");
+        } catch (error) {
+          console.error(error);
+          viewportElement.textContent =
+            "The 3D viewer could not be loaded. Please reload the page (CTRL + F5).";
+          return false;
+        }
 
-    this.annotationSelectionElement = this.querySelector(
-      "#annotation-selection",
-    );
+        this.stage = new NGL.Stage(viewportElement, {
+          backgroundColor: "white",
+        });
+
+        /*
+         * NGL prints its own "no WebGL" notice into the viewport, but its
+         * renderer is then undefined: resizing or loading a structure would
+         * throw on every call.
+         */
+        if (!this.stage.viewer?.renderer) {
+          console.error("NGL could not initialize a WebGL renderer.");
+          return false;
+        }
+
+        const resizeObserver = new ResizeObserver(() =>
+          this.stage.handleResize(),
+        );
+        resizeObserver.observe(viewportElement);
+        return true;
+      })();
+    }
+    return this.stagePromise;
+  }
+
+  connectedCallback() {
+    this.annotationSelectionElement =
+      this.querySelector(".annotation-selection");
     this.annotationButtons.forEach((button) => {
       const buttonElement = document.createElement("button");
-      buttonElement.id = button.id;
+      buttonElement.type = "button";
+      buttonElement.dataset.annotation = button.id;
       buttonElement.textContent = button.text;
       buttonElement.classList.add(button.color);
       buttonElement.classList.add("annotation-button");
       buttonElement.disabled = true;
       buttonElement.title = button.info;
+      // These are toggles: the pressed state has to be exposed, not just painted.
+      buttonElement.setAttribute("aria-pressed", "false");
 
       buttonElement.addEventListener("click", () => {
         const isActive = buttonElement.classList.toggle("active");
+        buttonElement.setAttribute("aria-pressed", String(isActive));
         this.annotationSelection[button.id] = isActive;
         this.annotateStructure();
       });
@@ -747,6 +975,9 @@ class NGLViewerElement extends HTMLElement {
 
   async loadStructure(molfile, inchi, auxinfo) {
     if (this.structureKey === getStructureKey(inchi, auxinfo)) {
+      return;
+    }
+    if (!(await this.ensureStage())) {
       return;
     }
 
@@ -762,7 +993,7 @@ class NGLViewerElement extends HTMLElement {
       this.structureKey = getStructureKey(inchi, auxinfo);
       this.annotationButtons.forEach((button) => {
         const buttonElement = this.annotationSelectionElement.querySelector(
-          `#${button.id}`,
+          `[data-annotation="${button.id}"]`,
         );
         const annotationAvailable =
           button.id === "index"
@@ -770,6 +1001,7 @@ class NGLViewerElement extends HTMLElement {
             : this.annotationData.get(button.id).size > 0;
         buttonElement.disabled = !annotationAvailable;
         buttonElement.classList.remove("active");
+        buttonElement.setAttribute("aria-pressed", "false");
       });
       this.annotationSelection = Object.fromEntries(
         Object.keys(this.annotationColors).map((id) => [id, false]),
@@ -777,16 +1009,17 @@ class NGLViewerElement extends HTMLElement {
 
       this.structure.autoView();
     } catch (error) {
-      console.log(error);
+      console.error("The structure could not be rendered", error);
       this.structure = undefined;
       this.structureKey = undefined;
       this.annotationData = undefined;
       this.annotationButtons.forEach((button) => {
         const buttonElement = this.annotationSelectionElement.querySelector(
-          `#${button.id}`,
+          `[data-annotation="${button.id}"]`,
         );
         buttonElement.disabled = true;
         buttonElement.classList.remove("active");
+        buttonElement.setAttribute("aria-pressed", "false");
       });
     }
   }

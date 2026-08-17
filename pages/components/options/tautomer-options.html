@@ -1,5 +1,14 @@
 <div class="form-check">
-  <select data-tautomer-multiselect multiple="multiple">
+  <!--
+    Bootstrap Multiselect clips this select rather than hiding it, so it stays
+    in the accessibility tree and needs a name of its own. It matches the
+    "nonSelectedText" of the button that replaces it visually.
+  -->
+  <select
+    data-tautomer-multiselect
+    multiple="multiple"
+    aria-label="Tautomer options"
+  >
     <option data-role="divider"></option>
     <option data-id="KET" data-inchi-option-on="KET" value="KET">
       KET - Keto-enol Tautomerism
