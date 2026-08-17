@@ -73,6 +73,7 @@
         <div class="ratio ketcher">
           <iframe
             id="rinchi-tab1-ketcher"
+            title="Ketcher reaction editor"
             class="w-100"
             src="ketcher/index.html"
             loading="lazy"
@@ -81,12 +82,13 @@
         </div>
       </div>
       <div class="col-xl-4 mt-auto">
-        <span id="rinchi-version"></span>
+        <span class="rinchi-version"></span>
       </div>
     </div>
     <inchi-result-field
       id="rinchi-tab1-rinchi"
       title="RInChI"
+      live
     ></inchi-result-field>
     <inchi-result-field
       id="rinchi-tab1-longrinchikey"
@@ -104,7 +106,11 @@
       id="rinchi-tab1-rauxinfo"
       title="RAuxInfo"
     ></inchi-result-field>
-    <inchi-result-field id="rinchi-tab1-logs" title="Log"></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab1-logs"
+      title="Log"
+      live
+    ></inchi-result-field>
   </div>
 
   <!-- Tab 2: Convert RXN/RD file to RInChI -->
@@ -121,8 +127,8 @@
           <div class="w-100">
             <textarea
               id="rinchi-tab2-rxnrdfileTextarea"
-              class="form-control pe-5 h-100"
-              style="resize: none"
+              aria-label="RXN or RD file"
+              class="form-control pe-5 h-100 resize-none"
               autocomplete="off"
               placeholder="Paste or drag-and-drop a RXN/RD file here"
               ondragover="onTextareaDragover(event)"
@@ -151,12 +157,13 @@
             >Force equilibrium</label
           >
         </div>
-        <span id="rinchi-version"></span>
+        <span class="rinchi-version"></span>
       </div>
     </div>
     <inchi-result-field
       id="rinchi-tab2-rinchi"
       title="RInChI"
+      live
     ></inchi-result-field>
     <inchi-result-field
       id="rinchi-tab2-longrinchikey"
@@ -174,7 +181,11 @@
       id="rinchi-tab2-rauxinfo"
       title="RAuxInfo"
     ></inchi-result-field>
-    <inchi-result-field id="rinchi-tab2-logs" title="Log"></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab2-logs"
+      title="Log"
+      live
+    ></inchi-result-field>
   </div>
 
   <!-- Tab 3: Convert RInChI to reaction -->
@@ -187,41 +198,51 @@
   >
     <div class="row mt-1">
       <div class="col-xl-8">
-        <div class="ratio" style="height: 100px">
+        <div class="ratio paste-area">
           <div class="w-100">
             <textarea
               id="rinchi-tab3-rinchiTextarea"
-              class="form-control pe-5 h-100"
-              style="resize: none"
+              aria-label="RInChI string"
+              class="form-control pe-5 h-100 resize-none"
               autocomplete="off"
               placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+"
               oninput="updateRinchiTab3()"
             ></textarea>
           </div>
         </div>
-        <div class="ratio mt-2" style="height: 100px">
+        <div class="ratio paste-area mt-2">
           <div class="w-100">
             <textarea
               id="rinchi-tab3-rauxinfoTextarea"
-              class="form-control pe-5 h-100"
-              style="resize: none"
+              aria-label="RAuxInfo string (optional)"
+              class="form-control pe-5 h-100 resize-none"
               autocomplete="off"
-              placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..."
+              aria-describedby="rinchi-tab3-rauxinfo-hint"
+              placeholder="Paste the corresponding RAuxInfo string here, e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..."
               oninput="updateRinchiTab3()"
             ></textarea>
           </div>
         </div>
+        <small id="rinchi-tab3-rauxinfo-hint" class="text-muted"
+          >Optional. Without RAuxInfo the reaction is rebuilt with zero atom
+          coordinates.</small
+        >
       </div>
       <div class="col-xl-4">
-        <span id="rinchi-version"></span>
+        <span class="rinchi-version"></span>
       </div>
     </div>
-    <inchi-result-field id="rinchi-tab3-logs" title="Log"></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab3-logs"
+      title="Log"
+      live
+    ></inchi-result-field>
     <div class="row mt-1">
       <div class="col-xl-8">
         <div class="ratio ketcher">
           <iframe
             id="rinchi-tab3-ketcher"
+            title="Ketcher reaction editor showing the converted reaction"
             class="w-100"
             src="ketcher/index.html"
             loading="lazy"
@@ -247,30 +268,35 @@
   >
     <div class="row mt-1">
       <div class="col-xl-8">
-        <div class="ratio" style="height: 100px">
+        <div class="ratio paste-area">
           <div class="w-100">
             <textarea
               id="rinchi-tab4-rinchiTextarea"
-              class="form-control pe-5 h-100"
-              style="resize: none"
+              aria-label="RInChI string"
+              class="form-control pe-5 h-100 resize-none"
               autocomplete="off"
               placeholder="Paste a RInChI string here&#10;e.g. RInChI=1.00.1S/C2H4O2/c1-2(3)4/h1H3,(H,3,4)!C2H6O/c1-2-3/h3H,2H2,1H3<>C4H8O2/c1-3-6-4(2)5/h3H2,1-2H3!H2O/h1H2<>H2O4S/c1-5(2,3)4/h(H2,1,2,3,4)/d+"
               oninput="updateRinchiTab4()"
             ></textarea>
           </div>
         </div>
-        <div class="ratio mt-2" style="height: 100px">
+        <div class="ratio paste-area mt-2">
           <div class="w-100">
             <textarea
               id="rinchi-tab4-rauxinfoTextarea"
-              class="form-control pe-5 h-100"
-              style="resize: none"
+              aria-label="RAuxInfo string (optional)"
+              class="form-control pe-5 h-100 resize-none"
               autocomplete="off"
-              placeholder="(Optional, may be empty)&#10;Paste the corresponding RAuxInfo string here&#10;e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..."
+              aria-describedby="rinchi-tab4-rauxinfo-hint"
+              placeholder="Paste the corresponding RAuxInfo string here, e.g. RAuxInfo=1.00.1/1/N:1,2,3,4/E:(3,4)/rA:4nCCOO/rB:s1;s2;d2;/rC:-3.8549,-.5552,0; ..."
               oninput="updateRinchiTab4()"
             ></textarea>
           </div>
         </div>
+        <small id="rinchi-tab4-rauxinfo-hint" class="text-muted"
+          >Optional. Without RAuxInfo the reaction is rebuilt with zero atom
+          coordinates.</small
+        >
       </div>
       <div class="col-xl-4 mt-auto">
         <div>
@@ -303,10 +329,14 @@
             >RD file</label
           >
         </div>
-        <span id="rinchi-version"></span>
+        <span class="rinchi-version"></span>
       </div>
     </div>
-    <inchi-result-field id="rinchi-tab4-logs" title="Log"></inchi-result-field>
+    <inchi-result-field
+      id="rinchi-tab4-logs"
+      title="Log"
+      live
+    ></inchi-result-field>
     <inchi-result-field
       id="rinchi-tab4-rxnfile"
       title="RXN/RD file"

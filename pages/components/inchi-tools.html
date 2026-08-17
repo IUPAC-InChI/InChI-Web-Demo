@@ -73,6 +73,7 @@
         <div class="ratio ketcher">
           <iframe
             id="inchi-tab1-ketcher"
+            title="Ketcher structure editor"
             class="w-100"
             src="ketcher/index.html"
             loading="lazy"
@@ -92,6 +93,7 @@
     <inchi-result-field
       id="inchi-tab1-inchi"
       title="InChI"
+      live
     ></inchi-result-field>
     <inchi-result-field
       id="inchi-tab1-inchikey"
@@ -101,7 +103,11 @@
       id="inchi-tab1-auxinfo"
       title="AuxInfo"
     ></inchi-result-field>
-    <inchi-result-field id="inchi-tab1-logs" title="Log"></inchi-result-field>
+    <inchi-result-field
+      id="inchi-tab1-logs"
+      title="Log"
+      live
+    ></inchi-result-field>
     <report-mask tabId="inchi-tab1"></report-mask>
   </div>
 
@@ -119,8 +125,8 @@
           <div class="w-100">
             <textarea
               id="inchi-tab2-molfile"
-              class="form-control pe-5 h-100"
-              style="resize: none"
+              aria-label="Molfile"
+              class="form-control pe-5 h-100 resize-none"
               autocomplete="off"
               placeholder="Paste or drag-and-drop a Molfile here"
               ondragover="onTextareaDragover(event)"
@@ -152,6 +158,7 @@
         <inchi-result-field
           id="inchi-tab2-inchi"
           title="InChI"
+          live
         ></inchi-result-field>
         <inchi-result-field
           id="inchi-tab2-inchikey"
@@ -164,11 +171,14 @@
         <inchi-result-field
           id="inchi-tab2-logs"
           title="Log"
+          live
         ></inchi-result-field>
         <report-mask tabId="inchi-tab2"></report-mask>
       </div>
-      <div class="col-xl-7 bounding-box">
-        <inchi-ngl-viewer id="inchi-tab2-ngl-viewer"></inchi-ngl-viewer>
+      <div class="col-xl-7">
+        <div class="bounding-box">
+          <inchi-ngl-viewer id="inchi-tab2-ngl-viewer"></inchi-ngl-viewer>
+        </div>
       </div>
     </div>
   </div>
@@ -183,18 +193,23 @@
   >
     <div class="row mt-1">
       <div class="col-xl-8">
-        <div class="ratio" style="height: 115px">
+        <div class="ratio paste-area">
           <div class="w-100">
             <textarea
               id="inchi-tab3-inputTextarea"
-              class="form-control pe-5 h-100"
-              style="resize: none"
+              aria-label="AuxInfo string"
+              class="form-control pe-5 h-100 resize-none"
               autocomplete="off"
-              placeholder="Paste an AuxInfo string here, e.g., AuxInfo=1/0/N:1,2,3/E:(1,2,3)/rA:3nCCC/rB:s1;s1s2;/rC:5.1494,-3.6325,0;6.1506,-3.6325,0;5.6501,-2.7675,0;&#10;Note that the AuxInfo needs to contain coordinates, otherwise no structure can be displayed (InChI cannot generate coordinates)."
+              aria-describedby="inchi-tab3-hint"
+              placeholder="Paste an AuxInfo string here, e.g. AuxInfo=1/0/N:1,2,3/E:(1,2,3)/rA:3nCCC/rB:s1;s1s2;/rC:5.1494,-3.6325,0;6.1506,-3.6325,0;5.6501,-2.7675,0;"
               oninput="updateInchiTab3()"
             ></textarea>
           </div>
         </div>
+        <small id="inchi-tab3-hint" class="text-muted"
+          >The AuxInfo has to contain atom coordinates. InChI cannot generate
+          them, so no structure can be shown without them.</small
+        >
       </div>
       <div class="col-xl-4 mt-auto">
         <inchi-version-selection
@@ -202,7 +217,11 @@
         ></inchi-version-selection>
       </div>
     </div>
-    <inchi-result-field id="inchi-tab3-logs" title="Log"></inchi-result-field>
+    <inchi-result-field
+      id="inchi-tab3-logs"
+      title="Log"
+      live
+    ></inchi-result-field>
     <div class="bounding-box">
       <inchi-ngl-viewer id="inchi-tab3-ngl-viewer"></inchi-ngl-viewer>
     </div>
@@ -218,18 +237,26 @@
   >
     <div class="row mt-1">
       <div class="col-xl-8">
-        <div class="w-100 d-flex align-items-center gap-2">
+        <div class="w-100">
+          <label class="form-label" for="inchi-tab4-sdfFileInput"
+            >SD file</label
+          >
           <input
             id="inchi-tab4-sdfFileInput"
             type="file"
-            class="form-control pe-5 h-100"
+            class="form-control"
             accept=".sdf"
+            aria-describedby="inchi-tab4-sdfFileInput-hint"
             onchange="updateInchiTab4()"
           />
+          <small id="inchi-tab4-sdfFileInput-hint" class="text-muted"
+            >One InChI, AuxInfo and InChIKey is generated per record.</small
+          >
         </div>
         <inchi-result-field
           id="inchi-tab4-inchis"
           title="InChIs"
+          live
         ></inchi-result-field>
       </div>
       <div class="col-xl-4">

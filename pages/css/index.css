@@ -1,34 +1,25 @@
-a {
-  color: #00612c !important;
-}
-
-::selection {
-  color: #ffffff;
-  background-color: #9db668;
-}
+/* App styles. Colours and radii come from css/tokens.css. */
 
 button.nav-link:not(.active) {
-  color: #00612c;
+  color: var(--inchi-brand);
 }
 
-ul.nav-pills button.nav-link.active {
-  background-color: #00612c;
-}
-
+/* Bootstrap 5.2.3 hardcodes the checked colour, so it needs a real override. */
 input.form-check-input:is([type="checkbox"], [type="radio"]):checked {
-  background-color: #00612c;
-  border-color: #00612c;
+  background-color: var(--inchi-brand);
+  border-color: var(--inchi-brand);
 }
 
 /*
  * Used when at least one item is selected in Bootstrap Multiselect.
  * Background image is a copy from Bootstrap with altered color ("stroke").
+ * The stroke has to stay literal: a data URI cannot read a custom property.
  */
 button.form-select.multiselect:has(
     ~ div.multiselect-container > button.active
   ) {
-  color: #ffffff;
-  background-color: #00612c;
+  color: var(--inchi-on-brand);
+  background-color: var(--inchi-brand);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
 }
 
@@ -36,81 +27,217 @@ input.form-check-input:is([type="checkbox"], [type="radio"]):focus,
 select.form-select:focus,
 textarea.form-control:focus,
 button.form-select.multiselect:focus {
-  border-color: #7e9849;
-  box-shadow: 0 0 0 0.25rem rgba(126, 152, 73, 0.25);
+  border-color: var(--inchi-focus-border);
+  box-shadow: 0 0 0 0.25rem var(--inchi-focus-ring);
 }
 
+/* A button that reads as a link: keyboard-operable, styled like the text around it. */
+.link-button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--inchi-brand);
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+/*
+ * The 500px cap on result panels used to clip anything longer out of reach;
+ * overflow makes the rest scrollable instead of invisible.
+ */
 .inchi-result-text {
   white-space: pre-wrap;
   word-break: break-all;
+  overflow: auto;
 }
 
-.inchi-sdf-result-text {
-  white-space: pre-wrap;
-  word-break: break-all;
-  min-height: 615px;
-  max-height: 615px;
+/*
+ * Editor and paste box: on wide screens the aspect ratio governs and the
+ * min-height never applies. It only takes over below ~855px, which is where
+ * these floors are aimed — a fixed 530px filled four fifths of a phone screen
+ * and pushed the results two screens down.
+ *
+ * The editor keeps more of the viewport than the paste box, because drawing
+ * needs room to work in and pasting does not.
+ */
+.ketcher {
+  --bs-aspect-ratio: 62%;
+  min-height: min(530px, 62vh);
 }
 
-.inchi-log {
-  white-space: pre-wrap;
-}
-
-.ketcher,
 .inputtextarea {
   --bs-aspect-ratio: 62%;
-  min-height: 530px;
+  min-height: min(530px, 34vh);
+}
+
+/*
+ * Paste fields whose placeholder shows the expected format. That example wraps
+ * over several lines on a phone and fits in two on the wide layout, so the box
+ * is generous first and tightens once the text fits.
+ */
+.paste-area {
+  height: 12rem;
+}
+
+@media (min-width: 992px) {
+  .paste-area {
+    height: 7rem;
+  }
+}
+
+/* Structure viewer: a share of the phone screen, its full size from tablet up. */
+.ngl-viewport {
+  width: 100%;
+  height: max(300px, 45vh);
+}
+
+@media (min-width: 768px) {
+  .ngl-viewport {
+    height: 600px;
+  }
 }
 
 .colored-icon {
-  color: #00612c;
+  color: var(--inchi-brand);
 }
 
+/* Room for the multi-paragraph option explanations, but never wider than the screen. */
 .custom-tooltip .tooltip-inner {
-  max-width: 500px !important;
-  text-align: left !important;
+  max-width: min(500px, 90vw);
+  text-align: left;
 }
 
+/* Landscape on a notched phone would otherwise run under the cutout. */
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Panel around a group of controls: version selector, options, 3D viewer. */
 .bounding-box {
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid var(--inchi-border);
+  border-radius: var(--inchi-radius-sm);
   padding: 12px;
-  background-color: #f9f9f9;
+  background-color: var(--inchi-surface-sunken);
   width: 100%;
 }
 
+/*
+ * The options panel is a <details>: twenty checkboxes are a reasonable sidebar
+ * on a desktop and a wall between the editor and the results on a phone, so it
+ * starts collapsed there (see InChIOptionsElement.postCreate).
+ */
+.bounding-box > summary {
+  cursor: pointer;
+}
+
+/*
+ * The five toggles used to sit flush against each other, separated only by
+ * their transparent borders. Deliberate spacing instead, and they wrap as a
+ * group on a narrow screen.
+ */
+.annotation-selection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+/*
+ * Touch sizing, keyed to the pointer rather than the viewport: a laptop with a
+ * touchscreen needs it and a narrow desktop window does not. Desktop stays as
+ * dense as it is, which suits a tool with this many controls.
+ */
+@media (pointer: coarse) {
+  .nav-link,
+  .btn,
+  .btn-group .btn-sm,
+  .annotation-button,
+  .link-button,
+  select[data-version],
+  button.form-select.multiselect {
+    min-height: 44px;
+  }
+
+  .btn-group .btn-sm,
+  .annotation-button {
+    min-width: 44px;
+  }
+
+  .annotation-button {
+    padding-inline: 0.75rem;
+  }
+
+  .annotation-selection {
+    gap: 0.5rem;
+  }
+
+  .mask-close {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  /* Room to hit the right checkbox in a stack of twenty. */
+  .bounding-box .form-check {
+    margin-bottom: 0.5rem;
+  }
+}
+
+.funder-logo {
+  width: 100%;
+  height: auto;
+}
+
+/*
+ * The file-input textareas are sized by their container, so the drag handle
+ * would only let the visitor break the layout.
+ */
+.resize-none {
+  resize: none;
+}
+
 .annotation-button {
-  background-color: #fff;
+  background-color: var(--inchi-surface);
   border: 3px solid transparent;
   cursor: pointer;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition: border-color var(--inchi-transition),
+    box-shadow var(--inchi-transition);
 }
 
 .annotation-button:not([disabled]):hover {
-  border: 3px solid #add8e6;
+  border: 3px solid var(--inchi-annotation-hover);
 }
 
+/*
+ * --inchi-annotation-hover only reaches 1.5:1 against the white button, so it cannot
+ * carry the focus indicator on its own (WCAG 1.4.11 asks for 3:1). The brand
+ * green is 7.6:1; the hover border stays for the pointer affordance.
+ */
 .annotation-button:not([disabled]):focus-visible {
-  border: 3px solid #add8e6;
-  outline: none;
+  border: 3px solid var(--inchi-annotation-hover);
+  outline: 2px solid var(--inchi-brand);
+  outline-offset: 1px;
 }
 
 .annotation-index.active {
-  background-color: rgb(209, 213, 220, 0.7);
+  background-color: var(--inchi-annotation-index);
 }
 
 .annotation-canonical-index.active {
-  background-color: rgb(0, 255, 0, 0.7);
+  background-color: var(--inchi-annotation-canonical-index);
 }
 
 .annotation-equivalence-class.active {
-  background-color: rgb(255, 255, 0, 0.7);
+  background-color: var(--inchi-annotation-equivalence-class);
 }
 
 .annotation-hydrogen-group.active {
-  background-color: rgb(255, 102, 255, 0.7);
+  background-color: var(--inchi-annotation-hydrogen-group);
 }
 
 .annotation-hydrogen-group-class.active {
-  background-color: rgb(0, 255, 255, 0.7);
+  background-color: var(--inchi-annotation-hydrogen-group-class);
 }
