@@ -1,0 +1,122 @@
+/*
+ * Design tokens and the primitives shared across more than one stylesheet.
+ *
+ * This file loads after Bootstrap and before the app stylesheets, so app rules
+ * win ties against the framework without needing "!important".
+ *
+ * How to use it:
+ *   - Reach for a semantic token (--inchi-surface, --inchi-brand) rather than a
+ *     hex value. If no token fits, the value is probably one-off: keep it local
+ *     to the rule that needs it instead of inventing a token for it.
+ *   - Brand colour belongs to --inchi-brand only. Bootstrap components pick it
+ *     up through the --bs-* hooks at the bottom of this file; where Bootstrap
+ *     5.2.3 hardcodes a colour instead of exposing a variable, index.css
+ *     overrides the selector explicitly and says so.
+ */
+
+:root {
+  /* Brand. --inchi-brand is 7.6:1 on white: safe for body text and icons. */
+  --inchi-brand: #00612c;
+  --inchi-brand-hover: #004d22;
+  --inchi-on-brand: #ffffff;
+
+  /* Focus. Both values are the olive companion to the brand green. */
+  --inchi-focus-border: #7e9849;
+  --inchi-focus-ring: rgba(126, 152, 73, 0.25);
+
+  /* Text selection. */
+  --inchi-selection-bg: #9db668;
+  --inchi-selection-text: #ffffff;
+
+  /* Surfaces, from the page up. */
+  --inchi-surface: #ffffff;
+  --inchi-surface-sunken: #f9f9f9;
+  --inchi-surface-muted: #f5f5f5;
+
+  /* Borders. --inchi-border is decorative; -strong clears 3:1 for controls. */
+  --inchi-border: #dddddd;
+  --inchi-border-strong: #767676;
+
+  --inchi-text-muted: #555555;
+
+  /* Pointer affordance on the annotation toggles. Decorative only: too light
+     to carry a focus indicator, which uses --inchi-brand instead. */
+  --inchi-annotation-hover: #add8e6;
+
+  /* Outcome colours for the report dialog. */
+  --inchi-success-surface: #e6f4ec;
+  --inchi-success-fg: var(--inchi-brand);
+  --inchi-error-surface: #fdecea;
+  --inchi-error-fg: #c0392b;
+
+  /* Overlay and elevation. */
+  --inchi-backdrop: rgba(0, 0, 0, 0.45);
+  --inchi-shadow-dialog: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+  --inchi-radius-sm: 4px;
+  --inchi-radius-md: 8px;
+
+  --inchi-transition: 150ms ease;
+
+  /*
+   * Atom annotations: a categorical set, not a scale — each one marks a
+   * different kind of index in the 3D viewer, and they can stack on one atom.
+   * Held at 70% alpha so the atom label stays readable underneath.
+   */
+  --inchi-annotation-index: rgb(209 213 220 / 0.7);
+  --inchi-annotation-canonical-index: rgb(0 255 0 / 0.7);
+  --inchi-annotation-equivalence-class: rgb(255 255 0 / 0.7);
+  --inchi-annotation-hydrogen-group: rgb(255 102 255 / 0.7);
+  --inchi-annotation-hydrogen-group-class: rgb(0 255 255 / 0.7);
+
+  /* Bootstrap hooks: brand the framework instead of overriding its selectors. */
+  --bs-link-color: var(--inchi-brand);
+  --bs-link-hover-color: var(--inchi-brand-hover);
+}
+
+/*
+ * Bootstrap declares component variables on the component root, so these have
+ * to be set there too rather than on :root.
+ */
+.nav-pills {
+  --bs-nav-pills-link-active-bg: var(--inchi-brand);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--inchi-brand);
+  --bs-btn-border-color: var(--inchi-brand);
+  --bs-btn-hover-bg: var(--inchi-brand-hover);
+  --bs-btn-hover-border-color: var(--inchi-brand-hover);
+  --bs-btn-active-bg: var(--inchi-brand-hover);
+  --bs-btn-active-border-color: var(--inchi-brand-hover);
+  --bs-btn-disabled-bg: var(--inchi-brand);
+  --bs-btn-disabled-border-color: var(--inchi-brand);
+}
+
+::selection {
+  color: var(--inchi-selection-text);
+  background-color: var(--inchi-selection-bg);
+}
+
+/*
+ * Modal dialog shell, shared by the report form and the outcome dialog.
+ * Padding sits on the body rather than the <dialog> so that a click anywhere
+ * inside hits content: the dialog element itself is only the click target for
+ * its ::backdrop. Each dialog sets its own max-width.
+ */
+.inchi-dialog {
+  background: var(--inchi-surface);
+  padding: 0;
+  border: none;
+  width: 90%;
+  border-radius: var(--inchi-radius-md);
+  box-shadow: var(--inchi-shadow-dialog);
+}
+
+.inchi-dialog::backdrop {
+  background: var(--inchi-backdrop);
+}
+
+.inchi-dialog-body {
+  padding: 20px;
+}

@@ -1,24 +1,7 @@
-.mask-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.mask-overlay.open {
-  display: flex;
-}
+/* Report form dialog. The shell lives in css/tokens.css as .inchi-dialog. */
 
 .mask-dialog {
-  background: #fff;
-  padding: 20px;
-  width: 90%;
   max-width: 420px;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .mask-dialog header {
@@ -34,9 +17,12 @@
 }
 
 .mask-close {
+  display: inline-flex;
+  align-items: center;
   background: transparent;
   border: none;
   font-size: 1.25rem;
+  line-height: 1;
   cursor: pointer;
 }
 
@@ -45,11 +31,33 @@
   flex-direction: column;
 }
 
-.mask-dialog input[type="text"] {
+/* Names what the report sends, before the visitor writes it. */
+.mask-intro {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  color: var(--inchi-text-muted);
+  line-height: 1.45;
+}
+
+/* Persistent labels: the placeholders below are examples, not names. */
+.mask-label {
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.mask-optional {
+  font-weight: 400;
+  color: var(--inchi-text-muted);
+}
+
+.mask-dialog input[type="text"],
+.mask-dialog textarea {
   padding: 8px 10px;
   margin-bottom: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid var(--inchi-border-strong);
+  border-radius: var(--inchi-radius-sm);
+  font: inherit;
 }
 
 .mask-actions {
@@ -59,32 +67,11 @@
   margin-top: 10px;
 }
 
-.btn-primary {
-  background: #00612c;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-secondary {
-  background: transparent;
-  border: 1px solid #ccc;
-  padding: 8px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.visually-hidden {
-  display: none !important;
-}
-
 .disclaimer-section {
   margin: 15px 0;
   padding: 12px;
-  background: #f5f5f5;
-  border-radius: 4px;
+  background: var(--inchi-surface-muted);
+  border-radius: var(--inchi-radius-sm);
 }
 
 .disclaimer-label {
