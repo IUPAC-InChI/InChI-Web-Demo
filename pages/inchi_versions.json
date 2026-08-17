@@ -48,5 +48,12 @@
     "optionsTemplateId": "inchi-options-explicit-zero-valence",
     "commit": "5c499d356c10e408d441f2ff79438cea092da7d1",
     "url": "https://github.com/IUPAC-InChI/InChI/pull/230"
+  },
+  "Polymer Support": {
+    "module": "inchiModulePolymerSupport",
+    "name": "inchi-web-polymer-support",
+    "optionsTemplateId": "inchi-options-dev",
+    "commit": "877f7538e4194ef54c0f512b23ebc33291bccea1",
+    "url": "https://github.com/IUPAC-InChI/InChI/pull/258"
   }
 }

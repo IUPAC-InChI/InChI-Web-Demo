@@ -22,6 +22,7 @@ build_inchi_wasm "Dev with Molecular Inorganics" "$inchi_versions_file" "$root_d
 build_inchi_wasm "Dev with Enhanced Stereochemistry" "$inchi_versions_file" "$root_dir"
 build_inchi_wasm "No Metal Hydrogens" "$inchi_versions_file" "$root_dir"
 build_inchi_wasm "Explicit Zero Valence" "$inchi_versions_file" "$root_dir"
+build_inchi_wasm "Polymer Support" "$inchi_versions_file" "$root_dir"
 
 # Build RInChI
 build_rinchi_wasm "$root_dir"

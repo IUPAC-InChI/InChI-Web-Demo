@@ -446,6 +446,23 @@ class InChIOptionsElement extends HTMLElement {
       this.querySelector('input[data-id="NPZz"]').checked = true;
     }
 
+    if (inchiVersion === "Polymer Support") {
+      const treatPolymers = this.querySelector('input.form-check-input[data-id="treatPolymers"]',);
+
+      const npzz = this.querySelector('input.form-check-input[data-id="NPZz"]',);
+
+      treatPolymers.checked = true;
+      treatPolymers.setAttribute("data-default-checked", "");
+
+      npzz.checked = true;
+      npzz.setAttribute("data-default-checked", "");
+
+      this.querySelectorAll("input.form-check-input[data-inchi-polymer-option]",).forEach((input) => {
+        input.disabled = false;
+        input.removeAttribute("data-default-disabled");
+      });
+    }
+
     /*
      * Reassign the name of the "stereoRadio" radio button group.
      */
