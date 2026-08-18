@@ -25,6 +25,36 @@ function scopeIds(root, suffix) {
   );
 }
 
+/*
+ * Fetch an HTML fragment, revalidating it and reusing the result.
+ *
+ * These fragments are pulled in from JS rather than linked from index.html, so
+ * a hard reload does not necessarily refresh them: the browser can pair a new
+ * stylesheet with a fragment it still holds in cache, which is how a rewritten
+ * component ends up rendered against styles that no longer match it. "no-cache"
+ * forces a conditional request, so an unchanged fragment still costs only a
+ * 304, and memoising by URL means the templates several tabs share are fetched
+ * once instead of once per tab.
+ */
+const fragmentCache = new Map();
+
+function loadFragment(path) {
+  if (!fragmentCache.has(path)) {
+    fragmentCache.set(
+      path,
+      fetch(path, { cache: "no-cache" }).then((response) => {
+        if (!response.ok) {
+          // Not cached as a failure: another instance may succeed on retry.
+          fragmentCache.delete(path);
+          throw new Error(`${response.status} ${response.statusText}`);
+        }
+        return response.text();
+      }),
+    );
+  }
+  return fragmentCache.get(path);
+}
+
 class InsertHTMLElement extends HTMLElement {
   constructor(htmlPath) {
     super();
@@ -33,11 +63,7 @@ class InsertHTMLElement extends HTMLElement {
 
   async connectedCallback() {
     try {
-      const response = await fetch(this.htmlPath);
-      if (!response.ok) {
-        throw new Error(`${response.status} ${response.statusText}`);
-      }
-      this.innerHTML = await response.text();
+      this.innerHTML = await loadFragment(this.htmlPath);
     } catch (error) {
       /*
        * Reloading is the only recovery: these fragments are part of the
@@ -576,12 +602,11 @@ class InChIOptionsElement extends HTMLElement {
     const htmlFragments = await Promise.all(
       this.componentPaths.map(async (path) => {
         try {
-          const response = await fetch(path);
-          return response.ok
-            ? await response.text()
-            : `<p>Error loading ${path}</p>`;
-        } catch {
-          return `<p>Error loading ${path}</p>`;
+          return await loadFragment(path);
+        } catch (error) {
+          console.error(`Error loading ${path}`, error);
+          return `<p class="alert alert-warning" role="alert">Some options
+            could not be loaded. Please reload the page (CTRL + F5).</p>`;
         }
       }),
     );
