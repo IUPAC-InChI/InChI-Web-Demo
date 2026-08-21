@@ -91,6 +91,11 @@ const VERSION_BEHAVIOR = {
     showAllHydrogenLabels: true,
     checkNPZzByDefault: true,
   },
+  "Polymer Support": {
+    // The polymer build is only interesting with polymer handling switched on.
+    checkNPZzByDefault: true,
+    polymerOptionsOn: true,
+  },
   "Dev with Enhanced Stereochemistry": {
     // Enhanced stereochemistry is only representable in V3000.
     molfileFormat: "v3000",

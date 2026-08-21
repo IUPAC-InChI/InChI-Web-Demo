@@ -645,7 +645,29 @@ class InChIOptionsElement extends HTMLElement {
     this.appendChild(boundingBox);
 
     if (versionBehavior(inchiVersion).checkNPZzByDefault) {
-      this.querySelector('input[data-id="NPZz"]').checked = true;
+      const npzz = this.querySelector('input[data-id="NPZz"]');
+      npzz.checked = true;
+      // A default, so "Reset" has to restore it rather than clear it.
+      npzz.setAttribute("data-default-checked", "");
+    }
+
+    /*
+     * The polymer build exists to exercise polymer handling, so its polymer
+     * options start on and enabled instead of behind "Treat polymers".
+     */
+    if (versionBehavior(inchiVersion).polymerOptionsOn) {
+      const treatPolymers = this.querySelector(
+        'input[data-id="treatPolymers"]',
+      );
+      treatPolymers.checked = true;
+      treatPolymers.setAttribute("data-default-checked", "");
+
+      this.querySelectorAll(
+        "input.form-check-input[data-inchi-polymer-option]",
+      ).forEach((input) => {
+        input.disabled = false;
+        input.removeAttribute("data-default-disabled");
+      });
     }
 
     /*
