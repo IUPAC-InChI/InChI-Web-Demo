@@ -644,11 +644,15 @@ class InChIOptionsElement extends HTMLElement {
 
     this.appendChild(boundingBox);
 
-    if (versionBehavior(inchiVersion).checkNPZzByDefault) {
-      const npzz = this.querySelector('input[data-id="NPZz"]');
+    /*
+     * Both blocks below tolerate a missing input: a fragment that failed to
+     * load above is replaced by a warning, and must not take the rest of
+     * postCreate (the radio group, the change listeners) down with it.
+     */
+    const npzz = this.querySelector('input[data-id="NPZz"]');
+    if (versionBehavior(inchiVersion).checkNPZzByDefault && npzz) {
       npzz.checked = true;
-      // A default, so "Reset" has to restore it rather than clear it.
-      npzz.setAttribute("data-default-checked", "");
+      npzz.setAttribute("data-default-checked", ""); // A default: "Reset" restores it.
     }
 
     /*
@@ -659,8 +663,10 @@ class InChIOptionsElement extends HTMLElement {
       const treatPolymers = this.querySelector(
         'input[data-id="treatPolymers"]',
       );
-      treatPolymers.checked = true;
-      treatPolymers.setAttribute("data-default-checked", "");
+      if (treatPolymers) {
+        treatPolymers.checked = true;
+        treatPolymers.setAttribute("data-default-checked", "");
+      }
 
       this.querySelectorAll(
         "input.form-check-input[data-inchi-polymer-option]",
