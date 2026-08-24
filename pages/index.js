@@ -153,22 +153,30 @@ async function updateInchiTab1() {
   const inchiVersion = getVersion("inchi-tab1-pane");
 
   let molfile;
+  let formatter;
   const ketcher = getKetcher("inchi-tab1-ketcher");
+  const struct = ketcher.editor.struct();
+
   if (ketcher.containsReaction()) {
     writeResult("Cannot convert reactions to InChI", "inchi-tab1-logs");
     return;
-  } else if (ketcher.editor.struct().isBlank()) {
+  } else if (struct.isBlank()) {
     // no structure
     return;
   } else {
-    if (inchiVersion == "Latest with Enhanced Stereochemistry") {
-      molfile = await ketcher.getMolfile("v3000"); 
+    if (inchiVersion == "Dev with Enhanced Stereochemistry") {
+      formatter = ketcher.formatterFactory.create(
+        "molv3000",
+        {},
+        false,
+        struct
+      );
     } else {
-      molfile = await ketcher.getMolfile();
+      formatter = ketcher.formatterFactory.create("mol", {}, false, struct);
     }
   }
 
-  // run conversion
+  molfile = await formatter.getStructureFromStructAsync(struct);
   await convertMolfileToInchiAndWriteResults(
     molfile,
     options,
