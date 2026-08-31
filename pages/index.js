@@ -166,7 +166,7 @@ async function updateInchiTab1() {
   } else {
     if (inchiVersion == "Dev with Enhanced Stereochemistry") {
       formatter = ketcher.formatterFactory.create(
-        "molv3000",
+        "molV3000",
         {},
         false,
         struct
