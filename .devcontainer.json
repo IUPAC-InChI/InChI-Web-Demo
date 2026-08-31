@@ -22,6 +22,7 @@
                 "editor.codeActionsOnSave": {
                     "source.fixAll.shellcheck": "explicit"
                 },
+                "prettier.trailingComma": "es5",
                 "files.associations": {
                     "*.yml": "github-actions-workflow"
                 },
