@@ -176,7 +176,7 @@ async function updateInchiTab1() {
     }
   }
 
-  molfile = await formatter.getStructureFromStructAsync(struct);
+  molfile = await formatter.getStringFromStructureAsync(struct);
   await convertMolfileToInchiAndWriteResults(
     molfile,
     options,

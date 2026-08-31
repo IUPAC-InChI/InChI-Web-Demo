@@ -4,13 +4,13 @@
   "homepage": ".",
   "private": true,
   "dependencies": {
-    "ketcher-react": "3.12.0",
-    "ketcher-standalone": "3.12.0",
+    "ketcher-react": "3.17.0",
+    "ketcher-standalone": "3.17.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "resolutions": {
-    "ketcher-core": "3.12.0",
+    "ketcher-core": "3.17.0",
     "qs": "6.15.2",
     "immutable": "3.8.3",
     "resolve-url-loader": "5.0.0",
