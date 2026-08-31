@@ -2,7 +2,7 @@
 // https://hub.docker.com/r/emscripten/emsdk
 {
     "name": "InChI-Web-Demo",
-    "image": "emscripten/emsdk:4.0.6",
+    "image": "emscripten/emsdk:6.0.8",
     "features": {
         "ghcr.io/devcontainers/features/common-utils:2": {
             "installZsh": true,
