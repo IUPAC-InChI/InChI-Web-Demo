@@ -1,4 +1,5 @@
 #!/bin/bash
+set -Eeuo pipefail
 
 
 download_package() {
