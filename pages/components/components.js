@@ -168,7 +168,7 @@ class ReportMaskElement extends InsertHTMLElement {
     console.log("reportMask:json", payload);
 
     document.dispatchEvent(
-      new CustomEvent("reportMask:json", { detail: payload }),
+      new CustomEvent("reportMask:json", { detail: payload })
     );
     const token = "HtEZnZMm3Nwez1nPb3Y53QpcdKscG5B";
 
@@ -179,7 +179,7 @@ class ReportMaskElement extends InsertHTMLElement {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        },
+        }
       );
       const responseData = await response.json();
       console.log("Success: ", responseData);
@@ -319,7 +319,7 @@ class InChIVersionSelectionElement extends HTMLElement {
     const commitLink = this.querySelector("#version-commit");
 
     for (const [versionName, versionConfig] of Object.entries(
-      availableInchiVersions,
+      availableInchiVersions
     )) {
       const option = document.createElement("option");
       option.innerHTML = versionName;
@@ -434,7 +434,7 @@ class InChIOptionsElement extends HTMLElement {
         } catch {
           return `<p>Error loading ${path}</p>`;
         }
-      }),
+      })
     );
 
     const boundingBox = document.createElement("div");
@@ -447,9 +447,11 @@ class InChIOptionsElement extends HTMLElement {
     }
 
     if (inchiVersion === "Polymer Support") {
-      const treatPolymers = this.querySelector('input.form-check-input[data-id="treatPolymers"]',);
+      const treatPolymers = this.querySelector(
+        'input.form-check-input[data-id="treatPolymers"]'
+      );
 
-      const npzz = this.querySelector('input.form-check-input[data-id="NPZz"]',);
+      const npzz = this.querySelector('input.form-check-input[data-id="NPZz"]');
 
       treatPolymers.checked = true;
       treatPolymers.setAttribute("data-default-checked", "");
@@ -457,7 +459,9 @@ class InChIOptionsElement extends HTMLElement {
       npzz.checked = true;
       npzz.setAttribute("data-default-checked", "");
 
-      this.querySelectorAll("input.form-check-input[data-inchi-polymer-option]",).forEach((input) => {
+      this.querySelectorAll(
+        "input.form-check-input[data-inchi-polymer-option]"
+      ).forEach((input) => {
         input.disabled = false;
         input.removeAttribute("data-default-disabled");
       });
@@ -467,7 +471,7 @@ class InChIOptionsElement extends HTMLElement {
      * Reassign the name of the "stereoRadio" radio button group.
      */
     this.querySelectorAll(
-      'input.form-check-input[type="radio"][name="stereoRadio"]',
+      'input.form-check-input[type="radio"][name="stereoRadio"]'
     ).forEach((input) => {
       input.name = "stereoRadio-" + tabDivId;
     });
@@ -477,7 +481,7 @@ class InChIOptionsElement extends HTMLElement {
      * 'disabled' state of the inputs that cope with stereo options.
      */
     this.querySelector(
-      'input.form-check-input[data-id="includeStereo"]',
+      'input.form-check-input[data-id="includeStereo"]'
     ).addEventListener("change", function () {
       document
         .getElementById(tabDivId)
@@ -492,7 +496,7 @@ class InChIOptionsElement extends HTMLElement {
      * 'disabled' state of the inputs that cope with polymer options.
      */
     this.querySelector(
-      'input.form-check-input[data-id="treatPolymers"]',
+      'input.form-check-input[data-id="treatPolymers"]'
     ).addEventListener("change", function () {
       document
         .getElementById(tabDivId)
@@ -514,7 +518,7 @@ class InChIOptionsElement extends HTMLElement {
       function () {
         resetInchiOptions(tabDivId);
         updateFunction();
-      },
+      }
     );
 
     /*
@@ -555,7 +559,7 @@ class InChIOptionsElement extends HTMLElement {
     [...this.querySelectorAll('[data-bs-toggle="tooltip"]')].map(
       (tooltipTriggerEl) => {
         new bootstrap.Tooltip(tooltipTriggerEl);
-      },
+      }
     );
   }
 }
@@ -664,8 +668,8 @@ function getAnnotationData(inchi, auxinfo) {
     "hydrogenGroupClass",
     mapCanonicalAtomIndicesToMobileHydrogenGroupClasses(
       annotationData.get("hydrogenGroup"),
-      auxinfoParsed.get("gE"),
-    ),
+      auxinfoParsed.get("gE")
+    )
   );
 
   return annotationData;
@@ -721,7 +725,7 @@ class NGLViewerElement extends HTMLElement {
     }));
 
     this.annotationSelection = Object.fromEntries(
-      Object.keys(this.annotationColors).map((id) => [id, false]),
+      Object.keys(this.annotationColors).map((id) => [id, false])
     );
 
     this.innerHTML = `<div id="annotation-selection" class="mt-2"></div>
@@ -741,7 +745,7 @@ class NGLViewerElement extends HTMLElement {
     resizeObserver.observe(viewportElement);
 
     this.annotationSelectionElement = this.querySelector(
-      "#annotation-selection",
+      "#annotation-selection"
     );
     this.annotationButtons.forEach((button) => {
       const buttonElement = document.createElement("button");
@@ -779,7 +783,7 @@ class NGLViewerElement extends HTMLElement {
       this.structureKey = getStructureKey(inchi, auxinfo);
       this.annotationButtons.forEach((button) => {
         const buttonElement = this.annotationSelectionElement.querySelector(
-          `#${button.id}`,
+          `#${button.id}`
         );
         const annotationAvailable =
           button.id === "index"
@@ -789,7 +793,7 @@ class NGLViewerElement extends HTMLElement {
         buttonElement.classList.remove("active");
       });
       this.annotationSelection = Object.fromEntries(
-        Object.keys(this.annotationColors).map((id) => [id, false]),
+        Object.keys(this.annotationColors).map((id) => [id, false])
       );
 
       this.structure.autoView();
@@ -800,7 +804,7 @@ class NGLViewerElement extends HTMLElement {
       this.annotationData = undefined;
       this.annotationButtons.forEach((button) => {
         const buttonElement = this.annotationSelectionElement.querySelector(
-          `#${button.id}`,
+          `#${button.id}`
         );
         buttonElement.disabled = true;
         buttonElement.classList.remove("active");
@@ -835,16 +839,13 @@ class NGLViewerElement extends HTMLElement {
 
       if (this.annotationSelection.index) {
         annotations.appendChild(
-          createAnnotation(atomIndex, this.annotationColors.index),
+          createAnnotation(atomIndex, this.annotationColors.index)
         );
       }
 
       if (canonicalIndex && this.annotationSelection.canonicalIndex) {
         annotations.appendChild(
-          createAnnotation(
-            canonicalIndex,
-            this.annotationColors.canonicalIndex,
-          ),
+          createAnnotation(canonicalIndex, this.annotationColors.canonicalIndex)
         );
       }
 
@@ -852,21 +853,21 @@ class NGLViewerElement extends HTMLElement {
         annotations.appendChild(
           createAnnotation(
             equivalenceClass,
-            this.annotationColors.equivalenceClass,
-          ),
+            this.annotationColors.equivalenceClass
+          )
         );
       }
       if (hydrogenGroup && this.annotationSelection.hydrogenGroup) {
         annotations.appendChild(
-          createAnnotation(hydrogenGroup, this.annotationColors.hydrogenGroup),
+          createAnnotation(hydrogenGroup, this.annotationColors.hydrogenGroup)
         );
       }
       if (hydrogenGroupClass && this.annotationSelection.hydrogenGroupClass) {
         annotations.appendChild(
           createAnnotation(
             hydrogenGroupClass,
-            this.annotationColors.hydrogenGroupClass,
-          ),
+            this.annotationColors.hydrogenGroupClass
+          )
         );
       }
 
@@ -886,18 +887,12 @@ customElements.define("inchi-result-field", InChIResultFieldElement);
 customElements.define("inchi-options-106", InChIOptions106Element);
 customElements.define("inchi-options-1075", InChIOptions1075Element);
 customElements.define("inchi-options-dev", InChIOptionsDevElement);
-customElements.define(
-  "inchi-options-dev-moin",
-  InChIOptionsDevMoInElement,
-);
+customElements.define("inchi-options-dev-moin", InChIOptionsDevMoInElement);
 customElements.define(
   "inchi-options-dev-enhanced-stereo",
-  InChIOptionsDevEnhancedStereoElement,
+  InChIOptionsDevEnhancedStereoElement
 );
-customElements.define(
-  "inchi-options-no-metal-h",
-  InChIOptionsNoMetalH,
-);
+customElements.define("inchi-options-no-metal-h", InChIOptionsNoMetalH);
 customElements.define(
   "inchi-options-explicit-zero-valence",
   InChIOptionsExplicitZeroValence
