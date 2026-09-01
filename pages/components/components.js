@@ -100,15 +100,9 @@ class ReportMaskElement extends InsertHTMLElement {
     if (this.tabId === "inchi-tab1") {
       // from ketcher for InChI Tab
       const ketcher = getKetcher(`${this.tabId}-ketcher`);
-
-      try {
-        if (ketcher) {
-          molfile_v2 = await ketcher.getMolfile("v2000");
-          molfile_v3 = await ketcher.getMolfile("v3000");
-        }
-      } catch (err) {
-        molfile_v2 = null;
-        molfile_v3 = null;
+      if (ketcher) {
+        molfile_v2 = await getMolfileFromKetcher(ketcher, "v2000");
+        molfile_v3 = await getMolfileFromKetcher(ketcher, "v3000");
       }
     } else if (this.tabId === "inchi-tab2") {
       let tab2Data = document.getElementById("inchi-tab2-molfile").value;

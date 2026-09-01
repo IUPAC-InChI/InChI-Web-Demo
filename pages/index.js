@@ -153,30 +153,25 @@ async function updateInchiTab1() {
   const inchiVersion = getVersion("inchi-tab1-pane");
 
   let molfile;
-  let formatter;
   const ketcher = getKetcher("inchi-tab1-ketcher");
-  const struct = ketcher.editor.struct();
 
   if (ketcher.containsReaction()) {
     writeResult("Cannot convert reactions to InChI", "inchi-tab1-logs");
     return;
-  } else if (struct.isBlank()) {
-    // no structure
-    return;
-  } else {
-    if (inchiVersion == "Dev with Enhanced Stereochemistry") {
-      formatter = ketcher.formatterFactory.create(
-        "molV3000",
-        {},
-        false,
-        struct
-      );
-    } else {
-      formatter = ketcher.formatterFactory.create("mol", {}, false, struct);
-    }
   }
 
-  molfile = await formatter.getStringFromStructureAsync(struct);
+  const struct = ketcher.editor.struct();
+  if (struct.isBlank()) {
+    // no structure
+    return;
+  }
+
+  if (inchiVersion == "Dev with Enhanced Stereochemistry") {
+    molfile = await getMolfileFromKetcher(ketcher, "v3000");
+  } else {
+    molfile = await getMolfileFromKetcher(ketcher, "v2000");
+  }
+
   await convertMolfileToInchiAndWriteResults(
     molfile,
     options,
@@ -717,6 +712,42 @@ async function convertRinchiToTextfile(
  */
 function getKetcher(iframeId) {
   return document.getElementById(iframeId).contentWindow.ketcher;
+}
+
+/**
+ * Get molfile from Ketcher editor
+ * @param {Object} ketcher - Ketcher instance
+ * @param {String} format - Format to retrieve: "v2000" (default) or "v3000"
+ * @returns {Promise<String>} - Molfile string in the requested format
+ */
+async function getMolfileFromKetcher(ketcher, format = "v2000") {
+  try {
+    const struct = ketcher.editor.struct();
+    if (struct.isBlank()) {
+      return null;
+    }
+
+    if (format === "v3000") {
+      const formatter = ketcher.formatterFactory.create(
+        "molV3000",
+        {},
+        false,
+        struct
+      );
+      return await formatter.getStringFromStructureAsync(struct);
+    } else {
+      const formatter = ketcher.formatterFactory.create(
+        "mol",
+        {},
+        false,
+        struct
+      );
+      return await formatter.getStringFromStructureAsync(struct);
+    }
+  } catch (err) {
+    alert(`Couldn't retrieve molfile from Ketcher; ${err}`);
+    return null;
+  }
 }
 
 function onKetcherLoaded(iframeId, updateFunction) {
