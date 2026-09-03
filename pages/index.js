@@ -727,23 +727,11 @@ async function getMolfileFromKetcher(ketcher, format = "v2000") {
       return null;
     }
 
-    if (format === "v3000") {
-      const formatter = ketcher.formatterFactory.create(
-        "molV3000",
-        {},
-        false,
-        struct
-      );
-      return await formatter.getStringFromStructureAsync(struct);
-    } else {
-      const formatter = ketcher.formatterFactory.create(
-        "mol",
-        {},
-        false,
-        struct
-      );
-      return await formatter.getStringFromStructureAsync(struct);
-    }
+    const formatter =
+      format === "v3000"
+        ? ketcher.formatterFactory.create("molV3000", {}, false, struct)
+        : ketcher.formatterFactory.create("mol", {}, false, struct);
+    return await formatter.getStringFromStructureAsync(struct);
   } catch (err) {
     alert(`Couldn't retrieve molfile from Ketcher; ${err}`);
     return null;
