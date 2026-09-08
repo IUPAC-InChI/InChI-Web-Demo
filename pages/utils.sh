@@ -22,6 +22,12 @@ download_package() {
     # are open. Bootstrap's dist alone ships 5.8 MB of them. Same reasoning as
     # the strip in build_ketcher.
     find "$artifact_dir" -type f -name "*.map" -delete
+
+    # A package's own documentation is not part of the app. bootstrap-multiselect
+    # ships 3.9 MB of it, including 1.3 MB of Glyphicons and FontAwesome that
+    # nothing here references — the widget's dist CSS has no url() at all — and
+    # all of it lands on the deployed site.
+    find "$artifact_dir" -type d -name "docs" -prune -exec rm -rf {} +
 }
 
 
