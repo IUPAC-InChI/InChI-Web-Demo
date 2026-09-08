@@ -15,6 +15,9 @@ download_package() {
     readonly archive
     if [ -n "$archive" ]; then
         unzip "$archive" -d "$artifact_dir"
+        # The archive has done its job. Left in place it sits next to the tree
+        # it produced, deploying the same bytes twice.
+        rm -f "$archive"
     fi
 
     # Source maps are for debugging a dependency's own source, which nobody
