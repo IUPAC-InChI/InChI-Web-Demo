@@ -1,5 +1,5 @@
 ---
-name: InChI Web Demo
+name: InChI Web App
 description: A chemical-identifier tool drawn in three rule weights, where the answer reads as notation rather than text.
 colors:
   ground: "#f2f4f3"
@@ -156,7 +156,7 @@ components:
     padding: "20px"
 ---
 
-# Design System: InChI Web Demo
+# Design System: InChI Web App
 
 ## Overview
 

@@ -1,4 +1,4 @@
-# InChI-Web-Demo
+# InChI Web App
 
 ## Local development
 
