@@ -1295,3 +1295,22 @@ button.form-select.multiselect:has(
 .annotation-label.annotation-hydrogen-group-class {
   background-color: var(--inchi-annotation-hydrogen-group-class);
 }
+
+/* ---- Changed-layer highlight ------------------------------------------- */
+/*
+ * A marker pen over the parts of a complete identifier that differ between the
+ * two versions. Translucent, so the monospace ink underneath keeps its full
+ * contrast and the string still reads as one continuous run — the highlight
+ * marks a region, it does not recolour the text.
+ *
+ * <mark> already means "marked for reference" to assistive technology, which
+ * is exactly the meaning here, so the element does the semantic work and the
+ * rule only supplies the paint.
+ */
+.layer-highlight {
+  background-color: var(--inchi-highlight);
+  color: inherit;
+  /* A hairline under the run, so the marked region survives greyscale too. */
+  box-shadow: inset 0 -1px 0 var(--inchi-highlight-edge);
+  padding-block: 0.05em;
+}

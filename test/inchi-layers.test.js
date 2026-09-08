@@ -8,6 +8,8 @@ const {
   diffInchiLayers,
   parseInchikeyBlocks,
   diffInchikeyBlocks,
+  markChangedLayers,
+  markChangedKeyBlocks,
   escapeHtml,
 } = require("../pages/inchi-layers.js");
 
@@ -95,4 +97,61 @@ test("marks which InChIKey block moved, not the whole key", () => {
 test("returns nothing to compare when neither side is a key", () => {
   expect(diffInchikeyBlocks("", "")).toEqual([]);
   expect(diffInchikeyBlocks("not-a-key", "also-not")).toEqual([]);
+});
+
+/*
+ * The highlight must never alter the identifier. Someone copies this string
+ * into a paper or a database; a stray character is the worst thing this file
+ * could do.
+ */
+const stripTags = (html) =>
+  html
+    .replace(/<[^>]*>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
+describe("marking changed layers inside a complete string", () => {
+  const full = "InChI=1S/C4H8O/c1-3-4(2)5/h4-5H/t4-/m1/s1";
+
+  test.each([
+    [new Set(["m", "s"]), "two stereo layers"],
+    [new Set(["formula"]), "the prefix-less formula layer"],
+    [new Set(["c"]), "the connections layer"],
+    [new Set(), "nothing at all"],
+  ])("leaves the string intact when marking %s (%s)", (keys) => {
+    expect(stripTags(markChangedLayers(full, keys))).toBe(full);
+  });
+
+  test("wraps only the layers that changed", () => {
+    const marked = markChangedLayers(full, new Set(["m", "s"]));
+    expect(marked).toContain('<mark class="layer-highlight">m1</mark>');
+    expect(marked).toContain('<mark class="layer-highlight">s1</mark>');
+    expect(marked).not.toContain('<mark class="layer-highlight">t4-</mark>');
+  });
+
+  test("marks the formula, which has no letter prefix", () => {
+    expect(markChangedLayers(full, new Set(["formula"]))).toContain(
+      '<mark class="layer-highlight">C4H8O</mark>'
+    );
+  });
+
+  test("adds no markup when nothing changed or the input is not an InChI", () => {
+    expect(markChangedLayers(full, new Set())).toBe(escapeHtml(full));
+    expect(markChangedLayers("not an inchi", new Set(["t"]))).toBe(
+      escapeHtml("not an inchi")
+    );
+  });
+
+  test("marks the InChIKey block that changed and keeps the key intact", () => {
+    const key = "HEFNNWSXXWATRW-JTQLQIEISA-N";
+    const marked = markChangedKeyBlocks(key, new Set([1]));
+    expect(stripTags(marked)).toBe(key);
+    expect(marked).toContain('<mark class="layer-highlight">JTQLQIEISA</mark>');
+    expect(marked).not.toContain(
+      '<mark class="layer-highlight">HEFNNWSXXWATRW</mark>'
+    );
+  });
 });

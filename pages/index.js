@@ -271,20 +271,52 @@ function renderComparison(paneId) {
    * unmarked and selectable in one run rather than reassembled from a diff.
    */
   const completeRows = [];
-  const addCompleteRow = (label, value) => {
-    if (!value) {
+  const addCompleteRow = (label, html) => {
+    if (!html) {
       return;
     }
     completeRows.push(
       `<div class="layer-key">${escapeHtml(label)}</div>` +
-        `<div class="layer-value">${escapeHtml(value)}</div>`
+        `<div class="layer-value">${html}</div>`
     );
   };
-  addCompleteRow("Pinned InChI", pinned.inchi);
-  addCompleteRow("Pinned key", pinned.inchikey);
+
+  /*
+   * The layers that moved, marked inside the complete strings themselves, so
+   * the whole identifier stays readable and copyable while still showing where
+   * the two versions parted company. markChangedLayers only wraps the text; a
+   * self-check in inchi-layers.js asserts the string survives untouched.
+   */
+  const changedKeys = new Set(changed.map((row) => row.key));
+  const changedKeyBlocks = new Set(
+    keyRows.reduce(
+      (indices, row, index) =>
+        row.status === "same" ? indices : [...indices, index],
+      []
+    )
+  );
+
+  addCompleteRow(
+    "Pinned InChI",
+    pinned.inchi ? markChangedLayers(pinned.inchi, changedKeys) : ""
+  );
+  addCompleteRow(
+    "Pinned key",
+    pinned.inchikey
+      ? markChangedKeyBlocks(pinned.inchikey, changedKeyBlocks)
+      : ""
+  );
   if (current) {
-    addCompleteRow("Current InChI", current.inchi);
-    addCompleteRow("Current key", current.inchikey);
+    addCompleteRow(
+      "Current InChI",
+      current.inchi ? markChangedLayers(current.inchi, changedKeys) : ""
+    );
+    addCompleteRow(
+      "Current key",
+      current.inchikey
+        ? markChangedKeyBlocks(current.inchikey, changedKeyBlocks)
+        : ""
+    );
   }
   const completeBody = completeRows.join("");
 

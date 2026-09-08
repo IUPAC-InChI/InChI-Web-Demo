@@ -237,6 +237,60 @@ function diffInchikeyBlocks(left, right) {
 }
 
 /*
+ * Render a complete InChI with the layers that changed marked.
+ *
+ * The string is re-split on "/" and rejoined, never rebuilt from parsed
+ * values, so the text a reader selects and copies is character-for-character
+ * what the library returned — the markup only wraps it. `changedKeys` is a
+ * Set of layer keys ("t", "m", "formula") from diffInchiLayers.
+ */
+function markChangedLayers(inchi, changedKeys) {
+  const text = typeof inchi === "string" ? inchi.trim() : "";
+  if (!text.startsWith("InChI=") || !changedKeys || changedKeys.size === 0) {
+    return escapeHtml(text);
+  }
+
+  const segments = text.slice("InChI=".length).split("/");
+  const version = segments.shift() ?? "";
+
+  let sawFormula = false;
+  const rendered = segments.map((segment) => {
+    let key;
+    if (!sawFormula && !/^[a-z]/.test(segment)) {
+      key = "formula";
+      sawFormula = true;
+    } else {
+      key = segment.slice(0, 1);
+    }
+    const escaped = escapeHtml(segment);
+    return changedKeys.has(key)
+      ? `<mark class="layer-highlight">${escaped}</mark>`
+      : escaped;
+  });
+
+  return `${escapeHtml("InChI=" + version)}/${rendered.join("/")}`;
+}
+
+/*
+ * The same for an InChIKey: mark the blocks that changed, by index, leaving
+ * the hyphens and every character in place.
+ */
+function markChangedKeyBlocks(inchikey, changedIndices) {
+  const text = typeof inchikey === "string" ? inchikey.trim() : "";
+  if (!changedIndices || changedIndices.size === 0) {
+    return escapeHtml(text);
+  }
+  return text
+    .split("-")
+    .map((block, index) =>
+      changedIndices.has(index)
+        ? `<mark class="layer-highlight">${escapeHtml(block)}</mark>`
+        : escapeHtml(block)
+    )
+    .join("-");
+}
+
+/*
  * The interface's icons, authored in one stroke weight.
  *
  * These replace the eight Bootstrap Icons glyphs the app used to pull from a
@@ -357,6 +411,46 @@ function demo() {
   assert.strictEqual(keyDiff[2].status, "same");
   assert.deepStrictEqual(diffInchikeyBlocks("", ""), []);
 
+  /*
+   * Highlighting must never alter the string itself: strip the markup back out
+   * and it has to equal the input exactly, or someone copies a corrupted
+   * identifier into a paper.
+   */
+  const stripTags = (html) =>
+    html
+      .replace(/<[^>]*>/g, "")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'");
+
+  const full = "InChI=1S/C4H8O/c1-3-4(2)5/h4-5H/t4-/m1/s1";
+  const marked = markChangedLayers(full, new Set(["m", "s"]));
+  assert.strictEqual(stripTags(marked), full);
+  assert.ok(marked.includes('<mark class="layer-highlight">m1</mark>'));
+  assert.ok(marked.includes('<mark class="layer-highlight">s1</mark>'));
+  assert.ok(!marked.includes('<mark class="layer-highlight">t4-</mark>'));
+
+  // the formula has no letter prefix and must still be markable
+  const formulaMarked = markChangedLayers(full, new Set(["formula"]));
+  assert.strictEqual(stripTags(formulaMarked), full);
+  assert.ok(formulaMarked.includes('<mark class="layer-highlight">C4H8O</mark>'));
+
+  // nothing changed, or not an InChI: plain escaped text, no marks
+  assert.strictEqual(markChangedLayers(full, new Set()), escapeHtml(full));
+  assert.strictEqual(
+    markChangedLayers("not an inchi", new Set(["t"])),
+    escapeHtml("not an inchi")
+  );
+
+  const key = "HEFNNWSXXWATRW-JTQLQIEISA-N";
+  const keyMarked = markChangedKeyBlocks(key, new Set([1]));
+  assert.strictEqual(stripTags(keyMarked), key);
+  assert.ok(keyMarked.includes('<mark class="layer-highlight">JTQLQIEISA</mark>'));
+  assert.ok(!keyMarked.includes('<mark class="layer-highlight">HEFNNWSXXWATRW</mark>'));
+  assert.strictEqual(markChangedKeyBlocks(key, new Set()), escapeHtml(key));
+
   // These feed innerHTML templates, and the SD-file path puts file content there.
   assert.strictEqual(
     escapeHtml('<img src=x onerror="alert(1)">'),
@@ -392,6 +486,8 @@ if (typeof module === "object" && module.exports) {
     diffInchiLayers,
     parseInchikeyBlocks,
     diffInchikeyBlocks,
+    markChangedLayers,
+    markChangedKeyBlocks,
     notationMark,
     escapeHtml,
     icon,

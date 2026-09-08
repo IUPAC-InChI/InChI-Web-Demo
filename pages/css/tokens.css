@@ -77,6 +77,15 @@
   --inchi-focus: var(--inchi-brand);
   --inchi-focus-ring: rgb(0 97 44 / 0.28);
 
+  /*
+   * Highlight for the layers that changed, marked inside a complete string.
+   * The institutional green at low alpha: a marker pen over the identifier
+   * rather than a colour change to it, so the string still reads as one run
+   * and the ink on top stays at full contrast.
+   */
+  --inchi-highlight: rgb(0 97 44 / 0.18);
+  --inchi-highlight-edge: rgb(0 97 44 / 0.7); /* 3.8:1 on the field */
+
   /* ---- Selection ------------------------------------------------------- */
   /*
    * White on the old #9db668 was 2.25:1 — worse than not selecting, on a page
@@ -185,6 +194,9 @@
 
     --inchi-focus-ring: rgb(98 181 133 / 0.32);
 
+    --inchi-highlight: rgb(98 181 133 / 0.22);
+    --inchi-highlight-edge: rgb(98 181 133 / 0.6); /* 3.4:1 on the field */
+
     --inchi-selection-bg: #2c5c40;
     --inchi-selection-text: #eef5f0;
 
@@ -226,6 +238,9 @@
   --inchi-on-brand: #0b120e;
 
   --inchi-focus-ring: rgb(98 181 133 / 0.32);
+
+  --inchi-highlight: rgb(98 181 133 / 0.22);
+  --inchi-highlight-edge: rgb(98 181 133 / 0.6); /* 3.4:1 on the field */
 
   --inchi-selection-bg: #2c5c40;
   --inchi-selection-text: #eef5f0;
