@@ -16,6 +16,12 @@ download_package() {
     if [ -n "$archive" ]; then
         unzip "$archive" -d "$artifact_dir"
     fi
+
+    # Source maps are for debugging a dependency's own source, which nobody
+    # does from the deployed copy, and no browser requests one unless devtools
+    # are open. Bootstrap's dist alone ships 5.8 MB of them. Same reasoning as
+    # the strip in build_ketcher.
+    find "$artifact_dir" -type f -name "*.map" -delete
 }
 
 
