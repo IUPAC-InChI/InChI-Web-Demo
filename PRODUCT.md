@@ -29,12 +29,18 @@ three RInChIKey variants — from drawn structures, pasted molfiles, AuxInfo, or
 papers and used in real curation workflows. "Demo" in the repository and page title is historical
 baggage, and the surface should not present itself as a toy.
 
-**Open decision — the public name.** The largest type on the page still reads "InChI Web Demo",
-which restates the very thing this section flags. Renaming is not a design call: the name is what
-papers cite, what the repository is called, and what the deployed URL implies, so changing it is
-the maintainers' decision and needs a redirect story. Recorded here rather than silently changed.
-Until it is decided, the tagline carries the honest description ("Chemical identifiers generated in
-your browser, never on a server") and the page title spells out what the tool does.
+**The public name is "InChI Web App".** Decided by the user, who put it plainly: it is not a demo
+any more. The name also settles an inconsistency the product carried — the About surface has always
+opened with "This web application runs entirely in your browser" while the heading said "Demo".
+
+The rename is deliberately **visible text only**: the page title, the heading and the README. The
+repository slug (`InChI-Web-Demo`) and the deployed path
+(`iupac-inchi.github.io/InChI-Web-Demo/`) are unchanged, because this tool is cited from published
+papers and GitHub does not reliably redirect Pages URLs after a rename. Nothing anyone has cited
+breaks.
+
+**Still open, for the maintainers, not for design:** whether to rename the repository and the
+deployed path as well. That needs a redirect plan and a view on the citations already in print.
 
 Success means a user gets a correct identifier they can trust, attribute to a specific algorithm
 version, and reproduce later.
