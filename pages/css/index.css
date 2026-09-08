@@ -677,6 +677,7 @@ button.form-select.multiselect:has(
     .nav-link,
     .link-button,
     .annotation-button,
+    .theme-switch,
     summary,
     a
   ):focus-visible {
@@ -1313,4 +1314,137 @@ button.form-select.multiselect:has(
   /* A hairline under the run, so the marked region survives greyscale too. */
   box-shadow: inset 0 -1px 0 var(--inchi-highlight-edge);
   padding-block: 0.05em;
+}
+
+/* ---- Theme switch ------------------------------------------------------ */
+/*
+ * The one authored motion moment on this surface, and it is made of the
+ * world's own idea: darkness is ink coverage.
+ *
+ * The knob is a square that slides while ink sweeps across the track behind
+ * it, and the knob inverts as it crosses into the inked half — paper on ink
+ * where it was ink on paper. No pill, no circle, no radius: a drafting slider
+ * leaving an inked trail, not a phone-settings toggle.
+ */
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  align-self: flex-start;
+  padding: 0.25rem;
+  border: 0;
+  background: none;
+  color: var(--inchi-ink-muted);
+  cursor: pointer;
+  flex: none;
+}
+
+.theme-switch:hover {
+  color: var(--inchi-ink);
+}
+
+.theme-switch-mode {
+  /*
+   * The label reports the current mode and its text changes, so it is sized
+   * to the wider of the two words. Otherwise the track jumps sideways by a
+   * few pixels every time you flip it.
+   */
+  min-width: 2.5rem;
+  text-align: right;
+  color: inherit;
+}
+
+/*
+ * The track's paper and ink are deliberately NOT tokens: they are literal in
+ * both themes, because they *depict* light and dark rather than participating
+ * in the current theme. Tokenised, --inchi-rule-stroke inverts per theme and
+ * switching to dark filled the track with near-white — darkness shown as
+ * light. Only the border follows the theme, so the control still sits in the
+ * page it belongs to.
+ */
+.theme-switch-track {
+  position: relative;
+  display: block;
+  width: 2.75rem;
+  height: 1.375rem;
+  flex: none;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule);
+  background-color: #f4f5f4;
+  overflow: hidden;
+}
+
+/* The ink sweeping in from the left. */
+.theme-switch-track::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: #14171a;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-switch-knob {
+  position: absolute;
+  top: 50%;
+  left: 0.1875rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-top: -0.4375rem;
+  background-color: #14171a;
+  /*
+   * Two hairlines crossing the knob: the same register mark that bounds every
+   * plate, at the size a 14px square allows.
+   */
+  background-image: linear-gradient(
+      to bottom,
+      transparent calc(50% - 0.5px),
+      #f4f5f4 calc(50% - 0.5px) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    ),
+    linear-gradient(
+      to right,
+      transparent calc(50% - 0.5px),
+      #f4f5f4 calc(50% - 0.5px) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    );
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Checked: the ink has swept in, and the knob is now paper sitting on ink. */
+.theme-switch[aria-checked="true"] .theme-switch-track::before {
+  transform: scaleX(1);
+}
+
+/* Checked: paper sitting on ink, where it was ink sitting on paper. */
+.theme-switch[aria-checked="true"] .theme-switch-knob {
+  transform: translateX(1.5rem);
+  background-color: #f4f5f4;
+  background-image: linear-gradient(
+      to bottom,
+      transparent calc(50% - 0.5px),
+      #14171a calc(50% - 0.5px) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    ),
+    linear-gradient(
+      to right,
+      transparent calc(50% - 0.5px),
+      #14171a calc(50% - 0.5px) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-switch-track::before,
+  .theme-switch-knob {
+    transition: none;
+  }
+}
+
+@media (pointer: coarse), (any-pointer: coarse) {
+  .theme-switch {
+    min-height: 44px;
+  }
 }

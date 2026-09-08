@@ -14,6 +14,24 @@
     />
     <meta name="color-scheme" content="light dark" />
 
+    <!--
+      The stored theme choice, applied before first paint. This has to be
+      inline and blocking: read it from index.js instead and the page paints
+      once in the system theme and then flips, which is worse than no toggle
+      at all. Absent a stored choice, nothing is set and the media queries in
+      css/tokens.css follow the system preference.
+    -->
+    <script>
+      try {
+        var storedTheme = localStorage.getItem("inchi-theme");
+        if (storedTheme === "light" || storedTheme === "dark") {
+          document.documentElement.dataset.theme = storedTheme;
+        }
+      } catch (error) {
+        /* Private mode or blocked storage: the system preference stands. */
+      }
+    </script>
+
     <link
       href="bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -147,6 +165,27 @@
             Chemical identifiers generated in your browser, never on a server.
           </p>
         </div>
+
+        <!--
+          role="switch" rather than a checkbox: this is a two-state control
+          whose accessible name stays put while its state changes, so the name
+          lives on aria-label and the visible label reports the current mode.
+        -->
+        <button
+          type="button"
+          class="theme-switch"
+          role="switch"
+          aria-checked="false"
+          aria-label="Dark mode"
+          data-theme-switch
+        >
+          <span class="theme-switch-mode apparatus" data-theme-switch-label
+            >Light</span
+          >
+          <span class="theme-switch-track" aria-hidden="true">
+            <span class="theme-switch-knob"></span>
+          </span>
+        </button>
       </header>
       <noscript>You need to enable JavaScript!</noscript>
 
