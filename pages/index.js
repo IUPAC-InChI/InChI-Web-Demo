@@ -810,7 +810,7 @@ async function updateInchiTab1() {
     );
     writeResult(
       "The structure editor is not ready yet. Please reload the page (CTRL + F5) if this persists.",
-      "inchi-tab1-logs",
+      "inchi-tab1-logs"
     );
     return;
   } else if (ketcher.containsReaction()) {
@@ -833,13 +833,28 @@ async function updateInchiTab1() {
     renderComparison("inchi-tab1-pane");
     return;
   } else {
-    const molfileFormat = versionBehavior(inchiVersion).molfileFormat;
-    molfile = molfileFormat
-      ? await ketcher.getMolfile(molfileFormat)
-      : await ketcher.getMolfile();
+    /*
+     * Serialization goes through getMolfileFromKetcher (added on main for
+     * Ketcher 3.17, which serializes through Ketcher's own formatterFactory
+     * rather than Indigo). The format still comes from VERSION_BEHAVIOR
+     * rather than a version-name comparison, and that helper defaults to
+     * v2000, which is what every version but Enhanced Stereochemistry wants.
+     */
+    const molfileFormat = versionBehavior(inchiVersion).molfileFormat ?? "v2000";
+    molfile = await getMolfileFromKetcher(ketcher, molfileFormat);
+
+    // The helper returns null when Ketcher could not serialize the structure.
+    if (molfile === null) {
+      clearTab1();
+      setConversionStatus(
+        "inchi-tab1-pane",
+        "error",
+        "The structure editor could not hand over this structure. Please reload the page (CTRL + F5) if this persists."
+      );
+      return;
+    }
   }
 
-  // run conversion
   await convertMolfileToInchiAndWriteResults(
     molfile,
     options,
@@ -1527,6 +1542,36 @@ async function convertRinchiToTextfile(
 function getKetcher(iframeId) {
   // Undefined until the iframe exists and its bundle has run; callers check.
   return document.getElementById(iframeId)?.contentWindow?.ketcher;
+}
+
+/**
+ * Get molfile from Ketcher editor
+ * @param {Object} ketcher - Ketcher instance
+ * @param {String} format - Format to retrieve: "v2000" (default) or "v3000"
+ * @returns {Promise<String>} - Molfile string in the requested format
+ */
+async function getMolfileFromKetcher(ketcher, format = "v2000") {
+  try {
+    const struct = ketcher.editor.struct();
+    if (struct.isBlank()) {
+      return null;
+    }
+
+    const formatter =
+      format === "v3000"
+        ? ketcher.formatterFactory.create("molV3000", {}, false, struct)
+        : ketcher.formatterFactory.create("mol", {}, false, struct);
+    return await formatter.getStringFromStructureAsync(struct);
+  } catch (error) {
+    /*
+     * Returning null rather than raising an alert(): every caller now reports
+     * failure through the status line, which is where the rest of this app
+     * says what went wrong. An alert is the only modal interruption in the
+     * product and it cannot be read by anything that logs.
+     */
+    console.error("Ketcher could not serialize the structure", error);
+    return null;
+  }
 }
 
 function onKetcherLoaded(iframeId, updateFunction, attemptsLeft = 300) {

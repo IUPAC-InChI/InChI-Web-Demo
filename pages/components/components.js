@@ -21,7 +21,7 @@ function scopeIds(root, suffix) {
           .join(" ");
         element.setAttribute(attribute, scoped);
       });
-    },
+    }
   );
 }
 
@@ -49,7 +49,7 @@ function loadFragment(path) {
           throw new Error(`${response.status} ${response.statusText}`);
         }
         return response.text();
-      }),
+      })
     );
   }
   return fragmentCache.get(path);
@@ -129,10 +129,10 @@ class ReportMaskElement extends InsertHTMLElement {
 
     this.openBtn.addEventListener("click", () => this.open());
     this.querySelector(".mask-close").addEventListener("click", () =>
-      this.dialog.close(),
+      this.dialog.close()
     );
     this.querySelector(".mask-cancel").addEventListener("click", () =>
-      this.dialog.close(),
+      this.dialog.close()
     );
     this.form.addEventListener("submit", (event) => this.submit(event));
   }
@@ -197,15 +197,9 @@ class ReportMaskElement extends InsertHTMLElement {
     if (this.tabId === "inchi-tab1") {
       // from ketcher for InChI Tab
       const ketcher = getKetcher(`${this.tabId}-ketcher`);
-
-      try {
-        if (ketcher) {
-          molfile_v2 = await ketcher.getMolfile("v2000");
-          molfile_v3 = await ketcher.getMolfile("v3000");
-        }
-      } catch (err) {
-        molfile_v2 = null;
-        molfile_v3 = null;
+      if (ketcher) {
+        molfile_v2 = await getMolfileFromKetcher(ketcher, "v2000");
+        molfile_v3 = await getMolfileFromKetcher(ketcher, "v3000");
       }
     } else if (this.tabId === "inchi-tab2") {
       let tab2Data = document.getElementById("inchi-tab2-molfile").value;
@@ -263,7 +257,7 @@ class ReportMaskElement extends InsertHTMLElement {
     }
 
     document.dispatchEvent(
-      new CustomEvent("reportMask:json", { detail: payload }),
+      new CustomEvent("reportMask:json", { detail: payload })
     );
 
     /*
@@ -280,7 +274,7 @@ class ReportMaskElement extends InsertHTMLElement {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        },
+        }
       );
       if (!response.ok) {
         console.error("Report ingest failed", response.status, response.statusText);
@@ -504,7 +498,7 @@ class InChIVersionSelectionElement extends HTMLElement {
     const groups = new Map(groupOrder.map((name) => [name, []]));
 
     for (const [versionName, versionConfig] of Object.entries(
-      availableInchiVersions,
+      availableInchiVersions
     )) {
       groups.get(groupFor(versionConfig.url)).push([versionName, versionConfig]);
     }
@@ -865,7 +859,7 @@ class InChIOptionsElement extends HTMLElement {
           return `<p class="alert alert-warning" role="alert">Some options
             could not be loaded. Please reload the page (CTRL + F5).</p>`;
         }
-      }),
+      })
     );
 
     /*
@@ -930,7 +924,7 @@ class InChIOptionsElement extends HTMLElement {
      */
     if (versionBehavior(inchiVersion).polymerOptionsOn) {
       const treatPolymers = this.querySelector(
-        'input[data-id="treatPolymers"]',
+        'input[data-id="treatPolymers"]'
       );
       if (treatPolymers) {
         treatPolymers.checked = true;
@@ -938,7 +932,7 @@ class InChIOptionsElement extends HTMLElement {
       }
 
       this.querySelectorAll(
-        "input.form-check-input[data-inchi-polymer-option]",
+        "input.form-check-input[data-inchi-polymer-option]"
       ).forEach((input) => {
         input.disabled = false;
         input.removeAttribute("data-default-disabled");
@@ -949,7 +943,7 @@ class InChIOptionsElement extends HTMLElement {
      * Reassign the name of the "stereoRadio" radio button group.
      */
     this.querySelectorAll(
-      'input.form-check-input[type="radio"][name="stereoRadio"]',
+      'input.form-check-input[type="radio"][name="stereoRadio"]'
     ).forEach((input) => {
       input.name = "stereoRadio-" + tabDivId;
     });
@@ -975,7 +969,7 @@ class InChIOptionsElement extends HTMLElement {
      * 'disabled' state of the inputs that cope with polymer options.
      */
     this.querySelector(
-      'input.form-check-input[data-id="treatPolymers"]',
+      'input.form-check-input[data-id="treatPolymers"]'
     )?.addEventListener("change", function () {
       document
         .getElementById(tabDivId)
@@ -997,7 +991,7 @@ class InChIOptionsElement extends HTMLElement {
       function () {
         resetInchiOptions(tabDivId);
         updateFunction();
-      },
+      }
     );
 
     /*
@@ -1043,7 +1037,7 @@ class InChIOptionsElement extends HTMLElement {
     [...this.querySelectorAll('[data-bs-toggle="tooltip"]')].map(
       (tooltipTriggerEl) => {
         new bootstrap.Tooltip(tooltipTriggerEl);
-      },
+      }
     );
   }
 }
@@ -1155,8 +1149,8 @@ function getAnnotationData(inchi, auxinfo) {
     "hydrogenGroupClass",
     mapCanonicalAtomIndicesToMobileHydrogenGroupClasses(
       annotationData.get("hydrogenGroup"),
-      auxinfoParsed.get("gE"),
-    ),
+      auxinfoParsed.get("gE")
+    )
   );
 
   return annotationData;
@@ -1212,7 +1206,7 @@ class NGLViewerElement extends HTMLElement {
     }));
 
     this.annotationSelection = Object.fromEntries(
-      Object.keys(this.annotationColors).map((id) => [id, false]),
+      Object.keys(this.annotationColors).map((id) => [id, false])
     );
 
     /*
@@ -1280,7 +1274,7 @@ class NGLViewerElement extends HTMLElement {
         }
 
         const resizeObserver = new ResizeObserver(() =>
-          this.stage.handleResize(),
+          this.stage.handleResize()
         );
         resizeObserver.observe(viewportElement);
         return true;
@@ -1354,7 +1348,7 @@ class NGLViewerElement extends HTMLElement {
       this.structureKey = getStructureKey(inchi, auxinfo);
       this.annotationButtons.forEach((button) => {
         const buttonElement = this.annotationSelectionElement.querySelector(
-          `[data-annotation="${button.id}"]`,
+          `[data-annotation="${button.id}"]`
         );
         const annotationAvailable =
           button.id === "index"
@@ -1365,7 +1359,7 @@ class NGLViewerElement extends HTMLElement {
         buttonElement.setAttribute("aria-pressed", "false");
       });
       this.annotationSelection = Object.fromEntries(
-        Object.keys(this.annotationColors).map((id) => [id, false]),
+        Object.keys(this.annotationColors).map((id) => [id, false])
       );
 
       this.structure.autoView();
@@ -1376,7 +1370,7 @@ class NGLViewerElement extends HTMLElement {
       this.annotationData = undefined;
       this.annotationButtons.forEach((button) => {
         const buttonElement = this.annotationSelectionElement.querySelector(
-          `[data-annotation="${button.id}"]`,
+          `[data-annotation="${button.id}"]`
         );
         buttonElement.disabled = true;
         buttonElement.classList.remove("active");
@@ -1412,16 +1406,13 @@ class NGLViewerElement extends HTMLElement {
 
       if (this.annotationSelection.index) {
         annotations.appendChild(
-          createAnnotation(atomIndex, this.annotationColors.index),
+          createAnnotation(atomIndex, this.annotationColors.index)
         );
       }
 
       if (canonicalIndex && this.annotationSelection.canonicalIndex) {
         annotations.appendChild(
-          createAnnotation(
-            canonicalIndex,
-            this.annotationColors.canonicalIndex,
-          ),
+          createAnnotation(canonicalIndex, this.annotationColors.canonicalIndex)
         );
       }
 
@@ -1429,21 +1420,21 @@ class NGLViewerElement extends HTMLElement {
         annotations.appendChild(
           createAnnotation(
             equivalenceClass,
-            this.annotationColors.equivalenceClass,
-          ),
+            this.annotationColors.equivalenceClass
+          )
         );
       }
       if (hydrogenGroup && this.annotationSelection.hydrogenGroup) {
         annotations.appendChild(
-          createAnnotation(hydrogenGroup, this.annotationColors.hydrogenGroup),
+          createAnnotation(hydrogenGroup, this.annotationColors.hydrogenGroup)
         );
       }
       if (hydrogenGroupClass && this.annotationSelection.hydrogenGroupClass) {
         annotations.appendChild(
           createAnnotation(
             hydrogenGroupClass,
-            this.annotationColors.hydrogenGroupClass,
-          ),
+            this.annotationColors.hydrogenGroupClass
+          )
         );
       }
 
@@ -1463,18 +1454,12 @@ customElements.define("inchi-result-field", InChIResultFieldElement);
 customElements.define("inchi-options-106", InChIOptions106Element);
 customElements.define("inchi-options-1075", InChIOptions1075Element);
 customElements.define("inchi-options-dev", InChIOptionsDevElement);
-customElements.define(
-  "inchi-options-dev-moin",
-  InChIOptionsDevMoInElement,
-);
+customElements.define("inchi-options-dev-moin", InChIOptionsDevMoInElement);
 customElements.define(
   "inchi-options-dev-enhanced-stereo",
-  InChIOptionsDevEnhancedStereoElement,
+  InChIOptionsDevEnhancedStereoElement
 );
-customElements.define(
-  "inchi-options-no-metal-h",
-  InChIOptionsNoMetalH,
-);
+customElements.define("inchi-options-no-metal-h", InChIOptionsNoMetalH);
 customElements.define(
   "inchi-options-explicit-zero-valence",
   InChIOptionsExplicitZeroValence
