@@ -993,6 +993,94 @@ button.form-select.multiselect:has(
 }
 
 /* ---- Comparison plate -------------------------------------------------- */
+/*
+ * Three columns: the segment key, then both answers. Every segment shows both
+ * sides whether or not it moved — knowing the formula and connections are
+ * identical is what gives "only the stereo layer moved" its meaning.
+ */
+.comparison-layers {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, max-content) 1fr 1fr;
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.9375rem;
+}
+
+.comparison-layers > .layer-key,
+.comparison-layers > .layer-value {
+  padding: 0.3rem 0.75rem;
+  border-top: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+}
+
+/* The head row names the two sides and carries no rule above it. */
+.comparison-layers > :nth-child(-n + 3) {
+  border-top: 0;
+}
+
+.comparison-layers > .layer-key {
+  font-size: var(--inchi-apparatus-size);
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+  color: var(--inchi-ink-muted);
+  background-color: var(--inchi-field-sunken);
+  white-space: nowrap;
+}
+
+.comparison-layers > .layer-value {
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+/* The current side of a segment that moved is the one in full ink. */
+.comparison-layers > .layer-value-current {
+  font-weight: 600;
+  color: var(--inchi-ink);
+}
+
+/*
+ * Below the point where three columns stop fitting, the two answers stack
+ * under their segment key, each labelled with the side it came from — the
+ * label rides on the cell as data-side.
+ */
+@media (max-width: 767.98px) {
+  /*
+   * A long version stamp ("Dev with Enhanced Stereochemistry") pushed the copy
+   * and download buttons off the right edge of a phone screen and made the
+   * whole page scroll sideways. The head wraps instead.
+   */
+  .identifier-head {
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+  }
+
+  .version-stamp {
+    white-space: normal;
+  }
+
+  .comparison-layers {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-layers > .layer-key {
+    white-space: normal;
+  }
+
+  .comparison-layers > .layer-value::before {
+    content: attr(data-side);
+    display: block;
+    font-family: system-ui, sans-serif;
+    font-size: var(--inchi-apparatus-size);
+    letter-spacing: var(--inchi-apparatus-tracking);
+    text-transform: uppercase;
+    color: var(--inchi-ink-faint);
+  }
+
+  /* The head row is redundant once every cell names its own side. */
+  .comparison-layers > :nth-child(2),
+  .comparison-layers > :nth-child(3) {
+    display: none;
+  }
+}
 .comparison-controls {
   display: flex;
   align-items: center;

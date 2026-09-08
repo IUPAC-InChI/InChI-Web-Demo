@@ -205,36 +205,64 @@ function renderComparison(paneId) {
       : [];
   const keyChanged = keyRows.filter((row) => row.status !== "same");
 
-  const keyBody = keyRows
-    .map((row) => {
-      const changedClass = row.status === "same" ? "" : " layer-cell-changed";
-      const key = `<div class="layer-key${changedClass}">${escapeHtml(
-        row.name
-      )}</div>`;
-      if (row.status === "same") {
-        return (
-          key +
-          `<div class="layer-value layer-value-same">${escapeHtml(
-            row.before
-          )}</div>`
-        );
-      }
-      const mark = `<span class="layer-mark">${notationMark("changed")}</span>`;
-      const before =
-        row.before === undefined
+  /*
+   * Every segment carries both answers, side by side, whether or not it
+   * changed: knowing the formula and connections are identical is what makes
+   * "only the stereo layer moved" mean anything, and a row that shows one
+   * value cannot be read as a comparison at all.
+   *
+   * The side labels ride on each cell as data-side so that narrow screens can
+   * stack the two values and still say which is which (see css/index.css).
+   */
+  const leftHead = sameVersion ? "Pinned" : pinned.version;
+  const rightHead = sameVersion
+    ? "Current"
+    : current
+      ? current.version
+      : "-";
+
+  const comparisonHead =
+    `<div class="layer-key"></div>` +
+    `<div class="layer-value apparatus">${escapeHtml(leftHead)}</div>` +
+    `<div class="layer-value apparatus">${escapeHtml(rightHead)}</div>`;
+
+  const comparisonRow = (label, letter, row) => {
+    const changed = row.status !== "same";
+    const cell = (value, side, isCurrent) => {
+      const absent =
+        value === undefined
           ? '<span class="layer-absent">not emitted</span>'
-          : `<span class="layer-before">${escapeHtml(row.before)}</span>`;
-      const after =
-        row.after === undefined
-          ? '<span class="layer-absent">not emitted</span>'
-          : escapeHtml(row.after);
-      return (
-        key +
-        `<div class="layer-value layer-cell-changed">${mark}${before}` +
-        `<span class="layer-arrow">to</span>${after}</div>`
-      );
-    })
+          : escapeHtml(value);
+      const classes = [
+        "layer-value",
+        changed ? "layer-cell-changed" : "layer-value-same",
+        changed && isCurrent ? "layer-value-current" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      return `<div class="${classes}" data-side="${escapeHtml(side)}">${absent}</div>`;
+    };
+    const mark = changed
+      ? `<span class="layer-mark">${notationMark("changed")}</span>`
+      : "";
+    const key =
+      `<div class="layer-key${changed ? " layer-cell-changed" : ""}">` +
+      `${mark}<span class="layer-letter">${escapeHtml(letter)}</span> ` +
+      `${escapeHtml(label)}</div>`;
+    return (
+      key +
+      cell(row.before, leftHead, false) +
+      cell(row.after, rightHead, true)
+    );
+  };
+
+  const body = rows
+    .map((row) =>
+      comparisonRow(row.name, row.key === "formula" ? "" : `/${row.key}`, row)
+    )
     .join("");
+
+  const keyBody = keyRows.map((row) => comparisonRow(row.name, "", row)).join("");
 
   /*
    * The complete strings for both sides, plainly, before any comparison. The
@@ -274,41 +302,6 @@ function renderComparison(paneId) {
             : `, and ${keyChanged.length} of ${keyRows.length} InChIKey ` +
               `blocks with it.`);
 
-  const body = rows
-    .map((row) => {
-      const letter = row.key === "formula" ? "" : `/${row.key}`;
-      const changedClass = row.status === "same" ? "" : " layer-cell-changed";
-      const key = `<div class="layer-key${changedClass}"><span class="layer-letter">${escapeHtml(
-        letter
-      )}</span> ${escapeHtml(row.name)}</div>`;
-
-      if (row.status === "same") {
-        return (
-          key +
-          `<div class="layer-value layer-value-same">${escapeHtml(
-            row.before
-          )}</div>`
-        );
-      }
-
-      const mark = `<span class="layer-mark">${notationMark("changed")}</span>`;
-      const before =
-        row.before === undefined
-          ? '<span class="layer-absent">not emitted</span>'
-          : `<span class="layer-before">${escapeHtml(row.before)}</span>`;
-      const after =
-        row.after === undefined
-          ? '<span class="layer-absent">not emitted</span>'
-          : escapeHtml(row.after);
-
-      return (
-        key +
-        `<div class="layer-value layer-cell-changed">${mark}${before}` +
-        `<span class="layer-arrow">to</span>${after}</div>`
-      );
-    })
-    .join("");
-
   /*
    * The stamp collapses when both sides are the same version, so it agrees
    * with the summary sentence instead of reading "1.07.5 to 1.07.5".
@@ -332,11 +325,11 @@ function renderComparison(paneId) {
     (body === ""
       ? ""
       : `<h3 class="comparison-subhead apparatus">InChI layers</h3>` +
-        `<div class="identifier-layers">${body}</div>`) +
+        `<div class="comparison-layers">${comparisonHead}${body}</div>`) +
     (keyBody === ""
       ? ""
       : `<h3 class="comparison-subhead apparatus">InChIKey blocks</h3>` +
-        `<div class="identifier-layers">${keyBody}</div>`) +
+        `<div class="comparison-layers">${comparisonHead}${keyBody}</div>`) +
     `</div>`;
   host.hidden = false;
 }
