@@ -452,21 +452,6 @@ details[open] > summary::before {
   margin-bottom: 0.25rem;
 }
 
-/* ---- Masthead logo ----------------------------------------------------- */
-/*
- * The supplied logo has an opaque light background baked in, so on the dark
- * theme it was a bright rectangle floating on the ground. Given a deliberate
- * plate with the same hairline as everything else, it reads as a mounted mark
- * rather than an artefact. The asset itself is a brand commitment; the mount
- * is ours.
- */
-.masthead-logo {
-  display: block;
-  background-color: #ffffff;
-  padding: 4px 6px;
-  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
-}
-
 /* ---- Conversion status ------------------------------------------------- */
 /*
  * The audit's worst finding: an invalid structure produced four empty boxes
@@ -892,26 +877,41 @@ button.form-select.multiselect:has(
   background-color: var(--inchi-annotation-hydrogen-group-class);
 }
 
-/* ---- Header ------------------------------------------------------------ */
+/* ---- Masthead ---------------------------------------------------------- */
 /*
+ * The banner strip: logo, wordmark, tagline and the theme switch, over the
+ * rule that separates it from the tabs.
+ *
  * The <h1> used to sit in a col-md-9 beside the logo, so its left edge landed
  * ~270px right of every other element on the page. It aligns to the page grid
  * now, with the logo beside it on one baseline.
  */
 .masthead {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 0 0.85rem;
-  border-bottom: var(--inchi-rule-weight-hairline) solid
-    var(--inchi-rule-hairline);
+  /* `rule`, not `hairline`: this bounds the masthead rather than dividing it. */
+  border-bottom: var(--inchi-rule-weight) solid var(--inchi-rule);
   margin-bottom: 0.5rem;
 }
 
+/*
+ * The supplied logo has an opaque light background baked in, so on the dark
+ * theme it was a bright rectangle floating on the ground. Given a deliberate
+ * plate with the same hairline as everything else, it reads as a mounted mark
+ * rather than an artefact. The asset itself is a brand commitment; the mount
+ * is ours.
+ */
 .masthead-logo {
+  display: block;
+  flex: none;
   height: 56px;
   width: auto;
-  flex: none;
+  background-color: #ffffff;
+  padding: 4px 6px;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
 }
 
 .masthead-text {
@@ -922,6 +922,55 @@ button.form-select.multiselect:has(
   font-size: 0.875rem;
   color: var(--inchi-ink-muted);
   margin: 0.15rem 0 0;
+}
+
+/*
+ * A register crossing at each end of the rule, the same mark that bounds every
+ * plate. They work as a pair: a lone one reads as a stray glyph.
+ */
+.masthead::before,
+.masthead::after {
+  content: "";
+  position: absolute;
+  bottom: -11px;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  background-image: linear-gradient(
+      to bottom,
+      transparent calc(50% - 1px),
+      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ),
+    linear-gradient(
+      to right,
+      transparent calc(50% - 1px),
+      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.masthead::before {
+  left: -11px;
+}
+
+.masthead::after {
+  right: -11px;
+}
+
+/*
+ * Below the point where the page gutter is narrower than a mark's 11px
+ * overhang, the marks would run into the edge of the screen — measured hard
+ * against the last column of a 390px viewport. The rule alone carries the
+ * masthead there.
+ */
+@media (max-width: 767.98px) {
+  .masthead::before,
+  .masthead::after {
+    display: none;
+  }
 }
 
 /* ---- Touch ------------------------------------------------------------- */
@@ -1166,66 +1215,6 @@ button.form-select.multiselect:has(
 
 :root[data-theme="dark"] .form-select {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e9ecea' stroke-linecap='square' stroke-width='1.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-}
-
-/* ---- Masthead apparatus ------------------------------------------------ */
-/*
- * The masthead is the first thing seen at every width and carried none of the
- * world's devices. It gets the margin apparatus the contract promises: a
- * keyed rule under the wordmark and a register crossing at the outer corner.
- */
-.masthead {
-  position: relative;
-}
-
-.masthead::before,
-.masthead::after {
-  content: "";
-  position: absolute;
-  bottom: -11px;
-  width: 22px;
-  height: 22px;
-  pointer-events: none;
-  background-image: linear-gradient(
-      to bottom,
-      transparent calc(50% - 1px),
-      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
-      transparent calc(50% + 1px)
-    ),
-    linear-gradient(
-      to right,
-      transparent calc(50% - 1px),
-      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
-      transparent calc(50% + 1px)
-    );
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-}
-
-.masthead::before {
-  left: -11px;
-}
-
-.masthead::after {
-  right: -11px;
-}
-
-/*
- * Below the point where the page gutter is narrower than a mark's 11px
- * overhang, the marks would run into the edge of the screen — measured hard
- * against the last column of a 390px viewport. The rule alone carries the
- * masthead there.
- */
-@media (max-width: 767.98px) {
-  .masthead::before,
-  .masthead::after {
-    display: none;
-  }
-}
-
-.masthead {
-  border-bottom-width: var(--inchi-rule-weight);
-  border-bottom-color: var(--inchi-rule);
 }
 
 /* ---- Disabled comparison controls -------------------------------------- */
