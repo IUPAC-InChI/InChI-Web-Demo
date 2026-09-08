@@ -34,6 +34,12 @@ build_ketcher() {
 
     rm -rf "$artifact_dir" && mkdir -p "$artifact_dir"
     cp -R build/* "$artifact_dir"
+
+    # Source maps are 21.2 MB of the deployed site (main.js.map alone is 13.9 MB)
+    # and nothing ever requests them: the browser only fetches a map when
+    # devtools are open, and these are minified third-party bundles nobody
+    # debugs from the deployed copy. Dropping them costs no functionality.
+    find "$artifact_dir" -name "*.map" -type f -delete
 }
 
 
