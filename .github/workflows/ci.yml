@@ -29,11 +29,14 @@ jobs:
           path: |
             pages/jquery
             pages/bootstrap
-            pages/bootstrap-icons
             pages/bootstrap-multiselect
             pages/ngl
-          # The hashed script contains the versions of the dependencies.
-          key: ${{ hashFiles('pages/download_packages.sh') }}
+          # download_packages.sh pins the versions, and utils.sh holds the
+          # download itself — including the source-map strip — so a change to
+          # either has to invalidate this cache. Hashing only the first meant
+          # a change to how packages are unpacked restored a stale tree
+          # instead of rebuilding it.
+          key: ${{ hashFiles('pages/download_packages.sh', 'pages/utils.sh') }}
 
       - name: Download dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
@@ -44,7 +47,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: pages/ketcher
-          key: ${{ hashFiles('ketcher/react-app/**/*') }}
+          # Same reasoning: build_ketcher lives in utils.sh, so a change to
+          # the build has to invalidate the cached build.
+          key: ${{ hashFiles('ketcher/react-app/**/*', 'pages/utils.sh') }}
 
       - name: Build Ketcher
         if: steps.cache-ketcher.outputs.cache-hit != 'true'
