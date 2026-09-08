@@ -203,6 +203,40 @@ function escapeHtml(text) {
 }
 
 /*
+ * Compare two InChIKeys block by block.
+ *
+ * The key's blocks carry different meanings, so *which* block changed is the
+ * useful fact: an identical skeleton block with a different stereo block means
+ * two versions agree on the structure and disagree about its stereochemistry,
+ * which is exactly the disagreement worth seeing. Comparing the keys as two
+ * 27-character strings hides that.
+ */
+function diffInchikeyBlocks(left, right) {
+  const leftBlocks = parseInchikeyBlocks(left);
+  const rightBlocks = parseInchikeyBlocks(right);
+  if (leftBlocks.length === 0 && rightBlocks.length === 0) {
+    return [];
+  }
+
+  const names = ["Skeleton", "Stereo and isotopes", "Protonation"];
+  return names.map((name, index) => {
+    const before = leftBlocks[index]?.value;
+    const after = rightBlocks[index]?.value;
+    let status;
+    if (before === undefined) {
+      status = "added";
+    } else if (after === undefined) {
+      status = "removed";
+    } else if (before === after) {
+      status = "same";
+    } else {
+      status = "changed";
+    }
+    return { name, before, after, status };
+  });
+}
+
+/*
  * The interface's icons, authored in one stroke weight.
  *
  * These replace the eight Bootstrap Icons glyphs the app used to pull from a
@@ -311,6 +345,18 @@ function demo() {
   );
   assert.deepStrictEqual(parseInchikeyBlocks("not-a-key"), []);
 
+  // Same skeleton, different stereo block: the disagreement worth seeing.
+  const keyDiff = diffInchikeyBlocks(
+    "HEFNNWSXXWATRW-JTQLQIEISA-N",
+    "HEFNNWSXXWATRW-UHFFFAOYSA-N"
+  );
+  assert.strictEqual(keyDiff[0].status, "same");
+  assert.strictEqual(keyDiff[1].status, "changed");
+  assert.strictEqual(keyDiff[1].before, "JTQLQIEISA");
+  assert.strictEqual(keyDiff[1].after, "UHFFFAOYSA");
+  assert.strictEqual(keyDiff[2].status, "same");
+  assert.deepStrictEqual(diffInchikeyBlocks("", ""), []);
+
   // These feed innerHTML templates, and the SD-file path puts file content there.
   assert.strictEqual(
     escapeHtml('<img src=x onerror="alert(1)">'),
@@ -345,6 +391,7 @@ if (typeof module === "object" && module.exports) {
     parseInchiLayers,
     diffInchiLayers,
     parseInchikeyBlocks,
+    diffInchikeyBlocks,
     notationMark,
     escapeHtml,
     icon,

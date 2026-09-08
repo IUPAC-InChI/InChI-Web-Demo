@@ -798,6 +798,16 @@ class InChIResultFieldElement extends HTMLElement {
    * not a single well-formed identifier.
    */
   buildNotationRows(text) {
+    /*
+     * Every plate leads with the whole identifier, then breaks it down. The
+     * segmentation is what makes the string readable, but the complete string
+     * is what you copy into a paper or a pipeline, so it has to be present and
+     * selectable as one run — not reassembled by eye from its layers.
+     */
+    const completeRow =
+      `<div class="layer-key">Complete</div>` +
+      `<div class="layer-value layer-value-complete">${escapeHtml(text)}</div>`;
+
     if (this.notation === "inchikey") {
       const blocks = parseInchikeyBlocks(text);
       if (blocks.length === 0) {
@@ -813,7 +823,10 @@ class InChIResultFieldElement extends HTMLElement {
             )}</span></span>`
         )
         .join('<span class="inchikey-separator">-</span>');
-      return `<div class="inchikey-blocks">${cells}</div>`;
+      return (
+        `<div class="identifier-layers">${completeRow}</div>` +
+        `<div class="inchikey-blocks">${cells}</div>`
+      );
     }
 
     const parsed = parseInchiLayers(text);
@@ -821,14 +834,7 @@ class InChIResultFieldElement extends HTMLElement {
       return null;
     }
 
-    const rows = [
-      `<div class="layer-key"><span class="layer-letter">${escapeHtml(
-        parsed.version
-      )}</span> Version</div>`,
-      `<div class="layer-value">${escapeHtml(parsed.prefix)}${escapeHtml(
-        parsed.version
-      )}</div>`,
-    ];
+    const rows = [completeRow];
 
     for (const layer of parsed.layers) {
       const letter = layer.key === "formula" ? "" : `/${layer.key}`;

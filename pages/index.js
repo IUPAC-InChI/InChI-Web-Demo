@@ -94,6 +94,10 @@ function inchiElementIdFor(paneId) {
   return paneId.replace(/-pane$/, "-inchi");
 }
 
+function inchikeyElementIdFor(paneId) {
+  return paneId.replace(/-pane$/, "-inchikey");
+}
+
 function currentResultFor(paneId) {
   const text =
     document.getElementById(inchiElementIdFor(paneId))?.textContent.trim() ??
@@ -107,7 +111,16 @@ function currentResultFor(paneId) {
    * it degrades to something readable rather than to nothing.
    */
   const version = getVersion(paneId) || "an unnamed version";
-  return { version, inchi: text };
+  /*
+   * The key is pinned with the InChI it came from. It is the thing most people
+   * actually paste into a database or a paper, so a comparison that comes back
+   * with only the InChI leaves out the half the user is going to use.
+   */
+  const inchikey =
+    document
+      .getElementById(inchikeyElementIdFor(paneId))
+      ?.textContent.trim() ?? "";
+  return { version, inchi: text, inchikey };
 }
 
 function pinCurrentResult(paneId) {
@@ -182,13 +195,60 @@ function renderComparison(paneId) {
       ? escapeHtml(current.version)
       : "";
 
+  /*
+   * The key's own comparison. Rendered as its three blocks rather than as two
+   * 27-character runs, so "same skeleton, different stereo" is readable.
+   */
+  const keyRows =
+    current && (pinned.inchikey || current.inchikey)
+      ? diffInchikeyBlocks(pinned.inchikey, current.inchikey)
+      : [];
+  const keyChanged = keyRows.filter((row) => row.status !== "same");
+
+  const keyBody = keyRows
+    .map((row) => {
+      const changedClass = row.status === "same" ? "" : " layer-cell-changed";
+      const key = `<div class="layer-key${changedClass}">${escapeHtml(
+        row.name
+      )}</div>`;
+      if (row.status === "same") {
+        return (
+          key +
+          `<div class="layer-value layer-value-same">${escapeHtml(
+            row.before
+          )}</div>`
+        );
+      }
+      const mark = `<span class="layer-mark">${notationMark("changed")}</span>`;
+      const before =
+        row.before === undefined
+          ? '<span class="layer-absent">not emitted</span>'
+          : `<span class="layer-before">${escapeHtml(row.before)}</span>`;
+      const after =
+        row.after === undefined
+          ? '<span class="layer-absent">not emitted</span>'
+          : escapeHtml(row.after);
+      return (
+        key +
+        `<div class="layer-value layer-cell-changed">${mark}${before}` +
+        `<span class="layer-arrow">to</span>${after}</div>`
+      );
+    })
+    .join("");
+
   const summary = !current
     ? `Pinned ${escapeHtml(pinned.version)}. Convert again to compare.`
     : pinned.inchi === current.inchi
       ? `${left} and ${right} produce an identical InChI` +
         (sameVersion ? " with these options." : ".")
       : `${changed.length} of ${rows.length} layers differ between ` +
-        `${left} and ${right}.`;
+        `${left} and ${right}` +
+        (keyRows.length === 0
+          ? "."
+          : keyChanged.length === 0
+            ? ", and the InChIKey is unchanged."
+            : `, and ${keyChanged.length} of ${keyRows.length} InChIKey ` +
+              `blocks with it.`);
 
   const body = rows
     .map((row) => {
@@ -241,7 +301,14 @@ function renderComparison(paneId) {
         <span class="version-stamp">${stamp}</span>
       </div>
       <p class="comparison-summary">${summary}</p>` +
-    (body === "" ? "" : `<div class="identifier-layers">${body}</div>`) +
+    (body === ""
+      ? ""
+      : `<h3 class="comparison-subhead apparatus">InChI layers</h3>` +
+        `<div class="identifier-layers">${body}</div>`) +
+    (keyBody === ""
+      ? ""
+      : `<h3 class="comparison-subhead apparatus">InChIKey blocks</h3>` +
+        `<div class="identifier-layers">${keyBody}</div>`) +
     `</div>`;
   host.hidden = false;
 }

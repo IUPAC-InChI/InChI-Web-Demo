@@ -7,6 +7,7 @@ const {
   parseInchiLayers,
   diffInchiLayers,
   parseInchikeyBlocks,
+  diffInchikeyBlocks,
   escapeHtml,
 } = require("../pages/inchi-layers.js");
 
@@ -76,4 +77,22 @@ test("escapes text destined for an innerHTML template", () => {
   expect(escapeHtml('<img src=x onerror="alert(1)">')).toBe(
     "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;"
   );
+});
+
+test("marks which InChIKey block moved, not the whole key", () => {
+  // Same structure, different stereochemistry: the skeleton block is
+  // identical and only the stereo block changes. Comparing the keys as two
+  // 27-character runs would hide exactly that.
+  const rows = diffInchikeyBlocks(
+    "HEFNNWSXXWATRW-JTQLQIEISA-N",
+    "HEFNNWSXXWATRW-UHFFFAOYSA-N"
+  );
+  expect(rows.map((row) => row.status)).toEqual(["same", "changed", "same"]);
+  expect(rows[1].before).toBe("JTQLQIEISA");
+  expect(rows[1].after).toBe("UHFFFAOYSA");
+});
+
+test("returns nothing to compare when neither side is a key", () => {
+  expect(diffInchikeyBlocks("", "")).toEqual([]);
+  expect(diffInchikeyBlocks("not-a-key", "also-not")).toEqual([]);
 });

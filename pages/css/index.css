@@ -357,15 +357,15 @@ details[open] > summary::before {
   font-weight: 600;
 }
 
+/*
+ * The previous value, kept plainly beside the new one. Not struck through:
+ * a crossed-out layer reads as "wrong", and neither side of a version
+ * comparison is wrong — they are two algorithms' answers for one structure.
+ * Weight carries which one is current.
+ */
 .layer-before {
   color: var(--inchi-ink-muted);
   font-weight: 400;
-  /*
-   * Struck through, not deleted: a lab notebook never erases a reading, it
-   * strikes it and writes the new one beside it.
-   */
-  text-decoration: line-through;
-  text-decoration-thickness: 1px;
 }
 
 .layer-arrow {
@@ -1008,6 +1008,14 @@ button.form-select.multiselect:has(
   margin-top: 0.75rem;
 }
 
+.comparison-subhead {
+  margin: 0;
+  padding: 0.45rem 0.75rem 0.3rem;
+  border-top: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+  color: var(--inchi-ink-muted);
+}
+
 .comparison-summary {
   margin: 0;
   padding: 0.5rem 0.75rem;
@@ -1024,6 +1032,19 @@ button.form-select.multiselect:has(
  */
 .layer-value-same {
   color: var(--inchi-ink-faint);
+}
+
+/*
+ * The whole identifier, leading the plate. Heavier than the layers beneath it:
+ * this is the thing you copy, and the breakdown below explains it.
+ */
+.layer-value-complete {
+  font-weight: 600;
+}
+
+.identifier-layers:has(+ .inchikey-blocks) {
+  border-bottom: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
 }
 
 .layer-absent {
