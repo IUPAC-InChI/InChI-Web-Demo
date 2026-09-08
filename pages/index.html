@@ -7,18 +7,17 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>InChI Web Demo</title>
+    <title>InChI Web Demo — generate InChI, InChIKey and RInChI in your browser</title>
+    <meta
+      name="description"
+      content="Generate InChI, InChIKey, AuxInfo and RInChI from a drawn structure, a molfile, AuxInfo or an SD file. Runs entirely in your browser: structures are never sent to a server. Compare output across InChI algorithm versions, including development branches and open pull requests."
+    />
+    <meta name="color-scheme" content="light dark" />
 
     <link
       href="bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css"
       rel="stylesheet"
       integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
-      crossorigin="anonymous"
-    />
-    <link
-      href="bootstrap-icons/bootstrap-icons-1.10.3/bootstrap-icons.css"
-      rel="stylesheet"
-      integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e"
       crossorigin="anonymous"
     />
     <link
@@ -67,6 +66,8 @@
       integrity="sha384-0bKqY/QpXas8sskCT4hKi1EsfrCHXH7kZYNMr05pTeUbEdxf5xdjxEy1fjdU861x"
       crossorigin="anonymous"
     ></script>
+    <!-- The InChI string's layer grammar: needed before the components render. -->
+    <script defer src="inchi-layers.js"></script>
     <script defer src="inchi.js"></script>
     <script defer src="rinchi.js"></script>
     <script defer src="index.js"></script>
@@ -90,19 +91,63 @@
     </script>
   </head>
   <body>
+    <!--
+      DIRECTION CONTRACT — Skeletal Notation — seed a4ec508d
+
+      THESIS: The identifier is drawn, not printed. Line weight, wedge, hash
+      and locant carry what colour usually carries. Refuses this category's
+      default arrangement: four identical cards holding answer, derived answer,
+      diagnostic dump and error channel as peers.
+
+      OWN-WORLD: Cool drawing-paper ground and ink, both themes first-class.
+      One institutional green, colour nowhere else except the categorical atom
+      key. Three rule weights (hairline separates, rule bounds, stroke marks)
+      are the hierarchy. Register marks at opposite corners of a plate. No
+      radius, no shadow outside dialogs. Tracked small-caps apparatus labels.
+      System mono for identifiers only, where character alignment is the data.
+
+      STORY: A developer draws or pastes, reads the identifier as keyed layers
+      rather than one opaque run, pins it, switches version, and sees which
+      layer moved.
+
+      FIRST VIEWPORT: Masthead on the page grid. Editor left, version and
+      options right as margin apparatus. Beneath, the identifier as a keyed
+      notation plate stamped with the version that produced it.
+
+      DEVIATION (cited): the status line sits ABOVE the plate, not beneath it
+      as this block first specified. It answers "did that work?", which is read
+      before the answer itself, and on a failure there is no plate to read
+      under. The announcement it drives is a separate always-present region,
+      because a hidden node is out of the accessibility tree.
+
+      FORM: Skeletal Notation, candidate 7 of 7 grounded directions, seed a4ec508d.
+
+      FINISH: unreviewed and undocumented is unfinished; this build ends with
+      the finish review, the verdict, and DESIGN.md
+    -->
     <div class="container-md" style="margin-bottom: 2rem">
-      <div class="row mt-1">
-        <div class="col-md-3">
-          <a href="https://www.inchi-trust.org/" target="_blank">
-            <img
-              style="height: 80px; width: auto"
-              src="img/InChI-logo2.png"
-              alt="InChI Trust Logo"
-            />
-          </a>
+      <header class="masthead">
+        <a
+          href="https://www.inchi-trust.org/"
+          target="_blank"
+          rel="noopener"
+          class="flex-none"
+        >
+          <img
+            class="masthead-logo"
+            src="img/InChI-logo2.png"
+            width="180"
+            height="56"
+            alt="InChI Trust"
+          />
+        </a>
+        <div class="masthead-text">
+          <h1>InChI Web Demo</h1>
+          <p class="masthead-tagline">
+            Chemical identifiers generated in your browser, never on a server.
+          </p>
         </div>
-        <h1 class="col-md-9 mt-auto">InChI Web Demo</h1>
-      </div>
+      </header>
       <noscript>You need to enable JavaScript!</noscript>
 
       <ul class="nav nav-pills mt-1" role="tablist">
@@ -171,11 +216,20 @@
         ></inchi-rinchi-tools>
 
         <!-- About pill -->
+        <!--
+          defer-until-shown: the funder logos on this surface are 357 KB over
+          the wire, and they were being fetched on first paint even though every
+          image there is marked loading="lazy" — a lazy image inside a
+          display:none tab pane has no computed position, so the browser
+          fetches it immediately.
+        -->
         <inchi-about
           class="tab-pane fade"
           id="pills-about"
           role="tabpanel"
+          aria-labelledby="pills-about-tab"
           tabindex="0"
+          defer-until-shown
         ></inchi-about>
       </div>
     </div>

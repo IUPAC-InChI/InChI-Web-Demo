@@ -77,6 +77,291 @@ function warmUp() {
 warmUp();
 
 /*
+ * Version comparison.
+ *
+ * This is what the tool is for and what it could not do: the version selector
+ * destroyed the answer you were comparing against, so comparing meant holding
+ * a 60-character identifier in your head while a different one loaded. A
+ * pinned result stays, and the next conversion is diffed against it layer by
+ * layer — because the useful answer is almost never "a different string", it
+ * is "the /t layer moved".
+ *
+ * Keyed by pane, so the four tabs pin independently.
+ */
+const pinnedResults = new Map();
+
+function inchiElementIdFor(paneId) {
+  return paneId.replace(/-pane$/, "-inchi");
+}
+
+function currentResultFor(paneId) {
+  const text =
+    document.getElementById(inchiElementIdFor(paneId))?.textContent.trim() ??
+    "";
+  if (!text.startsWith("InChI=")) {
+    return null;
+  }
+  /*
+   * A version name should always be there, but an empty one would leave a hole
+   * in the middle of a sentence ("3 of 7 layers differ between and Dev"), so
+   * it degrades to something readable rather than to nothing.
+   */
+  const version = getVersion(paneId) || "an unnamed version";
+  return { version, inchi: text };
+}
+
+function pinCurrentResult(paneId) {
+  const current = currentResultFor(paneId);
+  if (current === null) {
+    setConversionStatus(
+      paneId,
+      "error",
+      "Nothing to pin yet - convert a structure first."
+    );
+    return;
+  }
+  pinnedResults.set(paneId, current);
+  renderComparison(paneId);
+}
+
+function clearComparison(paneId) {
+  pinnedResults.delete(paneId);
+  renderComparison(paneId);
+}
+
+/*
+ * Enable each comparison control only when it has something to act on: you
+ * cannot pin an empty result, and there is nothing to clear until you have.
+ */
+function updateComparisonControls(paneId) {
+  const pane = document.getElementById(paneId);
+  const pinButton = pane?.querySelector("[data-pin]");
+  const clearButton = pane?.querySelector("[data-clear-comparison]");
+  if (pinButton) {
+    pinButton.disabled = currentResultFor(paneId) === null;
+  }
+  if (clearButton) {
+    clearButton.disabled = !pinnedResults.has(paneId);
+  }
+}
+
+function renderComparison(paneId) {
+  const pane = document.getElementById(paneId);
+  const host = pane?.querySelector("[data-comparison]");
+  updateComparisonControls(paneId);
+  if (!host) {
+    return;
+  }
+
+  const pinned = pinnedResults.get(paneId);
+  const current = currentResultFor(paneId);
+
+  if (!pinned) {
+    host.hidden = true;
+    host.replaceChildren();
+    return;
+  }
+
+  const rows = current ? diffInchiLayers(pinned.inchi, current.inchi) : [];
+  const changed = rows.filter((row) => row.status !== "same");
+
+  /*
+   * Both sides can carry the same version name — pinning a result and then
+   * changing the option flags is a real comparison, and "1.07.5 and 1.07.5
+   * differ" reads like a bug. Name the sides by what actually distinguishes
+   * them in that case.
+   */
+  const sameVersion =
+    current !== null && pinned.version === current.version;
+  const left = sameVersion
+    ? "the pinned result"
+    : escapeHtml(pinned.version);
+  const right = sameVersion
+    ? "the current one"
+    : current
+      ? escapeHtml(current.version)
+      : "";
+
+  const summary = !current
+    ? `Pinned ${escapeHtml(pinned.version)}. Convert again to compare.`
+    : pinned.inchi === current.inchi
+      ? `${left} and ${right} produce an identical InChI` +
+        (sameVersion ? " with these options." : ".")
+      : `${changed.length} of ${rows.length} layers differ between ` +
+        `${left} and ${right}.`;
+
+  const body = rows
+    .map((row) => {
+      const letter = row.key === "formula" ? "" : `/${row.key}`;
+      const changedClass = row.status === "same" ? "" : " layer-cell-changed";
+      const key = `<div class="layer-key${changedClass}"><span class="layer-letter">${escapeHtml(
+        letter
+      )}</span> ${escapeHtml(row.name)}</div>`;
+
+      if (row.status === "same") {
+        return (
+          key +
+          `<div class="layer-value layer-value-same">${escapeHtml(
+            row.before
+          )}</div>`
+        );
+      }
+
+      const mark = `<span class="layer-mark">${notationMark("changed")}</span>`;
+      const before =
+        row.before === undefined
+          ? '<span class="layer-absent">not emitted</span>'
+          : `<span class="layer-before">${escapeHtml(row.before)}</span>`;
+      const after =
+        row.after === undefined
+          ? '<span class="layer-absent">not emitted</span>'
+          : escapeHtml(row.after);
+
+      return (
+        key +
+        `<div class="layer-value layer-cell-changed">${mark}${before}` +
+        `<span class="layer-arrow">to</span>${after}</div>`
+      );
+    })
+    .join("");
+
+  const stampTo = current ? escapeHtml(current.version) : "-";
+  host.innerHTML =
+    `<div class="comparison-plate notation-frame">
+      <div class="identifier-head">
+        <span class="apparatus">Comparison</span>
+        <span class="version-stamp">${escapeHtml(
+          pinned.version
+        )} to ${stampTo}</span>
+      </div>
+      <p class="comparison-summary">${summary}</p>` +
+    (body === "" ? "" : `<div class="identifier-layers">${body}</div>`) +
+    `</div>`;
+  host.hidden = false;
+}
+
+/*
+ * The status line: one place that says what just happened.
+ *
+ * The audit's worst finding was that a structure InChI cannot handle produced
+ * four empty plates and a log whose entire content was the string
+ * "InChI options:" — indistinguishable from an untouched page. Success was
+ * equally unsignalled, so the only way to know a conversion had worked was
+ * that text appeared.
+ */
+function setConversionStatus(paneId, kind, text) {
+  const pane = document.getElementById(paneId);
+  const status = pane?.querySelector("[data-status]");
+  if (!status) {
+    return;
+  }
+
+  /*
+   * The announcement goes to a region that is never hidden and never moves.
+   * The visible box below can hide itself freely; a hidden node is out of the
+   * accessibility tree, and text written into one while it is hidden is not
+   * reliably announced — which would have made this whole status line
+   * invisible to exactly the users who most needed it.
+   */
+  const announcer = pane.querySelector("[data-status-announcer]");
+  if (announcer) {
+    announcer.textContent = kind ? text : "";
+  }
+
+  if (!kind) {
+    status.hidden = true;
+    status.replaceChildren();
+    return;
+  }
+  status.className = `conversion-status mt-2 conversion-status-${kind}`;
+  status.innerHTML =
+    `<span class="conversion-status-mark">${notationMark(kind)}</span>` +
+    `<span>${escapeHtml(text)}</span>`;
+  status.hidden = false;
+}
+
+/* The pane a result field belongs to, so callers can keep passing element ids. */
+function paneOf(elementId) {
+  return document.getElementById(elementId)?.closest(".tab-pane")?.id ?? "";
+}
+
+/*
+ * Stamp every result plate in a pane with the version that produced it.
+ * "Provenance is part of the answer": a string copied out of here without its
+ * version is not reproducible, and the selector 600px away is not provenance.
+ */
+function stampVersion(paneId, version) {
+  document
+    .getElementById(paneId)
+    ?.querySelectorAll("inchi-result-field")
+    .forEach((field) => field.setVersionStamp?.(version));
+}
+
+/*
+ * Mark the results as superseded rather than deleting them.
+ *
+ * Switching version used to blank all four plates and then wait several
+ * seconds on a cold ~1 MB WebAssembly module. Comparing versions is the whole
+ * point of this tool, and the comparison baseline was destroyed at the exact
+ * moment it was needed. The old answer now stays readable, dimmed and marked,
+ * until the new one lands.
+ */
+function markResultsStale(paneId, isStale) {
+  document
+    .getElementById(paneId)
+    ?.querySelectorAll("inchi-result-field")
+    .forEach((field) => field.setStale?.(isStale));
+}
+
+/*
+ * Count the options that differ from this version's defaults, so "Reset" is
+ * not a button that discards seventeen settings with no preview.
+ */
+function updateChangedOptionCount(tabDivId) {
+  const pane = document.getElementById(tabDivId);
+  const counter = pane?.querySelector("[data-changed-count]");
+  if (!counter) {
+    return;
+  }
+  const inputs = pane.querySelectorAll("input.form-check-input");
+  let changed = 0;
+  inputs.forEach((input) => {
+    if (input.checked !== input.hasAttribute("data-default-checked")) {
+      changed++;
+    }
+  });
+  counter.textContent =
+    changed === 0 ? "" : `${changed} changed from default`;
+  counter.hidden = changed === 0;
+}
+
+/*
+ * Debounce, for the paste fields. Every keystroke in the molfile textarea used
+ * to run a full WebAssembly conversion and reload the 3D structure.
+ */
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+/*
+ * The width at which the tool grid stops being two columns.
+ *
+ * The InChI and RInChI panes are laid out with Bootstrap's col-xl-8/col-xl-4,
+ * and `xl` is 1200px — so below this the editor, the options and the results
+ * are one column. Anything that reasons about "is the layout stacked?" reads
+ * this constant instead of hardcoding a width, because the two drifted apart
+ * once already: the options panel checked 992px and opened itself expanded
+ * across the whole 992-1199px band.
+ *
+ * css/index.css keys its own stacking rules to the same 1200px.
+ */
+const INCHI_STACK_BREAKPOINT = 1200;
+
+/*
  * Behaviour that differs per InChI version, keyed by the display names in
  * inchi_versions.json.
  *
@@ -137,6 +422,16 @@ async function addInchiOptionsForm(tabDivId, updateFunction) {
     .querySelector("div[data-inchi-options]");
   targetDiv.innerHTML = ""; // Remove previous options
   targetDiv.appendChild(inchiOptions); // Add current options
+
+  /*
+   * One delegated listener rather than one per checkbox: the panel is rebuilt
+   * on every version switch, and seventeen listeners would have to be rebuilt
+   * with it.
+   */
+  targetDiv.addEventListener("change", () =>
+    updateChangedOptionCount(tabDivId)
+  );
+  updateChangedOptionCount(tabDivId);
 }
 
 function resetInchiOptions(targetDivId) {
@@ -170,6 +465,8 @@ function resetInchiOptions(targetDivId) {
   $(targetDiv)
     .find("select[data-tautomer-multiselect]")
     .multiselect("deselectAll", false);
+
+  updateChangedOptionCount(targetDivId);
 }
 
 function getInchiOptions(tabId) {
@@ -264,35 +561,61 @@ function applyInchiOptionsState(tabDivId, optionsState) {
  * Update actions (when user changes inputs/options/(R)InChI version)
  */
 async function updateInchiTab1() {
-  // clear output fields
-  writeResult(
-    "",
-    "inchi-tab1-inchi",
-    "inchi-tab1-inchikey",
-    "inchi-tab1-auxinfo",
-    "inchi-tab1-logs"
-  );
+  /*
+   * The previous result is marked superseded rather than deleted: on a version
+   * switch this is the answer the user is comparing against, and blanking it
+   * before a cold WebAssembly load left them staring at four empty plates.
+   */
+  markResultsStale("inchi-tab1-pane", true);
 
   // collect user input
   const options = collectInchiOptions("inchi-tab1-pane");
   const inchiVersion = getVersion("inchi-tab1-pane");
+  setConversionStatus(
+    "inchi-tab1-pane",
+    "busy",
+    `Converting with InChI ${inchiVersion}…`
+  );
 
   let molfile;
   const ketcher = getKetcher("inchi-tab1-ketcher");
+  const clearTab1 = () =>
+    writeResult(
+      "",
+      "inchi-tab1-inchi",
+      "inchi-tab1-inchikey",
+      "inchi-tab1-auxinfo",
+      "inchi-tab1-logs"
+    );
   if (!ketcher) {
+    setConversionStatus(
+      "inchi-tab1-pane",
+      "error",
+      "The structure editor is not ready yet. Please reload the page (CTRL + F5) if this persists."
+    );
     writeResult(
       "The structure editor is not ready yet. Please reload the page (CTRL + F5) if this persists.",
       "inchi-tab1-logs",
     );
     return;
   } else if (ketcher.containsReaction()) {
+    clearTab1();
+    setConversionStatus(
+      "inchi-tab1-pane",
+      "error",
+      "InChI describes single structures, not reactions. Switch to the RInChI tab to convert this reaction."
+    );
     writeResult(
       "InChI describes single structures, not reactions. Switch to the RInChI tab to convert this reaction.",
       "inchi-tab1-logs"
     );
     return;
   } else if (ketcher.editor.struct().isBlank()) {
-    // no structure
+    // Nothing drawn: clear the plates and say nothing rather than report a failure.
+    clearTab1();
+    stampVersion("inchi-tab1-pane", "");
+    setConversionStatus("inchi-tab1-pane", null);
+    renderComparison("inchi-tab1-pane");
     return;
   } else {
     const molfileFormat = versionBehavior(inchiVersion).molfileFormat;
@@ -313,20 +636,41 @@ async function updateInchiTab1() {
   );
 }
 
+/*
+ * Typing in the molfile box ran a full WebAssembly conversion and an NGL
+ * structure reload on every keystroke. 250ms is below the threshold where a
+ * pause feels like lag and above the rate anyone types molfile lines.
+ */
+const updateInchiTab2Debounced = debounce(() => updateInchiTab2(), 250);
+
 async function updateInchiTab2() {
-  // clear output fields
-  writeResult(
-    "",
-    "inchi-tab2-inchi",
-    "inchi-tab2-inchikey",
-    "inchi-tab2-auxinfo",
-    "inchi-tab2-logs"
-  );
+  markResultsStale("inchi-tab2-pane", true);
 
   // collect user input
   const molfile = document.getElementById("inchi-tab2-molfile").value;
   const options = collectInchiOptions("inchi-tab2-pane");
   const inchiVersion = getVersion("inchi-tab2-pane");
+
+  // An empty box is not a failure: clear the plates and stay quiet.
+  if (molfile.trim() === "") {
+    writeResult(
+      "",
+      "inchi-tab2-inchi",
+      "inchi-tab2-inchikey",
+      "inchi-tab2-auxinfo",
+      "inchi-tab2-logs"
+    );
+    stampVersion("inchi-tab2-pane", "");
+    setConversionStatus("inchi-tab2-pane", null);
+    renderComparison("inchi-tab2-pane");
+    return;
+  }
+
+  setConversionStatus(
+    "inchi-tab2-pane",
+    "busy",
+    `Converting with InChI ${inchiVersion}…`
+  );
 
   // run conversion
   const [inchi, auxinfo] = await convertMolfileToInchiAndWriteResults(
@@ -525,9 +869,23 @@ async function onChangeInChIVersionTab4() {
 }
 
 async function updateInchiOptions(tabDivId, updateFunction) {
+  /*
+   * Say which version is loading, before the wait rather than after it. Every
+   * non-default version is a cold ~1 MB WebAssembly fetch and compile, because
+   * warmUp() only prefetches the default one — several seconds during which
+   * the old UI showed nothing at all.
+   */
+  setConversionStatus(
+    tabDivId,
+    "busy",
+    `Loading InChI ${getVersion(tabDivId)}…`
+  );
+  markResultsStale(tabDivId, true);
+
   await addInchiOptionsForm(tabDivId, () => updateFunction());
   const optionsState = getInchiOptionsState(tabDivId);
   applyInchiOptionsState(tabDivId, optionsState);
+  updateChangedOptionCount(tabDivId);
 
   await updateFunction();
 }
@@ -558,13 +916,24 @@ async function convertMolfileToInchiAndWriteResults(
   auxinfoTextElementId,
   logTextElementId
 ) {
+  const paneId = paneOf(inchiTextElementId);
   const log_entries = [];
-  log_entries.push("InChI options: " + options);
+  /*
+   * Never a bare label: an empty options set says so in words. This line read
+   * "InChI options:" with nothing after it on every default-options run, which
+   * was the entire content of the log on a successful conversion.
+   */
+  log_entries.push(`InChI options: ${options === "" ? "(defaults)" : options}`);
 
   let inchiResult;
   try {
     inchiResult = await inchiFromMolfile(molfile, options, inchiVersion);
   } catch (e) {
+    setConversionStatus(
+      paneId,
+      "error",
+      `The InChI library could not process this structure. It reported: ${e}`
+    );
     writeResult(
       `The InChI library could not process this structure.\nDetail: inchiFromMolfile() threw ${e}`,
       logTextElementId
@@ -577,9 +946,38 @@ async function convertMolfileToInchiAndWriteResults(
   const { inchi, auxinfo, log, return_code } = inchiResult;
   writeResult(inchi, inchiTextElementId);
   writeResult(auxinfo, auxinfoTextElementId);
+  stampVersion(paneId, inchiVersion);
+  markResultsStale(paneId, false);
+  renderComparison(paneId);
 
   if (log !== "") {
     log_entries.push(log);
+  }
+
+  /*
+   * The outcome, in one line, always. return_code -1 is a refusal; an empty
+   * InChI with a zero return code is the same refusal without a diagnosis,
+   * which is the case that used to fall through completely silently.
+   */
+  if (inchi === "") {
+    const detail =
+      log !== ""
+        ? log.split("\n")[0]
+        : "The InChI library returned no diagnostic for this input.";
+    setConversionStatus(
+      paneId,
+      "error",
+      `No InChI generated by ${inchiVersion} (code ${return_code}). ${detail}`
+    );
+  } else {
+    const optionSummary =
+      options === "" ? "default options" : `options ${options}`;
+    setConversionStatus(
+      paneId,
+      "ok",
+      `Converted with InChI ${inchiVersion}, ${optionSummary}.` +
+        (log !== "" ? " The library reported warnings; see the log." : "")
+    );
   }
 
   if (return_code != -1 && inchi !== "") {

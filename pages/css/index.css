@@ -1,13 +1,641 @@
-/* App styles. Colours and radii come from css/tokens.css. */
+/*
+ * App styles for the Skeletal Notation world. Colours, weights and type
+ * tokens come from css/tokens.css.
+ *
+ * The grammar, in one place so it stays consistent:
+ *
+ *   hairline (1px, --inchi-rule-hairline)  separates rows inside one thing
+ *   rule     (2px, --inchi-rule)           bounds a thing
+ *   stroke   (3px, --inchi-rule-stroke)    marks the active or divergent thing
+ *
+ * Nothing here has a corner radius and nothing but a dialog has a shadow: a
+ * drawn rule meets another drawn rule at a corner. Where an element needs to
+ * read as "a framed plate", it gets register marks (.notation-frame) rather
+ * than a border-radius-and-shadow card.
+ */
 
-button.nav-link:not(.active) {
+/* ---- Type scale -------------------------------------------------------- */
+/*
+ * A deliberate scale with visible steps. The audit measured nine sizes
+ * spanning 2.0:1 — Bootstrap's defaults, which is a flat hierarchy pretending
+ * to be a rich one. These five steps span 3.6:1 and each one has a job.
+ */
+body {
+  font-size: 1rem;
+  line-height: 1.5;
+  background-color: var(--inchi-ground);
+  color: var(--inchi-ink);
+  /* Landscape on a notched phone would otherwise run under the cutout. */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+h1 {
+  font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+/*
+ * Section headings on the tool surface. The audit found no headings at all
+ * here — "Version" and "Options" were a <label class="h4"> and a
+ * <summary class="h4">, so a screen-reader user had no way to move between
+ * the editor, the options and the results.
+ */
+.inchi-section-heading {
+  font-size: var(--inchi-apparatus-size);
+  font-weight: 600;
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+  color: var(--inchi-ink-muted);
+  margin: 0;
+}
+
+/*
+ * Apparatus: the small tracked labels that name a layer, a panel or a stamp.
+ * Borrowed from reference-book practice, where the running head and the plate
+ * number are set small and tracked so they never compete with the content.
+ */
+.apparatus {
+  font-size: var(--inchi-apparatus-size);
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+  color: var(--inchi-ink-muted);
+  font-weight: 500;
+}
+
+/* ---- Frames and register marks ----------------------------------------- */
+/*
+ * A framed plate: 1px rule plus a register mark at two opposite corners. The
+ * marks are how a plate in a printed reference announces its own edges, and
+ * they carry the world with no colour and no elevation. Decorative, so they
+ * are hidden from assistive technology by virtue of being backgrounds.
+ */
+.notation-frame {
+  position: relative;
+  /*
+   * `rule` (2px), not `hairline`: this weight is what *bounds* a thing. The
+   * hairline is reserved for separators inside one plate, so the two are
+   * distinguishable and the three-weight scale is real rather than declared.
+   */
+  border: var(--inchi-rule-weight) solid var(--inchi-rule);
+  background-color: var(--inchi-field);
+}
+
+/*
+ * Register marks: a crossing at each corner of a plate, the way a plate in a
+ * printed reference announces its own edges. Drawn at 22px in the stroke ink
+ * so they are actually seen — a mark nobody can distinguish from the border is
+ * a compliance token, not a device.
+ *
+ * One element per pair of corners, each drawing two crossings with a repeating
+ * background, so a plate needs no extra markup.
+ */
+.notation-frame::before,
+.notation-frame::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  /* horizontal arm, then vertical arm, centred on the corner */
+  background-image: linear-gradient(
+      to bottom,
+      transparent calc(50% - 1px),
+      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ),
+    linear-gradient(
+      to right,
+      transparent calc(50% - 1px),
+      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.notation-frame::before {
+  top: -11px;
+  left: -11px;
+}
+
+.notation-frame::after {
+  bottom: -11px;
+  right: -11px;
+}
+
+/*
+ * The other two corners. A second pair of marks needs a real element, so the
+ * plate head carries them: it spans the full width at the top of every plate.
+ */
+.identifier-head {
+  position: relative;
+}
+
+.identifier-head::before,
+.identifier-head::after {
+  content: "";
+  position: absolute;
+  top: -12px;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  background-image: linear-gradient(
+      to bottom,
+      transparent calc(50% - 1px),
+      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ),
+    linear-gradient(
+      to right,
+      transparent calc(50% - 1px),
+      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.identifier-head::before {
+  right: -12px;
+}
+
+.identifier-head::after {
+  left: -12px;
+  top: auto;
+  display: none; /* the plate's own ::after already marks bottom-right */
+}
+
+/* ---- Panels ------------------------------------------------------------ */
+/*
+ * Panel around a group of controls: version selector, options, 3D viewer.
+ * Keeps its class name so the components and the touch-sizing rules below
+ * still find it.
+ */
+.bounding-box {
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-sm);
+  padding: 0.75rem;
+  background-color: var(--inchi-field-sunken);
+  width: 100%;
+}
+
+.bounding-box > summary,
+.secondary-plates > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+/*
+ * A <summary> with `display: flex` loses its ::marker in Blink and WebKit, and
+ * nothing replaced it: the options panel was a grey bar with no indication it
+ * opened at all. Authored disclosure mark instead — a triangle in the same
+ * hand as the icons, rotating a quarter turn when open.
+ */
+.bounding-box > summary::marker,
+.secondary-plates > summary::marker,
+.bounding-box > summary::-webkit-details-marker,
+.secondary-plates > summary::-webkit-details-marker {
+  display: none;
+  content: "";
+}
+
+.bounding-box > summary::before,
+.secondary-plates > summary::before {
+  content: "";
+  flex: none;
+  align-self: center;
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: currentColor;
+  /* A solid triangle, pointing right when closed. */
+  clip-path: polygon(15% 0%, 100% 50%, 15% 100%);
+  transition: transform var(--inchi-transition);
+}
+
+details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bounding-box > summary::before,
+  .secondary-plates > summary::before {
+    transition: none;
+  }
+}
+
+/*
+ * The options panel says how many flags differ from this version's defaults,
+ * so "Reset" is no longer a button that discards seventeen settings blind.
+ */
+.options-changed-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--inchi-ink);
+  border-bottom: var(--inchi-rule-weight) solid var(--inchi-rule-stroke);
+}
+
+.options-changed-count[hidden] {
+  display: none;
+}
+
+/* ---- The identifier: a keyed notation stack ---------------------------- */
+/*
+ * This is the centre of the redesign. An InChI is not a line of text, it is
+ * a layered notation — version, formula, connections, hydrogens, stereo — and
+ * a chemist comparing two algorithm versions needs to see *which layer moved*.
+ * So the string is set as one row per layer, keyed in the margin, in a
+ * monospace where characters align column-for-column between versions.
+ *
+ * Monospace is earned here rather than worn: this is measurement data whose
+ * alignment carries the comparison.
+ */
+.identifier-plate {
+  margin-top: 1rem;
+}
+
+.identifier-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  /* A separator inside one plate, so: hairline. */
+  border-bottom: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+}
+
+/*
+ * The version stamp. "Provenance is part of the answer": a string without the
+ * version that produced it is incomplete, so every plate carries its version
+ * where a printed plate carries its number.
+ */
+.version-stamp {
+  font-size: var(--inchi-apparatus-size);
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+  color: var(--inchi-brand);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.identifier-layers {
+  display: grid;
+  /* key column sized to the longest layer name, value column takes the rest */
+  grid-template-columns: minmax(6.5rem, max-content) 1fr;
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.9375rem;
+}
+
+.layer-key,
+.layer-value {
+  padding: 0.3rem 0.75rem;
+  border-top: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+}
+
+.identifier-layers > .layer-key:first-child,
+.identifier-layers > .layer-key:first-child + .layer-value {
+  border-top: 0;
+}
+
+/*
+ * The layer key: its InChI letter, then its name. The letter is the locant of
+ * the notation — the thing you cite when you say "the /t layer differs".
+ */
+.layer-key {
+  font-size: var(--inchi-apparatus-size);
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+  color: var(--inchi-ink-muted);
+  background-color: var(--inchi-field-sunken);
+  white-space: nowrap;
+}
+
+.layer-letter {
+  color: var(--inchi-ink);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.layer-value {
+  color: var(--inchi-ink);
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+/*
+ * Divergence. A structure diagram marks a bond that differs from the default
+ * assumption with a wedge or a hash, not with a colour — so a layer that
+ * differs between two versions gets a stroke in the gutter and its value in
+ * heavier ink, and the mark carries the meaning without hue. Colour-blind,
+ * greyscale and print safe by construction.
+ */
+.layer-cell-changed.layer-key {
+  box-shadow: inset var(--inchi-rule-weight-stroke) 0 0 var(--inchi-rule-stroke);
+  color: var(--inchi-ink);
+  font-weight: 600;
+}
+
+.layer-cell-changed.layer-value {
+  font-weight: 600;
+}
+
+.layer-before {
+  color: var(--inchi-ink-muted);
+  font-weight: 400;
+  /*
+   * Struck through, not deleted: a lab notebook never erases a reading, it
+   * strikes it and writes the new one beside it.
+   */
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.layer-arrow {
+  color: var(--inchi-ink-faint);
+  padding-inline: 0.4rem;
+}
+
+.layer-mark {
+  display: inline-block;
+  vertical-align: -1px;
+  margin-right: 0.3rem;
+  color: var(--inchi-ink);
+}
+
+/* ---- The InChIKey's block grammar -------------------------------------- */
+/*
+ * TXBHLLHHHQAFNN-UHFFFAOYSA-N is 14 characters of skeleton, then stereo and
+ * isotopes, then a protonation flag. Two versions that disagree only about
+ * stereochemistry share the first block exactly — invisible in one run of
+ * 27 characters, obvious once the blocks are separated.
+ */
+.inchikey-blocks {
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.9375rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: 0.35rem;
+  row-gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.inchikey-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+/*
+ * The hyphen is a separate flex item rather than a ::before on the block, so
+ * it sits on the identifier's baseline instead of stretching the column and
+ * pushing the block's own label out from under it.
+ */
+.inchikey-separator {
+  color: var(--inchi-ink-faint);
+}
+
+.inchikey-block > .apparatus {
+  font-size: 0.5625rem;
+  line-height: 1.2;
+  color: var(--inchi-ink-faint);
+  white-space: nowrap;
+}
+
+/* ---- Empty states ------------------------------------------------------ */
+.plate-empty {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--inchi-ink-faint);
+}
+
+/* ---- Demoted plates ---------------------------------------------------- */
+/*
+ * AuxInfo and the library log are evidence, not the answer. They used to get
+ * containers identical to the InChI's, which made the diagnostic dump a peer
+ * of the identifier. Collapsed by default, one hairline summary each.
+ */
+.secondary-plates {
+  margin-top: 1rem;
+  border-top: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+  padding-top: 0.5rem;
+}
+
+.secondary-plates > summary {
+  color: var(--inchi-ink-muted);
+  font-size: var(--inchi-apparatus-size);
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+}
+
+.secondary-plates[open] > summary {
+  margin-bottom: 0.25rem;
+}
+
+/* ---- Masthead logo ----------------------------------------------------- */
+/*
+ * The supplied logo has an opaque light background baked in, so on the dark
+ * theme it was a bright rectangle floating on the ground. Given a deliberate
+ * plate with the same hairline as everything else, it reads as a mounted mark
+ * rather than an artefact. The asset itself is a brand commitment; the mount
+ * is ours.
+ */
+.masthead-logo {
+  display: block;
+  background-color: #ffffff;
+  padding: 4px 6px;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+}
+
+/* ---- Conversion status ------------------------------------------------- */
+/*
+ * The audit's worst finding: an invalid structure produced four empty boxes
+ * and a log containing the literal string "InChI options:". Success was
+ * equally unsignalled. This line always says what happened.
+ */
+.conversion-status {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-left-width: var(--inchi-rule-weight-stroke);
+  border-left-color: var(--inchi-rule-hairline);
+  background-color: var(--inchi-field);
+  font-size: 0.875rem;
+  color: var(--inchi-ink-muted);
+}
+
+.conversion-status[hidden] {
+  display: none;
+}
+
+.conversion-status-mark {
+  flex: none;
+  margin-top: 0.15rem;
+  color: var(--inchi-ink-faint);
+}
+
+.conversion-status-ok {
+  border-left-color: var(--inchi-brand);
+  color: var(--inchi-ink);
+}
+
+.conversion-status-ok .conversion-status-mark {
   color: var(--inchi-brand);
 }
 
+.conversion-status-error {
+  border-left-color: var(--inchi-error);
+  background-color: var(--inchi-error-quiet);
+  color: var(--inchi-ink);
+}
+
+.conversion-status-error .conversion-status-mark {
+  color: var(--inchi-error);
+}
+
+/*
+ * Busy. The version switch used to blank all four fields and then wait several
+ * seconds on a cold ~1 MB WebAssembly module with no indication at all.
+ */
+.conversion-status-busy .conversion-status-mark {
+  animation: inchi-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes inchi-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .conversion-status-busy .conversion-status-mark {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+/*
+ * A result that is being replaced stays readable while the new one loads,
+ * stamped with the version it came from. Never blank-then-fill.
+ */
+.identifier-plate-stale {
+  opacity: 0.45;
+}
+
+.identifier-plate-stale .version-stamp::after {
+  content: " · superseded";
+  color: var(--inchi-ink-faint);
+}
+
+/* ---- Comparison -------------------------------------------------------- */
+/*
+ * Pinned results accumulate instead of being destroyed. Comparing versions is
+ * the job this tool exists for; it used to be a <select> that deleted the
+ * answer you were comparing against.
+ */
+.comparison-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 1200px) {
+  .comparison-stack-paired {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---- Navigation -------------------------------------------------------- */
+/*
+ * Tabs in the world's vocabulary: a hairline baseline, and the active tab
+ * marked by a 3px stroke rather than a filled pill. The detector flagged
+ * `cramped-padding` on the old nav — its children sat flush against the
+ * border-bottom with no inset.
+ */
+.nav-tabs,
+.nav-pills {
+  border-bottom: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+  gap: 0.25rem;
+  padding-bottom: 0.35rem;
+}
+
+.nav-tabs .nav-link,
+.nav-pills .nav-link {
+  border: 0;
+  border-radius: 0;
+  padding: 0.4rem 0.7rem;
+  color: var(--inchi-ink-muted);
+  background: none;
+  box-shadow: inset 0 -2px 0 transparent;
+  transition: box-shadow var(--inchi-transition), color var(--inchi-transition);
+}
+
+.nav-tabs .nav-link:hover,
+.nav-pills .nav-link:hover {
+  color: var(--inchi-ink);
+  box-shadow: inset 0 -2px 0 var(--inchi-rule-hairline);
+}
+
+.nav-tabs .nav-link.active,
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  color: var(--inchi-ink);
+  background: none;
+  font-weight: 600;
+  box-shadow: inset 0 calc(-1 * var(--inchi-rule-weight-stroke)) 0
+    var(--inchi-rule-stroke);
+}
+
+/*
+ * Bootstrap's own .nav-link colour would otherwise win against the tokens.
+ * The old rule painted every inactive tab brand green, which is why a wrapped
+ * tab row read as three green links and one white box.
+ */
+button.nav-link:not(.active) {
+  color: var(--inchi-ink-muted);
+}
+
+/* ---- Forms ------------------------------------------------------------- */
 /* Bootstrap 5.2.3 hardcodes the checked colour, so it needs a real override. */
 input.form-check-input:is([type="checkbox"], [type="radio"]):checked {
   background-color: var(--inchi-brand);
   border-color: var(--inchi-brand);
+}
+
+input.form-check-input {
+  border-color: var(--inchi-rule);
+  background-color: var(--inchi-field);
+}
+
+input.form-check-input:is([type="checkbox"]) {
+  border-radius: 0;
+}
+
+.form-control,
+.form-select {
+  background-color: var(--inchi-field);
+  color: var(--inchi-ink);
+  border-color: var(--inchi-rule);
+  border-radius: 0;
+}
+
+.form-control::placeholder {
+  color: var(--inchi-ink-faint);
 }
 
 /*
@@ -23,12 +651,28 @@ button.form-select.multiselect:has(
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
 }
 
-input.form-check-input:is([type="checkbox"], [type="radio"]):focus,
-select.form-select:focus,
-textarea.form-control:focus,
-button.form-select.multiselect:focus {
-  border-color: var(--inchi-focus-border);
-  box-shadow: 0 0 0 0.25rem var(--inchi-focus-ring);
+/*
+ * One focus system. The audit found two — a 3.08:1 olive ring on controls and
+ * brand green on the annotation buttons — plus Bootstrap's blue glow on the
+ * green buttons, because --bs-btn-focus-shadow-rgb was never overridden.
+ */
+:is(
+    input.form-check-input,
+    select.form-select,
+    textarea.form-control,
+    input.form-control,
+    button.form-select.multiselect,
+    .btn,
+    .nav-link,
+    .link-button,
+    .annotation-button,
+    summary,
+    a
+  ):focus-visible {
+  outline: var(--inchi-rule-weight) solid var(--inchi-focus);
+  outline-offset: 2px;
+  border-color: var(--inchi-rule-stroke);
+  box-shadow: none;
 }
 
 /* A button that reads as a link: keyboard-operable, styled like the text around it. */
@@ -45,27 +689,68 @@ button.form-select.multiselect:focus {
 }
 
 /*
+ * The option explanations used to hang on a non-focusable <i> with the text in
+ * data-bs-title: no accessible name, no keyboard path, and no native title
+ * fallback either. They are real buttons now.
+ */
+.option-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0;
+  margin-left: 0.15rem;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule);
+  background: var(--inchi-field);
+  color: var(--inchi-ink-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.option-help:hover {
+  border-color: var(--inchi-rule-stroke);
+  color: var(--inchi-ink);
+}
+
+/* ---- Result text ------------------------------------------------------- */
+/*
  * The 500px cap on result panels used to clip anything longer out of reach;
- * overflow makes the rest scrollable instead of invisible.
+ * overflow makes the rest scrollable instead of invisible. The inset shadow
+ * signals that it scrolls, which the audit found nothing did.
  */
 .inchi-result-text {
   white-space: pre-wrap;
   word-break: break-all;
   overflow: auto;
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.875rem;
+  color: var(--inchi-ink);
+  background-color: var(--inchi-field);
+  scrollbar-gutter: stable;
 }
 
+.inchi-result-text:not(:empty) {
+  background-image: linear-gradient(
+    to top,
+    rgb(0 0 0 / 0.05),
+    transparent 1.5rem
+  );
+}
+
+/* ---- Editor, paste box, viewer ---------------------------------------- */
 /*
  * Editor and paste box: on wide screens the aspect ratio governs and the
  * min-height never applies. It only takes over below ~855px, which is where
  * these floors are aimed — a fixed 530px filled four fifths of a phone screen
  * and pushed the results two screens down.
- *
- * The editor keeps more of the viewport than the paste box, because drawing
- * needs room to work in and pasting does not.
  */
 .ketcher {
   --bs-aspect-ratio: 62%;
   min-height: min(530px, 62vh);
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
 }
 
 .inputtextarea {
@@ -77,12 +762,17 @@ button.form-select.multiselect:focus {
  * Paste fields whose placeholder shows the expected format. That example wraps
  * over several lines on a phone and fits in two on the wide layout, so the box
  * is generous first and tightens once the text fits.
+ *
+ * Keyed to 1200px, not 992px: the tool grid is col-xl-*, so it is still one
+ * column until 1200px. See --inchi-stack-breakpoint in index.js.
  */
 .paste-area {
   height: 12rem;
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.8125rem;
 }
 
-@media (min-width: 992px) {
+@media (min-width: 1200px) {
   .paste-area {
     height: 7rem;
   }
@@ -92,11 +782,16 @@ button.form-select.multiselect:focus {
 .ngl-viewport {
   width: 100%;
   height: max(300px, 45vh);
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
 }
 
 @media (min-width: 768px) {
   .ngl-viewport {
-    height: 600px;
+    /*
+     * 600px used to outweigh the identifier it explains by about 3:1 in
+     * visual area. The evidence should not dwarf the answer.
+     */
+    height: 420px;
   }
 }
 
@@ -110,52 +805,129 @@ button.form-select.multiselect:focus {
   text-align: left;
 }
 
-/* Landscape on a notched phone would otherwise run under the cutout. */
-body {
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-}
-
-/* Panel around a group of controls: version selector, options, 3D viewer. */
-.bounding-box {
-  border: 1px solid var(--inchi-border);
-  border-radius: var(--inchi-radius-sm);
-  padding: 12px;
-  background-color: var(--inchi-surface-sunken);
-  width: 100%;
-}
-
 /*
- * The options panel is a <details>: twenty checkboxes are a reasonable sidebar
- * on a desktop and a wall between the editor and the results on a phone, so it
- * starts collapsed there (see InChIOptionsElement.postCreate).
- */
-.bounding-box > summary {
-  cursor: pointer;
-}
-
-/*
- * The five toggles used to sit flush against each other, separated only by
- * their transparent borders. Deliberate spacing instead, and they wrap as a
- * group on a narrow screen.
+ * The five annotation toggles used to read as a tab strip — white boxes in a
+ * row above the viewer, whose colour appeared only once pressed, so the
+ * colour-to-meaning mapping was undiscoverable. They are chips now, each
+ * carrying its own swatch at rest: the control *is* the legend.
  */
 .annotation-selection {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: 0.35rem;
+  padding: 0;
+  margin: 0;
+  border: 0;
 }
 
+.annotation-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--inchi-field);
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  color: var(--inchi-ink);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: border-color var(--inchi-transition);
+}
+
+/* The swatch is always visible, so the key is readable before anything is pressed. */
+.annotation-swatch {
+  flex: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 1px solid var(--inchi-rule);
+}
+
+.annotation-button:not([disabled]):hover {
+  border-color: var(--inchi-rule-stroke);
+}
+
+.annotation-button[aria-pressed="true"] {
+  border-color: var(--inchi-rule-stroke);
+  border-width: var(--inchi-rule-weight);
+  font-weight: 600;
+}
+
+.annotation-button[disabled] {
+  color: var(--inchi-ink-faint);
+  cursor: not-allowed;
+}
+
+.annotation-button[disabled] .annotation-swatch {
+  opacity: 0.4;
+}
+
+.annotation-index .annotation-swatch {
+  background-color: var(--inchi-annotation-index);
+}
+
+.annotation-canonical-index .annotation-swatch {
+  background-color: var(--inchi-annotation-canonical-index);
+}
+
+.annotation-equivalence-class .annotation-swatch {
+  background-color: var(--inchi-annotation-equivalence-class);
+}
+
+.annotation-hydrogen-group .annotation-swatch {
+  background-color: var(--inchi-annotation-hydrogen-group);
+}
+
+.annotation-hydrogen-group-class .annotation-swatch {
+  background-color: var(--inchi-annotation-hydrogen-group-class);
+}
+
+/* ---- Header ------------------------------------------------------------ */
+/*
+ * The <h1> used to sit in a col-md-9 beside the logo, so its left edge landed
+ * ~270px right of every other element on the page. It aligns to the page grid
+ * now, with the logo beside it on one baseline.
+ */
+.masthead {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0 0.85rem;
+  border-bottom: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+  margin-bottom: 0.5rem;
+}
+
+.masthead-logo {
+  height: 56px;
+  width: auto;
+  flex: none;
+}
+
+.masthead-text {
+  min-width: 0;
+}
+
+.masthead-tagline {
+  font-size: 0.875rem;
+  color: var(--inchi-ink-muted);
+  margin: 0.15rem 0 0;
+}
+
+/* ---- Touch ------------------------------------------------------------- */
 /*
  * Touch sizing, keyed to the pointer rather than the viewport: a laptop with a
- * touchscreen needs it and a narrow desktop window does not. Desktop stays as
- * dense as it is, which suits a tool with this many controls.
+ * touchscreen needs it and a narrow desktop window does not.
+ *
+ * `any-pointer: coarse` as well as `pointer: coarse`, because a stylus 2-in-1
+ * reports a fine primary pointer and still needs the targets — the audit found
+ * those devices getting 30px buttons in a stack of seventeen checkboxes.
  */
-@media (pointer: coarse) {
+@media (pointer: coarse), (any-pointer: coarse) {
   .nav-link,
   .btn,
   .btn-group .btn-sm,
   .annotation-button,
   .link-button,
+  .option-help,
   select[data-version],
   button.form-select.multiselect {
     min-height: 44px;
@@ -164,6 +936,11 @@ body {
   .btn-group .btn-sm,
   .annotation-button {
     min-width: 44px;
+  }
+
+  .option-help {
+    min-width: 44px;
+    font-size: 0.875rem;
   }
 
   .annotation-button {
@@ -199,45 +976,124 @@ body {
   resize: none;
 }
 
-.annotation-button {
-  background-color: var(--inchi-surface);
-  border: 3px solid transparent;
-  cursor: pointer;
-  transition: border-color var(--inchi-transition),
-    box-shadow var(--inchi-transition);
+/* Prose measure: 65-75 characters is the readable range, and About is prose. */
+.prose {
+  max-width: 68ch;
 }
 
-.annotation-button:not([disabled]):hover {
-  border: 3px solid var(--inchi-annotation-hover);
+/* ---- Comparison plate -------------------------------------------------- */
+.comparison-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.comparison-clear {
+  font-size: 0.8125rem;
+}
+
+.comparison-plate {
+  margin-top: 0.75rem;
+}
+
+.comparison-summary {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--inchi-ink);
+  border-bottom: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
 }
 
 /*
- * --inchi-annotation-hover only reaches 1.5:1 against the white button, so it cannot
- * carry the focus indicator on its own (WCAG 1.4.11 asks for 3:1). The brand
- * green is 7.6:1; the hover border stays for the pointer affordance.
+ * Layers that agree are still shown — knowing the formula and connections are
+ * identical is what makes "only the stereo layer moved" meaningful — but they
+ * recede so the marked rows carry the eye.
  */
-.annotation-button:not([disabled]):focus-visible {
-  border: 3px solid var(--inchi-annotation-hover);
-  outline: 2px solid var(--inchi-brand);
-  outline-offset: 1px;
+.layer-value-same {
+  color: var(--inchi-ink-faint);
 }
 
-.annotation-index.active {
-  background-color: var(--inchi-annotation-index);
+.layer-absent {
+  color: var(--inchi-ink-faint);
+  font-style: italic;
 }
 
-.annotation-canonical-index.active {
-  background-color: var(--inchi-annotation-canonical-index);
+/* ---- Icons ------------------------------------------------------------- */
+.app-icon {
+  flex: none;
+  vertical-align: -0.125em;
 }
 
-.annotation-equivalence-class.active {
-  background-color: var(--inchi-annotation-equivalence-class);
+/* ---- Select caret ------------------------------------------------------ */
+/*
+ * Bootstrap 5.2.3 bakes #343a40 into the caret's data URI, which is 1.5:1
+ * against the dark field — a WCAG 1.4.11 failure on the version selector, the
+ * most important control on the surface for the primary user. A data URI
+ * cannot read a custom property, so the stroke is literal in each theme.
+ */
+.form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2314171a' stroke-linecap='square' stroke-width='1.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
 }
 
-.annotation-hydrogen-group.active {
-  background-color: var(--inchi-annotation-hydrogen-group);
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e9ecea' stroke-linecap='square' stroke-width='1.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  }
 }
 
-.annotation-hydrogen-group-class.active {
-  background-color: var(--inchi-annotation-hydrogen-group-class);
+:root[data-theme="dark"] .form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e9ecea' stroke-linecap='square' stroke-width='1.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* ---- Masthead apparatus ------------------------------------------------ */
+/*
+ * The masthead is the first thing seen at every width and carried none of the
+ * world's devices. It gets the margin apparatus the contract promises: a
+ * keyed rule under the wordmark and a register crossing at the outer corner.
+ */
+.masthead {
+  position: relative;
+}
+
+.masthead::after {
+  content: "";
+  position: absolute;
+  right: -11px;
+  bottom: -11px;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  background-image: linear-gradient(
+      to bottom,
+      transparent calc(50% - 1px),
+      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ),
+    linear-gradient(
+      to right,
+      transparent calc(50% - 1px),
+      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.masthead {
+  border-bottom-width: var(--inchi-rule-weight);
+  border-bottom-color: var(--inchi-rule);
+}
+
+/* ---- Disabled comparison controls -------------------------------------- */
+.comparison-controls > [disabled],
+.comparison-controls > .link-button[disabled] {
+  color: var(--inchi-ink-faint);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.comparison-controls > .link-button[disabled]:hover {
+  text-decoration: none;
 }

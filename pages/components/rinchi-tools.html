@@ -136,11 +136,13 @@
               oninput="updateRinchiTab2()"
             ></textarea>
             <button
+              type="button"
               class="btn btn-outline-secondary border-0"
+              aria-label="Clear the pasted reaction"
               style="position: absolute; top: 10px; right: 10px"
               onclick="document.getElementById('rinchi-tab2-rxnrdfileTextarea').value = '';updateRinchiTab2()"
             >
-              <i class="bi bi-trash"></i>
+              <svg class="app-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 4.5H13M6.5 4.5V2.5H9.5V4.5M4.6 4.5 5.4 14H10.6L11.4 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
             </button>
           </div>
         </div>
@@ -299,9 +301,8 @@
         >
       </div>
       <div class="col-xl-4 mt-auto">
-        <div>
-          <label class="form-check-label mb-2">Select output format</label>
-        </div>
+        <fieldset>
+          <legend class="form-check-label mb-2">Select output format</legend>
         <div class="form-check">
           <input
             id="rinchi-tab4-outputformat-rxn"
@@ -329,6 +330,7 @@
             >RD file</label
           >
         </div>
+        </fieldset>
         <span class="rinchi-version"></span>
       </div>
     </div>

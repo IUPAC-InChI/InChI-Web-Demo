@@ -62,6 +62,24 @@ class InsertHTMLElement extends HTMLElement {
   }
 
   async connectedCallback() {
+    /*
+     * `defer-until-shown` holds the fetch until this element's tab is first
+     * opened. The About surface carries seven funder logos — 507 KB raw,
+     * 357 KB over the wire — and they were all fetched on first paint even
+     * though every <img> has loading="lazy": a lazy image inside a
+     * display:none tab pane has no computed position, so the browser cannot
+     * defer it and fetches it immediately.
+     */
+    if (this.hasAttribute("defer-until-shown") && !this.classList.contains("active")) {
+      const tabId = this.getAttribute("aria-labelledby");
+      const trigger = tabId ? document.getElementById(tabId) : null;
+      if (trigger) {
+        await new Promise((resolve) => {
+          trigger.addEventListener("shown.bs.tab", resolve, { once: true });
+        });
+      }
+    }
+
     try {
       this.innerHTML = await loadFragment(this.htmlPath);
     } catch (error) {
@@ -356,14 +374,14 @@ class FeedbackDialogElement extends InsertHTMLElement {
     return {
       success: {
         iconClass: "success",
-        glyph: "bi bi-check-lg",
+        glyph: "check-lg",
         title: "Report submitted",
         message:
           "Thank you for your report. It has been received and will be reviewed shortly.",
       },
       error: {
         iconClass: "error",
-        glyph: "bi bi-x-lg",
+        glyph: "x-lg",
         title: "Submission failed",
         message: "Your report could not be submitted.",
       },
@@ -376,7 +394,8 @@ class FeedbackDialogElement extends InsertHTMLElement {
       FeedbackDialogElement.states[status] ??
       FeedbackDialogElement.states.error;
     this.iconEl.className = `feedback-icon ${state.iconClass}`;
-    this.glyphEl.className = `feedback-glyph ${state.glyph}`;
+    this.glyphEl.className = "feedback-glyph";
+    this.glyphEl.innerHTML = icon(state.glyph);
     this.titleEl.textContent = state.title;
     this.messageEl.textContent = msg
       ? `${state.message} ${msg}`
@@ -440,23 +459,71 @@ class InChIVersionSelectionElement extends HTMLElement {
     const suffix = this.closest(".tab-pane")?.id ?? "";
     const dropdownId = `version-dropdown-${suffix}`;
 
+    /*
+     * A real heading, not a <label class="h4">. The audit found the whole tool
+     * surface had no headings at all between the page title and the dialogs,
+     * so there was no way to move between editor, options and results.
+     */
     this.innerHTML = `<div class="bounding-box">
-      <label class="h4 d-block" for="${dropdownId}">Version</label>
-      <select id="${dropdownId}" style="display: block;" data-version></select>
-      <span class="version-commit" style="display: block;"></span>
+      <h2 class="inchi-section-heading" id="version-heading-${suffix}">
+        InChI version
+      </h2>
+      <label class="visually-hidden" for="${dropdownId}">InChI version</label>
+      <select id="${dropdownId}" class="form-select form-select-sm mt-1" data-version></select>
+      <p class="version-commit apparatus mt-2 mb-0"></p>
     </div>`;
 
     const dropdown = this.querySelector("select[data-version]");
     const commitLink = this.querySelector(".version-commit");
 
+    /*
+     * Released versions and open pull requests used to sit in one flat list of
+     * eight as visual peers, with no cue which was which. The URL already
+     * records the difference, so the grouping is derived rather than added to
+     * inchi_versions.json.
+     */
+    const groupFor = (url) => {
+      if (typeof url !== "string") {
+        return "Other builds";
+      }
+      if (url.includes("/releases/tag/")) {
+        return "Released";
+      }
+      if (url.includes("/pull/")) {
+        return "Open pull requests";
+      }
+      return "Development builds";
+    };
+
+    const groupOrder = [
+      "Released",
+      "Development builds",
+      "Open pull requests",
+      "Other builds",
+    ];
+    const groups = new Map(groupOrder.map((name) => [name, []]));
+
     for (const [versionName, versionConfig] of Object.entries(
       availableInchiVersions,
     )) {
-      const option = document.createElement("option");
-      option.textContent = versionName;
-      option.value = versionName;
-      option.selected = Boolean(versionConfig.default);
-      dropdown.appendChild(option);
+      groups.get(groupFor(versionConfig.url)).push([versionName, versionConfig]);
+    }
+
+    for (const groupName of groupOrder) {
+      const entries = groups.get(groupName);
+      if (entries.length === 0) {
+        continue;
+      }
+      const optgroup = document.createElement("optgroup");
+      optgroup.label = groupName;
+      for (const [versionName, versionConfig] of entries) {
+        const option = document.createElement("option");
+        option.textContent = versionName;
+        option.value = versionName;
+        option.selected = Boolean(versionConfig.default);
+        optgroup.appendChild(option);
+      }
+      dropdown.appendChild(optgroup);
     }
 
     const showCommitLink = (versionName) => {
@@ -465,8 +532,21 @@ class InChIVersionSelectionElement extends HTMLElement {
       link.href = url;
       link.target = "_blank";
       link.rel = "noopener";
-      link.textContent = url;
-      commitLink.replaceChildren(link);
+      /*
+       * The raw URL used to be its own link text and wrapped over two lines
+       * inside the panel. Name the destination instead.
+       */
+      const group = groupFor(url);
+      const pull = url.match(/\/pull\/(\d+)/);
+      link.textContent = pull
+        ? `Pull request #${pull[1]}`
+        : group === "Released"
+          ? `${versionName} release notes`
+          : "Source revision";
+      commitLink.replaceChildren(
+        document.createTextNode(`${group} · `),
+        link
+      );
     };
 
     dropdown.addEventListener("change", (event) => {
@@ -499,60 +579,89 @@ class InChIResultFieldElement extends HTMLElement {
      * announcements, and AuxInfo or a full key list is not worth reading aloud.
      */
     const live = this.hasAttribute("live")
-      ? ' aria-live="polite" aria-atomic="true"'
+      ? ' aria-live="polite" aria-atomic="false"'
       : "";
 
-    this.innerHTML = `<div class="mt-2 border rounded bg-light" style="--bs-bg-opacity: 0.3">
-      <div
-        class="border-bottom py-1 px-3 d-flex align-items-center justify-content-between"
-      >
-        <small class="font-monospace">${this.fieldTitle}</small>
-        <div class="btn-group" role="group">
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto result-copy"
-            title="Copy to clipboard"
-            aria-label="Copy ${this.fieldTitle} to clipboard"
-            disabled
-          >
-            <i class="bi bi-clipboard" aria-hidden="true"></i>
-          </button>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary ms-auto result-download"
-            title="Download to text file"
-            aria-label="Download ${this.fieldTitle} as a text file"
-            disabled
-          >
-            <i class="bi bi-download" aria-hidden="true"></i>
-          </button>
-        </div>
+    /*
+     * `notation` turns the plain text sink into a keyed notation view: "inchi"
+     * splits the string into its layers, "inchikey" into its three blocks.
+     * Fields without it (AuxInfo, the log, RInChI file text) stay as a <pre>,
+     * because their content has no layer grammar to reveal.
+     */
+    this.notation = this.getAttribute("notation") ?? "";
+
+    /*
+     * The <pre> stays as the single source of truth for the text, so every
+     * existing writeResult() call site, the copy and download buttons and the
+     * SD-file batch path keep working untouched. When a notation view is
+     * rendered from it, the <pre> is hidden — the rendered rows carry the same
+     * text as real DOM content, and having both visible would read the
+     * identifier twice to a screen reader.
+     */
+    const hidden =
+      this.notation || this.hasAttribute("placeholder") ? " hidden" : "";
+    const viewLive = this.notation ? live : "";
+    const preLive = this.notation ? "" : live;
+
+    this.innerHTML = `<div class="identifier-plate notation-frame">
+      <div class="identifier-head">
+        <span class="apparatus">${escapeHtml(this.fieldTitle)}</span>
+        <span class="d-flex align-items-center gap-2">
+          <span class="version-stamp" data-version-stamp hidden></span>
+          <span class="btn-group" role="group">
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary result-copy"
+              aria-label="Copy ${escapeHtml(this.fieldTitle)} to clipboard"
+              disabled
+            >
+              ${icon("clipboard")}
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary result-download"
+              aria-label="Download ${escapeHtml(this.fieldTitle)} as a text file"
+              disabled
+            >
+              ${icon("download")}
+            </button>
+          </span>
+        </span>
       </div>
-      <pre id="${this._id}" class="py-1 px-3 mb-0 inchi-result-text" style="max-height: 500px"${live}></pre>
+      <div class="identifier-view"${viewLive}${hidden ? "" : " hidden"}></div>
+      <pre id="${this._id}" class="py-1 px-3 mb-0 inchi-result-text" style="max-height: 500px"${preLive}${hidden}></pre>
     </div>`;
 
     const resultText = this.querySelector(`#${this._id}`);
+    const view = this.querySelector(".identifier-view");
+    const stamp = this.querySelector("[data-version-stamp]");
     const copyButton = this.querySelector(".result-copy");
     const downloadButton = this.querySelector(".result-download");
 
     copyButton.addEventListener("click", async () => {
-      const icon = copyButton.querySelector("i");
+      const iconHost = copyButton;
       try {
         await navigator.clipboard.writeText(resultText.innerText.trim());
-        icon.className = "bi bi-clipboard-check";
-        copyButton.title = "Copied";
+        iconHost.innerHTML = icon("clipboard-check");
+        copyButton.setAttribute("aria-label", "Copied to clipboard");
       } catch (error) {
         /*
          * Blocked permission or an insecure context: say so instead of leaving
          * the user to wonder whether the copy worked.
          */
         console.error("Copy to clipboard failed", error);
-        icon.className = "bi bi-clipboard-x";
-        copyButton.title = "Copying failed — select the text and copy manually";
+        iconHost.innerHTML = icon("clipboard-x");
+        copyButton.setAttribute(
+          "aria-label",
+          "Copying failed — select the text and copy manually"
+        );
       }
       setTimeout(() => {
-        icon.className = "bi bi-clipboard";
-        copyButton.title = "Copy to clipboard";
+        iconHost.innerHTML = icon("clipboard");
+        copyButton.setAttribute(
+          "aria-label",
+          `Copy ${this.fieldTitle} to clipboard`
+        );
       }, 2000);
     });
 
@@ -574,22 +683,164 @@ class InChIResultFieldElement extends HTMLElement {
       URL.revokeObjectURL(url); // Clean up the URL object
     });
 
+    /*
+     * Render the notation view from whatever the <pre> now holds. Driven by a
+     * MutationObserver rather than by the callers, so that every path that
+     * writes a result — conversion, error message, SD-file batch — gets the
+     * same treatment without being changed.
+     */
+    const placeholder = this.getAttribute("placeholder") ?? "";
+
+    const renderNotation = () => {
+      const text = resultText.textContent.trim();
+
+      /*
+       * Empty is a state worth writing. Four unlabelled empty plates told a
+       * first-time visitor nothing about what would fill them, or in what
+       * order, or whether an empty one meant "not yet" or "it failed".
+       */
+      if (text === "") {
+        if (placeholder === "") {
+          view.replaceChildren();
+          view.hidden = true;
+          return;
+        }
+        view.innerHTML = `<p class="plate-empty">${escapeHtml(
+          placeholder
+        )}</p>`;
+        view.hidden = false;
+        resultText.hidden = true;
+        return;
+      }
+
+      if (!this.notation) {
+        // Plain text field: the <pre> carries it, the view only holds the
+        // empty state.
+        view.replaceChildren();
+        view.hidden = true;
+        resultText.hidden = false;
+        return;
+      }
+
+      const rows = this.buildNotationRows(text);
+      if (rows === null) {
+        /*
+         * Not a well-formed identifier — an error message, or a batch of many.
+         * Show it as text rather than pretending it has layers.
+         */
+        view.innerHTML = `<div class="layer-value px-3 py-2">${escapeHtml(
+          text
+        )}</div>`;
+      } else {
+        view.innerHTML = rows;
+      }
+      view.hidden = false;
+      resultText.hidden = true;
+    };
+
     const toggleButtonState = () => {
-      const resultAvailable = resultText.innerText.trim().length > 0;
+      const resultAvailable = resultText.textContent.trim().length > 0;
       copyButton.disabled = !resultAvailable;
       downloadButton.disabled = !resultAvailable;
+      /*
+       * The version stamp belongs to a result, so it disappears with one.
+       * Provenance is part of the answer: a stamp left behind over an empty
+       * plate would attribute nothing to a version.
+       */
+      stamp.hidden = !resultAvailable || stamp.textContent === "";
+    };
+
+    const update = () => {
+      toggleButtonState();
+      renderNotation();
     };
 
     /*
      * Only text changes matter here. Watching attributes as well meant every
      * result field reacted to mutations that can never change its content.
      */
-    const observer = new MutationObserver(toggleButtonState);
+    const observer = new MutationObserver(update);
     observer.observe(resultText, {
       characterData: true,
       childList: true,
       subtree: true,
     });
+    update();
+  }
+
+  /*
+   * The version that produced the text currently on this plate. Set by
+   * index.js at the end of a conversion rather than read from the selector,
+   * because the selector already shows the new version while a switch is in
+   * flight.
+   */
+  setVersionStamp(version) {
+    const stamp = this.querySelector("[data-version-stamp]");
+    if (!stamp) {
+      return;
+    }
+    stamp.textContent = version ?? "";
+    const hasText =
+      this.querySelector(`#${this._id}`).textContent.trim().length > 0;
+    stamp.hidden = !version || !hasText;
+  }
+
+  /* Mark this plate as showing a result that a newer conversion is replacing. */
+  setStale(isStale) {
+    this.querySelector(".identifier-plate")?.classList.toggle(
+      "identifier-plate-stale",
+      Boolean(isStale)
+    );
+  }
+
+  /*
+   * Build the keyed rows for this field's notation, or null when the text is
+   * not a single well-formed identifier.
+   */
+  buildNotationRows(text) {
+    if (this.notation === "inchikey") {
+      const blocks = parseInchikeyBlocks(text);
+      if (blocks.length === 0) {
+        return null;
+      }
+      const cells = blocks
+        .map(
+          (block) =>
+            `<span class="inchikey-block"><span>${escapeHtml(
+              block.value
+            )}</span><span class="apparatus">${escapeHtml(
+              block.name
+            )}</span></span>`
+        )
+        .join('<span class="inchikey-separator">-</span>');
+      return `<div class="inchikey-blocks">${cells}</div>`;
+    }
+
+    const parsed = parseInchiLayers(text);
+    if (parsed.layers.length === 0) {
+      return null;
+    }
+
+    const rows = [
+      `<div class="layer-key"><span class="layer-letter">${escapeHtml(
+        parsed.version
+      )}</span> Version</div>`,
+      `<div class="layer-value">${escapeHtml(parsed.prefix)}${escapeHtml(
+        parsed.version
+      )}</div>`,
+    ];
+
+    for (const layer of parsed.layers) {
+      const letter = layer.key === "formula" ? "" : `/${layer.key}`;
+      rows.push(
+        `<div class="layer-key"><span class="layer-letter">${escapeHtml(
+          letter
+        )}</span> ${escapeHtml(layer.name)}</div>`,
+        `<div class="layer-value">${escapeHtml(layer.value)}</div>`
+      );
+    }
+
+    return `<div class="identifier-layers">${rows.join("")}</div>`;
   }
 }
 
@@ -621,14 +872,26 @@ class InChIOptionsElement extends HTMLElement {
     const boundingBox = document.createElement("details");
     boundingBox.setAttribute("class", "bounding-box");
     boundingBox.innerHTML =
-      '<summary class="h4">Options</summary>' + htmlFragments.join("");
+      '<summary><h2 class="inchi-section-heading">InChI options</h2>' +
+      '<span class="options-changed-count apparatus" data-changed-count hidden></span>' +
+      "</summary>" +
+      htmlFragments.join("");
 
     /*
      * Follow the layout until the visitor expresses a preference: rotating a
      * tablet into portrait should collapse the panel, but reopening it by hand
      * has to stick.
+     *
+     * Keyed to the breakpoint at which the tool grid actually stacks. This
+     * used to read 991.98px while the grid is col-xl-*, which stacks below
+     * 1200px — so between 992 and 1199.98px the layout was single-column and
+     * the panel opened anyway, producing the exact regression the comment
+     * above claims to prevent. INCHI_STACK_BREAKPOINT is defined in index.js
+     * next to the grid it describes.
      */
-    const stacked = window.matchMedia("(max-width: 991.98px)");
+    const stacked = window.matchMedia(
+      `(max-width: ${INCHI_STACK_BREAKPOINT - 0.02}px)`
+    );
     boundingBox.open = !stacked.matches;
     let visitorDecided = false;
     boundingBox.addEventListener("toggle", () => {
@@ -947,9 +1210,26 @@ class NGLViewerElement extends HTMLElement {
      * Classes, not ids: this component is rendered in more than one tab, and
      * duplicate ids in a document are invalid and resolve to the first match.
      */
+    /*
+     * A labelled group, not a bare row of buttons. These five read as a tab
+     * strip when they sit unlabelled above the viewport, so people click one
+     * expecting the panel below to switch views instead of understanding them
+     * as independent colour overlays.
+     *
+     * The explanations live in a <details> rather than in a title attribute,
+     * because a title is mouse-only: unreachable by keyboard and absent on the
+     * lab tablets this tool is used on.
+     */
     // Sizing lives in css/index.css so it can respond to the viewport.
-    this.innerHTML = `<div class="annotation-selection mt-2"></div>
-      <div class="ngl-viewport"></div>`;
+    this.innerHTML = `<h3 class="inchi-section-heading mt-3">Atom annotations</h3>
+      <fieldset class="annotation-selection mt-1">
+        <legend class="visually-hidden">Atom annotations to overlay</legend>
+      </fieldset>
+      <details class="mt-1">
+        <summary class="apparatus">What these mean</summary>
+        <dl class="annotation-legend mt-1 mb-0 small"></dl>
+      </details>
+      <div class="ngl-viewport mt-2"></div>`;
 
     this.stage = undefined;
     this.structure = undefined;
@@ -1003,15 +1283,26 @@ class NGLViewerElement extends HTMLElement {
   connectedCallback() {
     this.annotationSelectionElement =
       this.querySelector(".annotation-selection");
+    const legend = this.querySelector(".annotation-legend");
+
     this.annotationButtons.forEach((button) => {
       const buttonElement = document.createElement("button");
       buttonElement.type = "button";
       buttonElement.dataset.annotation = button.id;
-      buttonElement.textContent = button.text;
       buttonElement.classList.add(button.color);
       buttonElement.classList.add("annotation-button");
       buttonElement.disabled = true;
-      buttonElement.title = button.info;
+
+      /*
+       * The swatch is part of the control and visible at rest, so the mapping
+       * from colour to meaning is readable before anything is pressed. It used
+       * to appear only once a button was active — the colour key was hidden
+       * inside the thing it was the key for.
+       */
+      const swatch = document.createElement("span");
+      swatch.className = "annotation-swatch";
+      buttonElement.append(swatch, document.createTextNode(button.text));
+
       // These are toggles: the pressed state has to be exposed, not just painted.
       buttonElement.setAttribute("aria-pressed", "false");
 
@@ -1023,6 +1314,14 @@ class NGLViewerElement extends HTMLElement {
       });
 
       this.annotationSelectionElement.appendChild(buttonElement);
+
+      const term = document.createElement("dt");
+      term.className = "apparatus";
+      term.textContent = button.text;
+      const description = document.createElement("dd");
+      description.className = "mb-2";
+      description.textContent = button.info;
+      legend.append(term, description);
     });
   }
 
