@@ -236,6 +236,30 @@ function renderComparison(paneId) {
     })
     .join("");
 
+  /*
+   * The complete strings for both sides, plainly, before any comparison. The
+   * layer and block diffs below answer "what moved"; these answer "what are
+   * the two answers" — and they are what gets copied out, so they are whole,
+   * unmarked and selectable in one run rather than reassembled from a diff.
+   */
+  const completeRows = [];
+  const addCompleteRow = (label, value) => {
+    if (!value) {
+      return;
+    }
+    completeRows.push(
+      `<div class="layer-key">${escapeHtml(label)}</div>` +
+        `<div class="layer-value">${escapeHtml(value)}</div>`
+    );
+  };
+  addCompleteRow("Pinned InChI", pinned.inchi);
+  addCompleteRow("Pinned key", pinned.inchikey);
+  if (current) {
+    addCompleteRow("Current InChI", current.inchi);
+    addCompleteRow("Current key", current.inchikey);
+  }
+  const completeBody = completeRows.join("");
+
   const summary = !current
     ? `Pinned ${escapeHtml(pinned.version)}. Convert again to compare.`
     : pinned.inchi === current.inchi
@@ -301,6 +325,10 @@ function renderComparison(paneId) {
         <span class="version-stamp">${stamp}</span>
       </div>
       <p class="comparison-summary">${summary}</p>` +
+    (completeBody === ""
+      ? ""
+      : `<h3 class="comparison-subhead apparatus">Complete strings</h3>` +
+        `<div class="identifier-layers">${completeBody}</div>`) +
     (body === ""
       ? ""
       : `<h3 class="comparison-subhead apparatus">InChI layers</h3>` +
