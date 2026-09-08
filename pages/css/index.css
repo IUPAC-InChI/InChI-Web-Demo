@@ -163,6 +163,16 @@ h1 {
   right: -12px;
 }
 
+/*
+ * Register marks work as pairs, and two pairs 12px apart do not read as two
+ * marks. A plate stacked under another drops its top-right mark and keeps the
+ * diagonal pair, so each plate is still marked and no two marks collide.
+ */
+inchi-result-field + inchi-result-field .identifier-head::before,
+.secondary-plates .identifier-head::before {
+  display: none;
+}
+
 .identifier-head::after {
   left: -12px;
   top: auto;
@@ -255,7 +265,8 @@ details[open] > summary::before {
  * alignment carries the comparison.
  */
 .identifier-plate {
-  margin-top: 1rem;
+  /* Room for the register marks to sit clear of the plate above. */
+  margin-top: 1.75rem;
 }
 
 .identifier-head {
@@ -1057,10 +1068,10 @@ button.form-select.multiselect:has(
   position: relative;
 }
 
+.masthead::before,
 .masthead::after {
   content: "";
   position: absolute;
-  right: -11px;
   bottom: -11px;
   width: 22px;
   height: 22px;
@@ -1081,6 +1092,27 @@ button.form-select.multiselect:has(
   background-size: 100% 100%;
 }
 
+.masthead::before {
+  left: -11px;
+}
+
+.masthead::after {
+  right: -11px;
+}
+
+/*
+ * Below the point where the page gutter is narrower than a mark's 11px
+ * overhang, the marks would run into the edge of the screen — measured hard
+ * against the last column of a 390px viewport. The rule alone carries the
+ * masthead there.
+ */
+@media (max-width: 767.98px) {
+  .masthead::before,
+  .masthead::after {
+    display: none;
+  }
+}
+
 .masthead {
   border-bottom-width: var(--inchi-rule-weight);
   border-bottom-color: var(--inchi-rule);
@@ -1096,4 +1128,25 @@ button.form-select.multiselect:has(
 
 .comparison-controls > .link-button[disabled]:hover {
   text-decoration: none;
+}
+
+/*
+ * Same overhang problem on the plates themselves: at phone widths the page
+ * gutter is narrower than a mark's 11px reach, so the marks tuck inside the
+ * frame rather than hanging off it.
+ */
+@media (max-width: 767.98px) {
+  .notation-frame::before {
+    top: -1px;
+    left: -1px;
+  }
+
+  .notation-frame::after {
+    bottom: -1px;
+    right: -1px;
+  }
+
+  .identifier-head::before {
+    display: none;
+  }
 }

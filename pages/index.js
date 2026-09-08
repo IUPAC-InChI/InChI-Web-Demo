@@ -225,14 +225,20 @@ function renderComparison(paneId) {
     })
     .join("");
 
-  const stampTo = current ? escapeHtml(current.version) : "-";
+  /*
+   * The stamp collapses when both sides are the same version, so it agrees
+   * with the summary sentence instead of reading "1.07.5 to 1.07.5".
+   */
+  const stamp = sameVersion
+    ? `${escapeHtml(pinned.version)}, options differ`
+    : `${escapeHtml(pinned.version)} to ${
+        current ? escapeHtml(current.version) : "-"
+      }`;
   host.innerHTML =
     `<div class="comparison-plate notation-frame">
       <div class="identifier-head">
         <span class="apparatus">Comparison</span>
-        <span class="version-stamp">${escapeHtml(
-          pinned.version
-        )} to ${stampTo}</span>
+        <span class="version-stamp">${stamp}</span>
       </div>
       <p class="comparison-summary">${summary}</p>` +
     (body === "" ? "" : `<div class="identifier-layers">${body}</div>`) +
