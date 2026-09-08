@@ -1118,12 +1118,15 @@ class InChIOptionsExplicitZeroValence extends InChIOptionsElement {
 function createAnnotation(text, color) {
   const annotation = document.createElement("div");
   annotation.textContent = text;
+  /*
+   * `annotation-label` distinguishes a label painted onto an atom in the 3D
+   * viewer from the toggle chip that switches it on. Both carry the same
+   * category class, but the chip shows its colour as a swatch while the label
+   * is filled with it — so the fill has to be scoped to the label, or
+   * pressing a chip would flood the chip itself.
+   */
+  annotation.classList.add("annotation-label");
   annotation.classList.add(color);
-  annotation.classList.add("active");
-  annotation.style.color = "black";
-  annotation.style.fontWeight = "500";
-  annotation.style.paddingLeft = "1%";
-  annotation.style.paddingRight = "1%";
 
   return annotation;
 }

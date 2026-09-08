@@ -775,7 +775,7 @@ button.form-select.multiselect:has(
  * is generous first and tightens once the text fits.
  *
  * Keyed to 1200px, not 992px: the tool grid is col-xl-*, so it is still one
- * column until 1200px. See --inchi-stack-breakpoint in index.js.
+ * column until 1200px. See INCHI_STACK_BREAKPOINT in index.js.
  */
 .paste-area {
   height: 12rem;
@@ -1149,4 +1149,40 @@ button.form-select.multiselect:has(
   .identifier-head::before {
     display: none;
   }
+}
+
+/* ---- Atom annotation labels (in the 3D viewer) ------------------------- */
+/*
+ * The labels NGL paints onto atoms. These carry the category colour as a
+ * fill, where the toggle chip carries it as a swatch — same token, different
+ * job. Scoped to .annotation-label so pressing a chip does not flood the chip.
+ *
+ * The ink is fixed rather than theme-dependent: these sit on the viewer's own
+ * white canvas in both themes, and the five chip colours were chosen so that
+ * dark ink clears 5.7:1 on every one of them.
+ */
+.annotation-label {
+  color: var(--inchi-annotation-ink);
+  font-weight: 500;
+  padding-inline: 0.25em;
+}
+
+.annotation-label.annotation-index {
+  background-color: var(--inchi-annotation-index);
+}
+
+.annotation-label.annotation-canonical-index {
+  background-color: var(--inchi-annotation-canonical-index);
+}
+
+.annotation-label.annotation-equivalence-class {
+  background-color: var(--inchi-annotation-equivalence-class);
+}
+
+.annotation-label.annotation-hydrogen-group {
+  background-color: var(--inchi-annotation-hydrogen-group);
+}
+
+.annotation-label.annotation-hydrogen-group-class {
+  background-color: var(--inchi-annotation-hydrogen-group-class);
 }

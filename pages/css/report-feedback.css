@@ -13,7 +13,12 @@
 .feedback-icon {
   width: 52px;
   height: 52px;
-  border-radius: 50%;
+  /*
+   * Square, not a circle: nothing in this world has a radius — a drawn rule
+   * meets another drawn rule at a corner.
+   */
+  border-radius: var(--inchi-radius-sm);
+  border: var(--inchi-rule-weight-hairline) solid currentColor;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,13 +28,13 @@
 }
 
 .feedback-icon.success {
-  background: var(--inchi-success-surface);
-  color: var(--inchi-success-fg);
+  background: var(--inchi-success-quiet);
+  color: var(--inchi-success);
 }
 
 .feedback-icon.error {
-  background: var(--inchi-error-surface);
-  color: var(--inchi-error-fg);
+  background: var(--inchi-error-quiet);
+  color: var(--inchi-error);
 }
 
 .feedback-dialog h2 {
@@ -41,7 +46,7 @@
 .feedback-dialog p {
   margin: 0 0 22px;
   font-size: 0.9rem;
-  color: var(--inchi-text-muted);
+  color: var(--inchi-ink-muted);
   line-height: 1.5;
 }
 

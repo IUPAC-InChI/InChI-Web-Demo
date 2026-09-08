@@ -35,7 +35,7 @@
 .mask-intro {
   margin: 0 0 14px;
   font-size: 0.9rem;
-  color: var(--inchi-text-muted);
+  color: var(--inchi-ink-muted);
   line-height: 1.45;
 }
 
@@ -48,16 +48,34 @@
 
 .mask-optional {
   font-weight: 400;
-  color: var(--inchi-text-muted);
+  color: var(--inchi-ink-muted);
 }
 
 .mask-dialog input[type="text"],
 .mask-dialog textarea {
   padding: 8px 10px;
   margin-bottom: 12px;
-  border: 1px solid var(--inchi-border-strong);
+  border: 1px solid var(--inchi-rule);
   border-radius: var(--inchi-radius-sm);
   font: inherit;
+  /* Named explicitly rather than inherited from the UA. */
+  background-color: var(--inchi-field);
+  color: var(--inchi-ink);
+}
+
+.mask-dialog input[type="text"]::placeholder,
+.mask-dialog textarea::placeholder {
+  color: var(--inchi-ink-faint);
+}
+
+/*
+ * The report endpoint's hostname. Bootstrap paints <code> #d63384, a pink from
+ * outside this palette entirely; here it is the identifier face in body ink.
+ */
+.mask-intro code {
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.875em;
+  color: var(--inchi-ink);
 }
 
 .mask-actions {
@@ -70,7 +88,7 @@
 .disclaimer-section {
   margin: 15px 0;
   padding: 12px;
-  background: var(--inchi-surface-muted);
+  background: var(--inchi-field-sunken);
   border-radius: var(--inchi-radius-sm);
 }
 

@@ -28,7 +28,13 @@
  */
 
 :root {
-  color-scheme: light dark;
+  /*
+   * The resolved theme, not "light dark". Advertising both lets the UA style
+   * form controls, scrollbars and the caret from the *system* preference,
+   * which contradicts an explicit [data-theme] choice — a light page whose
+   * text inputs were painted near-black.
+   */
+  color-scheme: light;
 
   /* ---- Ground and paper ------------------------------------------------ */
   /* Cool, not cream: this is drawing paper for a structure, not book stock. */
@@ -159,6 +165,7 @@
  */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --inchi-ground: #101413;
     --inchi-field: #171c1a;
     --inchi-field-sunken: #1e2422;
@@ -200,6 +207,7 @@
 
 /* An explicit choice wins over the system preference, in both directions. */
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --inchi-ground: #101413;
   --inchi-field: #171c1a;
   --inchi-field-sunken: #1e2422;
