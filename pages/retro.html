@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>InChI Web App &mdash; 3270</title>
+    <link rel="stylesheet" href="css/retro.css" />
+  </head>
+  <body>
+    <!--
+      DIRECTION CONTRACT — seed 2c12b1ca (direction/operate) — canon, taken by the user
+
+      THESIS: An InChI is a fielded record on a character-cell display, not a
+      string in a box. This surface refuses the soft-card arrangement of four
+      lifted plates holding answer, key, diagnostics and error as visual peers;
+      a 3270 panel has numbered field zones, two ink intensities and one
+      operator information area, and that is the whole hierarchy.
+
+      OWN-WORLD: IBM 3279 green screen played straight. Phosphor ground #0a0f0c;
+      three intensities — dim #2a9b60 protected captions, normal #35c07a
+      unprotected input, intensified #7ef0ad the answer — plus 3279 white
+      #e6f2ea for column headings and alarm red #f4705f for a rejected field.
+      Self-hosted 3270font (OFL) on a strict 80-column cell grid, character-
+      drawn field separators, underscore-run unprotected fields, [X] / (o)
+      selection cells, no bloom, no curvature, no scanlines.
+
+      STORY: The operator fills field 1 (structure), field 2 (algorithm and
+      flags), presses ENTER, and reads field 3. Flags assemble into the real
+      command line above the answer, so the run is reproducible in a pipeline.
+
+      FIRST VIEWPORT: Row 1 masthead, then STRUCTURE with the molfile already
+      loaded and converted. Field 2 with version + flag block. ENTER is the
+      primary action and it is the keyboard's own key. Row 24 is the OIA.
+
+      FORM: Candidate 4 of 4 offered; the standing exit, chosen by the user,
+      executed at the IBM 3270 fidelity bar rather than the CRT-simulation one.
+
+      FINISH: unreviewed and undocumented is unfinished; this build ends with
+      the finish review, the verdict, and DESIGN.md
+    -->
+
+    <div class="frame">
+      <div class="bezel">
+        <main class="screen" id="screen">
+          <div class="masthead">
+            <h1>InChI Web App</h1>
+            <span class="fill" aria-hidden="true"></span>
+            <span class="nameplate">IUPAC &nbsp;INCHI TRUST</span>
+          </div>
+
+          <p class="subhead">
+            Chemical identifiers, generated in this browser. Nothing you draw or
+            paste leaves the machine.
+          </p>
+
+          <!-- ============================ FIELD 1 ============================ -->
+          <section class="zone" aria-labelledby="z1">
+            <h2 class="zonehead" id="z1">
+              <span class="zonenum">1</span><span class="zonename">STRUCTURE</span>
+              <span class="fill" aria-hidden="true"></span>
+            </h2>
+
+            <div class="fieldrow">
+              <span class="caption" id="srclabel">SOURCE</span>
+              <div class="radios" role="radiogroup" aria-labelledby="srclabel">
+                <label class="sel">
+                  <input type="radio" name="source" value="molfile" checked />
+                  <span class="cell" aria-hidden="true"></span>
+                  <span class="cap">MOLFILE</span>
+                </label>
+                <label class="sel">
+                  <input type="radio" name="source" value="draw" />
+                  <span class="cell" aria-hidden="true"></span>
+                  <span class="cap">DRAW</span>
+                </label>
+                <label class="sel">
+                  <input type="radio" name="source" value="auxinfo" />
+                  <span class="cell" aria-hidden="true"></span>
+                  <span class="cap">AUXINFO</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="pane" data-pane="molfile">
+              <label class="caption block" for="molfile">MOL / SD FILE TEXT</label>
+              <textarea id="molfile" class="entry" spellcheck="false" rows="14"></textarea>
+              <div class="fieldrow">
+                <label class="caption" for="molupload">UPLOAD</label>
+                <input type="file" id="molupload" class="entry file" accept=".mol,.sdf,.txt" />
+              </div>
+            </div>
+
+            <div class="pane" data-pane="draw" hidden>
+              <div class="ketcher-mount">
+                <iframe
+                  id="ketcher"
+                  title="Ketcher structure editor"
+                  src="ketcher/index.html"
+                  loading="lazy"
+                ></iframe>
+              </div>
+              <p class="caption note">
+                The editor is Ketcher, unchanged. Draw, then press ENTER or RUN
+                to read the structure across.
+              </p>
+            </div>
+
+            <div class="pane" data-pane="auxinfo" hidden>
+              <label class="caption block" for="auxinfo">AUXINFO TEXT</label>
+              <textarea
+                id="auxinfo"
+                class="entry"
+                spellcheck="false"
+                rows="6"
+                placeholder="AuxInfo=1/0/N:1,2,3/rA:3nCCC/rB:s1;s2;/rC:;;;"
+              ></textarea>
+              <p class="caption note">
+                AuxInfo is reconstructed to a molfile first, then converted.
+              </p>
+            </div>
+          </section>
+
+          <!-- ============================ FIELD 2 ============================ -->
+          <section class="zone" aria-labelledby="z2">
+            <h2 class="zonehead" id="z2">
+              <span class="zonenum">2</span><span class="zonename">ALGORITHM</span>
+              <span class="fill" aria-hidden="true"></span>
+              <span class="zonehint" id="flagcount">&nbsp;</span>
+            </h2>
+
+            <div class="fieldrow">
+              <label class="caption" for="version">VERSION</label>
+              <span class="selectwrap">
+                <select id="version" class="entry"></select>
+                <svg class="caret" width="8" height="8" viewBox="0 0 8 8" aria-hidden="true" focusable="false">
+                  <path d="M1 2.5 4 5.5 7 2.5" fill="none" stroke="currentColor" stroke-width="1.25" />
+                </svg>
+              </span>
+            </div>
+            <div class="fieldrow">
+              <span class="caption">SOURCE</span>
+              <span class="protected" id="provenance"></span>
+            </div>
+
+            <h3 class="subhead-rule">
+              <span class="zonename">FLAGS</span>
+              <span class="fill" aria-hidden="true"></span>
+            </h3>
+            <div id="flags" class="flags"></div>
+            <div class="fieldrow">
+              <button type="button" class="pf" id="resetflags">
+                <span class="pfn">PF4</span>RESET FLAGS
+              </button>
+            </div>
+
+            <h3 class="subhead-rule">
+              <span class="zonename">COMMAND</span>
+              <span class="fill" aria-hidden="true"></span>
+            </h3>
+            <p class="command"><span class="prompt">$</span> <span id="command"></span><span class="cursor" aria-hidden="true"></span></p>
+            <p class="caption note">
+              Every checkbox above is one real InChI command-line flag. This is
+              the line to put in a pipeline to reproduce the answer below.
+            </p>
+          </section>
+
+          <!-- ============================ FIELD 3 ============================ -->
+          <section class="zone" aria-labelledby="z3">
+            <h2 class="zonehead" id="z3">
+              <span class="zonenum">3</span><span class="zonename">RESULT</span>
+              <span class="fill" aria-hidden="true"></span>
+              <span class="zonehint" id="resultstamp">&nbsp;</span>
+            </h2>
+
+            <div id="result" class="record">
+              <p class="empty">
+                Field 3 fills with the identifier's own layers &mdash; formula,
+                connections, hydrogens, stereo &mdash; one row per layer, keyed by
+                its InChI letter.
+              </p>
+            </div>
+
+            <div class="fieldrow actions">
+              <button type="button" class="pf" data-copy="inchi">
+                <span class="pfn">PF5</span>COPY INCHI
+              </button>
+              <button type="button" class="pf" data-copy="inchikey">
+                <span class="pfn">PF6</span>COPY KEY
+              </button>
+              <button type="button" class="pf" id="pin">
+                <span class="pfn">PF7</span>PIN
+              </button>
+            </div>
+
+            <details class="evidence" id="evidence">
+              <summary>
+                <span class="tri" aria-hidden="true"></span>AUXINFO AND LIBRARY LOG
+              </summary>
+              <div class="fieldrow stack">
+                <span class="caption">AUXINFO</span>
+                <pre class="protected wrap" id="auxout">not emitted</pre>
+              </div>
+              <div class="fieldrow stack">
+                <span class="caption">LOG</span>
+                <pre class="protected wrap" id="logout">not emitted</pre>
+              </div>
+            </details>
+          </section>
+
+          <!-- ============================ FIELD 4 ============================ -->
+          <section class="zone" aria-labelledby="z4" id="comparezone" hidden>
+            <h2 class="zonehead" id="z4">
+              <span class="zonenum">4</span><span class="zonename">COMPARISON</span>
+              <span class="fill" aria-hidden="true"></span>
+              <span class="zonehint" id="comparestamp">&nbsp;</span>
+            </h2>
+            <p class="summary" id="comparesummary"></p>
+            <div id="compare" class="record"></div>
+            <div class="fieldrow actions">
+              <button type="button" class="pf" id="unpin">
+                <span class="pfn">PF8</span>DROP PINNED
+              </button>
+            </div>
+          </section>
+
+          <!-- =================== OPERATOR INFORMATION AREA =================== -->
+          <div class="oia">
+            <span class="oia-state" id="oia" role="status" aria-live="polite">READY</span>
+            <span class="fill" aria-hidden="true"></span>
+            <span class="oia-meta" id="oiameta">MODEL 2 &nbsp;80x24</span>
+          </div>
+        </main>
+
+        <div class="pfkeys">
+          <button type="button" class="pf pf-primary" id="run">
+            <span class="pfn">ENTER</span>RUN
+          </button>
+          <button type="button" class="pf" id="help"><span class="pfn">PF1</span>HELP</button>
+          <button type="button" class="pf" id="clear"><span class="pfn">PF3</span>CLEAR</button>
+          <button type="button" class="pf" id="demo"><span class="pfn">PF9</span>LOAD SAMPLE</button>
+        </div>
+      </div>
+
+      <p class="colophon">
+        Preview surface. The shipped app is
+        <a href="index.html">index.html</a>. Typeface: 3270font by Ricardo
+        Banffy after the IBM 3270 character ROM, SIL Open Font License.
+      </p>
+    </div>
+
+    <dialog id="helpdialog">
+      <h2>What this screen does</h2>
+      <p>
+        Fill field 1 with a structure, choose an algorithm version and flags in
+        field 2, then press <b>ENTER</b>. Field 3 shows the InChI split into its
+        real layers and the InChIKey split into its three blocks.
+      </p>
+      <p>
+        <b>PF7 PIN</b> holds the current answer. Change the version or a flag and
+        run again: field 4 shows which layers moved. Difference is carried by
+        intensity and a <span class="mark">&gt;</span> marker in the gutter, never
+        by colour, so it survives greyscale and print.
+      </p>
+      <p>
+        <b>X SYSTEM</b> in the operator information area means a WebAssembly
+        module is still compiling. It is roughly 1 MB per version and it is
+        fetched the first time you select that version.
+      </p>
+      <button type="button" class="pf" id="helpclose"><span class="pfn">PF3</span>CLOSE</button>
+    </dialog>
+
+    <script src="inchi.js"></script>
+    <script src="inchi-layers.js"></script>
+    <script src="retro.js"></script>
+  </body>
+</html>

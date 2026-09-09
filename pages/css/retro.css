@@ -1,0 +1,1010 @@
+/*
+ * InChI Web App — 3270 preview surface
+ *
+ * An IBM 3279 green screen, played straight. The whole hierarchy is the one a
+ * 3270 panel actually had: numbered field zones, character-drawn separators,
+ * and three ink intensities. There is no elevation system, no radius, no
+ * shadow inside the screen — a phosphor display cannot lift anything. What
+ * looks like a decision here is usually the display's own constraint.
+ *
+ * Rules that bind this file:
+ *   - Colour does three jobs: phosphor (three intensities), 3279 white for a
+ *     column heading, alarm red for a rejected field. Nothing else gets a hue.
+ *   - Difference is carried by intensity and a gutter marker, never by colour,
+ *     so the comparison reads in greyscale and in print.
+ *   - Every measurement is in character cells (ch) or lines (lh). A value in
+ *     px here is a bug unless it is a hairline or a focus offset.
+ *   - Anything bounding a control uses --p-dim (5.5:1), never --hair.
+ */
+
+@font-face {
+  font-family: "3270";
+  src: url("../fonts/3270-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* The screen. A CRT face is dark green-grey glass, not black. */
+  --screen: #0a0f0c;
+  /* The equipment the screen is set into. Neutral, so phosphor is the only hue. */
+  --equip: #17191a;
+  --equip-edge: #2a2d2d;
+
+  /*
+   * Three intensities, which is the 3278's entire type scale.
+   *   dim        protected captions, field names, PF legends        5.5:1
+   *   normal     unprotected field content, body text               8.3:1
+   *   intensified the answer, a heading, a layer that moved        13.8:1
+   */
+  --p-dim: #2a9b60;
+  --p: #35c07a;
+  --p-hi: #7ef0ad;
+  /* 3279 four-colour: white was the column heading, red the rejected field. */
+  --p-white: #e6f2ea;
+  --alarm: #f4705f;
+
+  /* Decorative row separator only. Never bounds a control. */
+  --hair: #1a3d2a;
+  /* A field the host has protected. Disabled, so 1.4.3 exempts it, but a row
+     you cannot read at all is not information about why you cannot use it. */
+  --p-off: #1d7047;
+
+  --cell: 1ch;
+  --line: 1.2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--equip);
+}
+
+body {
+  margin: 0;
+  padding: 2lh 0 3lh;
+  background: var(--equip);
+  color: var(--p);
+  font-family: "3270", ui-monospace, "Liberation Mono", monospace;
+  /*
+   * 80 columns is the Model 2 screen and it does not reflow — it scales. The
+   * clamp keeps 84ch (80 plus the 2ch side margins) inside the viewport down to
+   * the width where the narrow model takes over.
+   */
+  font-size: clamp(11px, 1.62vw, 20px);
+  line-height: var(--line);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  -webkit-text-size-adjust: 100%;
+}
+
+::selection {
+  /* This page's whole job is text you select and copy. */
+  background: var(--p);
+  color: var(--screen);
+}
+
+.frame {
+  width: 84ch;
+  max-width: calc(100% - 2ch);
+  margin: 0 auto;
+}
+
+/*
+ * The one piece of physical object on the page: the display is set into
+ * equipment. A real offset shadow, not a halo — and the only shadow anywhere.
+ */
+.bezel {
+  background: var(--equip);
+  border: 1px solid var(--equip-edge);
+  border-top-color: #3a3e3e;
+  box-shadow: 0 2lh 4lh -1lh rgb(0 0 0 / 0.7);
+  padding: 1lh 1ch;
+}
+
+.screen {
+  background: var(--screen);
+  padding: 1lh 2ch;
+}
+
+/* ---------------------------------------------------------------- masthead */
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  gap: 2ch;
+}
+
+h1 {
+  margin: 0;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 1em;
+  font-weight: 400;
+  color: var(--p-white);
+  letter-spacing: 0;
+}
+
+.nameplate {
+  flex: 0 0 auto;
+  color: var(--p-dim);
+  white-space: nowrap;
+}
+
+.subhead {
+  margin: 0 0 1lh;
+  color: var(--p-dim);
+  /* 3270 body copy has no measure of its own; the screen is the measure. */
+  max-width: 72ch;
+}
+
+/* ------------------------------------------------------------- field zones */
+
+.zone {
+  margin: 1lh 0 0;
+}
+
+.zonehead,
+.subhead-rule {
+  display: flex;
+  align-items: baseline;
+  gap: 1ch;
+  margin: 0 0 1lh;
+  font-size: 1em;
+  font-weight: 400;
+}
+
+.subhead-rule {
+  margin-top: 1lh;
+}
+
+.zonenum {
+  /*
+   * The sequence is the operator's step order on the panel — fill 1, fill 2,
+   * press ENTER — so the number carries information rather than decorating.
+   */
+  color: var(--screen);
+  background: var(--p-white);
+  padding: 0 1ch;
+}
+
+.zonename {
+  color: var(--p-white);
+}
+
+.zonehint {
+  color: var(--p-dim);
+  white-space: nowrap;
+}
+
+/*
+ * A 3270 draws a field separator with characters, because characters are all
+ * it has. The run is filled in by script and clipped to the remaining width.
+ */
+.fill {
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--hair);
+  user-select: none;
+}
+
+/* ----------------------------------------------------------------- fields */
+
+.fieldrow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 2ch;
+  margin: 0 0 1lh;
+  min-width: 0;
+}
+
+.fieldrow.stack {
+  display: block;
+}
+
+.fieldrow.actions {
+  gap: 1ch 2ch;
+}
+
+.caption {
+  color: var(--p-dim);
+  white-space: nowrap;
+}
+
+.caption.block {
+  display: block;
+}
+
+.caption.note {
+  max-width: 68ch;
+  margin: 0;
+  white-space: normal;
+}
+
+.protected {
+  color: var(--p);
+}
+
+/* The browser's link blue is a hue this surface does not have. */
+a {
+  color: var(--p-hi);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: var(--p-white);
+}
+
+.wrap {
+  margin: 0;
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 10lh;
+  overflow: auto;
+}
+
+/*
+ * An unprotected field showed as a run of underscores in the field's own
+ * colour. A 1px bottom rule is the same mark, and --p-dim clears 3:1 so the
+ * boundary satisfies 1.4.11 as well as the period.
+ */
+.entry {
+  font: inherit;
+  color: var(--p);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--p-dim);
+  border-radius: 0;
+  padding: 0 1ch;
+  min-width: 0;
+}
+
+textarea.entry {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--p-dim);
+  padding: 0 1ch;
+  resize: vertical;
+  white-space: pre;
+  overflow: auto;
+}
+
+.entry::placeholder {
+  color: var(--p-dim);
+  opacity: 1;
+}
+
+.entry.file {
+  border-bottom: 0;
+  padding: 0;
+  color: var(--p-dim);
+}
+
+.entry.file::file-selector-button {
+  font: inherit;
+  color: var(--p);
+  background: transparent;
+  border: 1px solid var(--p-dim);
+  padding: 0 1ch;
+  margin-right: 1ch;
+  cursor: pointer;
+}
+
+.selectwrap {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  min-width: 0;
+  max-width: 100%;
+}
+
+select.entry {
+  appearance: none;
+  padding-right: 3ch;
+  /*
+   * The longest version name is wider than the 40-column screen, and a select
+   * takes its intrinsic width from its widest option unless it is capped.
+   */
+  max-width: 100%;
+}
+
+select.entry option,
+select.entry optgroup {
+  background: var(--screen);
+  color: var(--p);
+}
+
+.caret {
+  position: absolute;
+  right: 1ch;
+  bottom: 0.35lh;
+  color: var(--p-dim);
+  pointer-events: none;
+}
+
+/* One focus treatment, everywhere: the phosphor at full intensity. */
+:focus-visible {
+  outline: 1px solid var(--p-hi);
+  outline-offset: 2px;
+}
+
+.sel:focus-within {
+  outline: 1px solid var(--p-hi);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------ selection cells: [X] and ( o ) */
+
+/*
+ * A 3270 selection field is a one-character unprotected cell that the operator
+ * types into. The real input stays in the tree and keeps the keyboard; the cell
+ * beside it is the mark the display would have drawn.
+ */
+.sel {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 1ch;
+  cursor: pointer;
+}
+
+.sel input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.sel .cell {
+  color: var(--p);
+  white-space: pre;
+}
+
+.sel input[type="checkbox"] ~ .cell::before {
+  content: "[ ]";
+}
+
+.sel input[type="checkbox"]:checked ~ .cell::before {
+  content: "[X]";
+}
+
+.sel input[type="radio"] ~ .cell::before {
+  content: "( )";
+}
+
+.sel input[type="radio"]:checked ~ .cell::before {
+  content: "(o)";
+}
+
+.sel .cap {
+  color: var(--p);
+}
+
+/* Intensified when set: the operator's own eye-catch on a filled field. */
+.sel input:checked ~ .cap {
+  color: var(--p-hi);
+}
+
+.sel input:disabled ~ .cell,
+.sel input:disabled ~ .cap,
+.sel input:disabled ~ .flagname {
+  color: var(--p-off);
+  cursor: default;
+}
+
+.sel input:disabled {
+  cursor: default;
+}
+
+.radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 3ch;
+}
+
+/* -------------------------------------------------------------- flag block */
+
+.flags {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.flags .group {
+  grid-column: 1 / -1;
+  color: var(--p-dim);
+  margin-top: 1lh;
+}
+
+.flags .group:first-child {
+  margin-top: 0;
+}
+
+.flags .sel {
+  display: grid;
+  grid-template-columns: 4ch 16ch minmax(0, 1fr);
+  gap: 0;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.flags .sel .cap {
+  grid-column: 3;
+  overflow-wrap: anywhere;
+}
+
+.flags .flagname {
+  grid-column: 2;
+  color: var(--p-dim);
+  white-space: nowrap;
+}
+
+.flags .sel.indent .cap {
+  padding-left: 2ch;
+}
+
+.flags .legend {
+  grid-column: 1 / -1;
+  margin: 1lh 0 1lh;
+  color: var(--p-dim);
+  white-space: normal;
+  max-width: 68ch;
+}
+
+/* ------------------------------------------------------------ command line */
+
+.command {
+  margin: 0 0 1lh;
+  color: var(--p-hi);
+  overflow-wrap: anywhere;
+}
+
+.prompt {
+  color: var(--p-dim);
+}
+
+.cursor {
+  display: inline-block;
+  width: 1ch;
+  height: 1lh;
+  vertical-align: text-bottom;
+  background: var(--p-hi);
+  animation: blink 1.4s steps(1, end) infinite;
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* --------------------------------------------------------- the record grid */
+
+/*
+ * The signature. An InChI rendered as the fielded record it is: the layer's
+ * own letter in the key column at full intensity — it is the locant you cite
+ * when you say "the /t layer moved" — and the value beside it.
+ */
+.record {
+  display: grid;
+  grid-template-columns: 3ch 17ch minmax(0, 1fr);
+  margin: 0 0 1lh;
+}
+
+.record > * {
+  padding: 0 1ch 0 0;
+  border-top: 1px solid var(--hair);
+}
+
+.record > .gutter {
+  padding-left: 0;
+  color: var(--p-hi);
+  text-align: center;
+}
+
+.record > .key {
+  color: var(--p-dim);
+  white-space: nowrap;
+  padding-right: 2ch;
+}
+
+.record > .key .letter {
+  color: var(--p);
+}
+
+.record > .value {
+  color: var(--p-hi);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* A row that agrees recedes; knowing it agreed is what makes "only /t moved" mean something. */
+.record > .value.same,
+.record > .key.same {
+  color: var(--p-dim);
+}
+
+.record > .value.moved,
+.record > .key.moved,
+.record > .key.moved .letter {
+  color: var(--p-hi);
+}
+
+.record .was {
+  color: var(--p-dim);
+  text-decoration: line-through;
+}
+
+.record .to {
+  color: var(--p-dim);
+}
+
+/* "not emitted" is a reading, not decoration, so it stays at 4.5:1. */
+.record .absent {
+  color: var(--p-dim);
+}
+
+.record .empty,
+.record > .head {
+  grid-column: 1 / -1;
+}
+
+.record > .head {
+  color: var(--p-dim);
+  border-top: 0;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0;
+  border-top: 0;
+  color: var(--p-dim);
+  max-width: 68ch;
+}
+
+/* A reading being replaced, and a reading left standing after a failure. */
+.superseded,
+.stale {
+  opacity: 0.45;
+}
+
+/* The 27 characters are three blocks with three jobs; one run hides that. */
+.keyblocks {
+  /* Sits under the value column, not under the key. */
+  grid-column: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 1ch;
+  border-top: 1px solid var(--hair);
+  padding-top: 0;
+}
+
+.keyblocks .block {
+  display: flex;
+  flex-direction: column;
+}
+
+.keyblocks .block b {
+  font-weight: 400;
+  color: var(--p-hi);
+}
+
+.keyblocks .block span {
+  color: var(--p-dim);
+}
+
+.keyblocks .dash {
+  color: var(--p);
+}
+
+.keyblocks.moved b {
+  color: var(--p-hi);
+}
+
+/* An unchanged key recedes in the comparison, the same way an unchanged layer does. */
+.keyblocks.same b {
+  color: var(--p-dim);
+}
+
+.keyblocks.same .dash {
+  color: var(--p-dim);
+}
+
+.summary {
+  margin: 0 0 1lh;
+  color: var(--p);
+  max-width: 72ch;
+}
+
+.mark {
+  color: var(--p-hi);
+}
+
+/* ---------------------------------------------------------------- evidence */
+
+.evidence {
+  margin: 1lh 0 0;
+  border-top: 1px solid var(--hair);
+}
+
+.evidence summary {
+  display: flex;
+  align-items: baseline;
+  gap: 1ch;
+  color: var(--p-dim);
+  cursor: pointer;
+  list-style: none;
+  padding: 0;
+}
+
+.evidence summary::-webkit-details-marker {
+  display: none;
+}
+
+/* display:flex kills the native marker in Blink and WebKit, so it is drawn. */
+.tri {
+  width: 1ch;
+  height: 1lh;
+  background: var(--p-dim);
+  clip-path: polygon(20% 25%, 80% 50%, 20% 75%);
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.evidence[open] .tri {
+  transform: rotate(90deg);
+}
+
+.evidence > .fieldrow {
+  margin-top: 1lh;
+}
+
+/* -------------------------------------------------------------- PF buttons */
+
+.pf {
+  font: inherit;
+  color: var(--p);
+  background: transparent;
+  border: 1px solid var(--p-dim);
+  border-radius: 0;
+  padding: 0 1ch;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1ch;
+  white-space: nowrap;
+}
+
+.pf .pfn {
+  color: var(--p-dim);
+}
+
+.pf:hover:not(:disabled) {
+  color: var(--p-hi);
+  border-color: var(--p);
+}
+
+.pf:hover:not(:disabled) .pfn {
+  color: var(--p);
+}
+
+.pf:active:not(:disabled) {
+  /* The 3270's own field-selected state: the cell inverts. */
+  background: var(--p);
+  color: var(--screen);
+}
+
+.pf:active:not(:disabled) .pfn {
+  color: var(--screen);
+}
+
+.pf:disabled {
+  color: var(--hair);
+  border-color: var(--hair);
+  cursor: default;
+}
+
+.pf:disabled .pfn {
+  color: var(--hair);
+}
+
+.pf-primary {
+  color: var(--screen);
+  background: var(--p);
+  border-color: var(--p);
+}
+
+.pf-primary .pfn {
+  color: var(--screen);
+}
+
+.pf-primary:hover:not(:disabled) {
+  background: var(--p-hi);
+  border-color: var(--p-hi);
+  color: var(--screen);
+}
+
+.pf-primary:hover:not(:disabled) .pfn {
+  color: var(--screen);
+}
+
+.pf-primary:active:not(:disabled) {
+  background: var(--p-hi);
+  color: var(--screen);
+}
+
+/* ------------------------------------- operator information area (row 24) */
+
+/*
+ * Row 24 of a 3270 is the OIA, and it always says what the machine is doing.
+ * "X SYSTEM" is the real indicator for "the host has your screen and has not
+ * answered yet" — which is exactly what a cold 1 MB WebAssembly module is.
+ * This node is never hidden and never moved, because a status written into a
+ * node that can be hidden is not announced.
+ */
+.oia {
+  display: flex;
+  align-items: baseline;
+  gap: 2ch;
+  margin-top: 1lh;
+  border-top: 1px solid var(--p-dim);
+  color: var(--p);
+}
+
+.oia-state {
+  white-space: nowrap;
+}
+
+.oia-state.busy {
+  color: var(--p-white);
+}
+
+.oia-state.busy::before {
+  content: "X ";
+}
+
+.oia-state.bad {
+  color: var(--alarm);
+}
+
+.oia-state.bad::before {
+  content: "X ";
+}
+
+.oia-meta {
+  color: var(--p-dim);
+  white-space: nowrap;
+}
+
+.pfkeys {
+  margin-top: 1lh;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1ch;
+  padding: 0 2ch;
+}
+
+/* ------------------------------------------------------------------ dialog */
+
+dialog {
+  width: 60ch;
+  max-width: calc(100% - 4ch);
+  background: var(--screen);
+  color: var(--p);
+  border: 1px solid var(--p-dim);
+  border-radius: 0;
+  font: inherit;
+  padding: 1lh 2ch;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.7);
+}
+
+dialog h2 {
+  margin: 0 0 1lh;
+  font-size: 1em;
+  font-weight: 400;
+  color: var(--p-white);
+}
+
+dialog p {
+  margin: 0 0 1lh;
+  max-width: 56ch;
+}
+
+dialog b {
+  font-weight: 400;
+  color: var(--p-hi);
+}
+
+/* --------------------------------------------------------------- mounts */
+
+.ketcher-mount,
+#ketcher {
+  display: block;
+  width: 100%;
+  border: 0;
+}
+
+.ketcher-mount {
+  border: 1px solid var(--p-dim);
+  height: min(30lh, 62vh);
+}
+
+#ketcher {
+  height: 100%;
+}
+
+/*
+ * Off the screen, on the equipment. Neutral by intent — the phosphor palette
+ * belongs to the display, and this is the plastic below it. 5.7:1 and 9.2:1.
+ */
+.colophon {
+  margin: 1lh 0 0;
+  color: #8d9490;
+  max-width: 76ch;
+}
+
+.colophon a {
+  color: #b6bdb9;
+}
+
+/* ------------------------------------------------------------- Model 1: 40 */
+
+/*
+ * A 3270 screen has no reflow — it has screen models. Below the width where
+ * 80 columns stays legible, the panel becomes the 40-column Model 1: the flag
+ * block goes to one column, and the OIA says which model you are looking at.
+ */
+@media (max-width: 44rem) {
+  body {
+    font-size: clamp(12px, 3.1vw, 16px);
+  }
+
+  .frame {
+    width: 44ch;
+  }
+
+  /* Two cells wide is all there is, so the flag wraps under its caption. */
+  .flags .sel {
+    grid-template-columns: 4ch minmax(0, 1fr);
+  }
+
+  .flags .sel .cap {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .flags .flagname {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .record {
+    grid-template-columns: 3ch 1fr;
+  }
+
+  .record > .key {
+    grid-column: 2;
+    padding-bottom: 0;
+    border-top: 1px solid var(--hair);
+  }
+
+  .record > .value {
+    grid-column: 2;
+    border-top: 0;
+  }
+
+  .record > .gutter {
+    grid-row: span 2;
+  }
+
+  .keyblocks {
+    grid-column: 2;
+  }
+
+  .masthead .nameplate {
+    display: none;
+  }
+}
+
+/* --------------------------------------------------------- touch and motion */
+
+@media (pointer: coarse), (any-pointer: coarse) {
+  /*
+   * Keyed to the pointer, not the viewport: a stylus 2-in-1 reports a fine
+   * primary pointer and still needs the targets.
+   */
+  .pf,
+  .sel,
+  select.entry,
+  .evidence summary {
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .fieldrow,
+  .radios {
+    align-items: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor {
+    animation: none;
+  }
+
+  .tri {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .zonenum,
+  .pf-primary,
+  .pf:active {
+    forced-color-adjust: none;
+  }
+
+  .entry,
+  textarea.entry,
+  .pf,
+  .ketcher-mount,
+  dialog {
+    border-color: CanvasText;
+  }
+}
+
+@media print {
+  html,
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .bezel,
+  .screen {
+    background: #fff;
+    box-shadow: none;
+    border: 0;
+  }
+
+  .zonename,
+  .value,
+  .oia-state,
+  h1 {
+    color: #000 !important;
+  }
+
+  .caption,
+  .key,
+  .fill,
+  .nameplate,
+  .oia-meta {
+    color: #555 !important;
+  }
+
+  .pfkeys,
+  .actions,
+  .colophon {
+    display: none;
+  }
+}
