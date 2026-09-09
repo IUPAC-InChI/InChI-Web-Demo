@@ -1,15 +1,19 @@
 /*
- * Design tokens for the Skeletal Notation world (seed a4ec508d).
+ * Design tokens for the Soft Modern world.
  *
  * This file loads after Bootstrap and before the app stylesheets, so app rules
  * win ties against the framework without needing "!important".
  *
- * The governing idea: a structure diagram carries its meaning in line weight,
- * wedge, hash and locant, and uses colour only where chemistry itself does —
- * heteroatom labels. So this palette is deliberately short on hue. Hierarchy
- * comes from --inchi-rule-* weights and type scale; colour is reserved for
- * three jobs only: the institutional brand, an outcome (error), and the
- * categorical atom annotations.
+ * The governing idea: things are bounded by the surface they sit on, not by a
+ * line drawn around them. A plate is a white card lifted off a tinted ground
+ * by a soft shadow and a 12px radius; rules retreat to hairlines that separate
+ * rows and nothing else. Hierarchy comes from elevation, surface and space;
+ * colour is reserved for three jobs only: the institutional brand, an outcome
+ * (error), and the categorical atom annotations.
+ *
+ * The one place a line still has to be a line is a control boundary, which
+ * WCAG 1.4.11 holds to 3:1 — hence two rule tokens with different jobs and
+ * different contrast obligations. See the Rules block below.
  *
  * How to use it:
  *   - Reach for a semantic token (--inchi-field, --inchi-brand) rather than a
@@ -37,66 +41,71 @@
   color-scheme: light;
 
   /* ---- Ground and paper ------------------------------------------------ */
-  /* Cool, not cream: this is drawing paper for a structure, not book stock. */
-  --inchi-ground: #f2f4f3;
+  /*
+   * Three surfaces, one step apart. The ground is a faintly green-grey the
+   * white field lifts off; the sunken panel is where controls sit *into* the
+   * page rather than on it.
+   */
+  --inchi-ground: #f4f7f5;
   --inchi-field: #ffffff;
-  --inchi-field-sunken: #eceeed;
+  --inchi-field-sunken: #f0f4f1;
 
   /* ---- Ink ------------------------------------------------------------- */
-  --inchi-ink: #14171a; /* 16.3:1 on ground */
-  --inchi-ink-muted: #4d5457; /* 7.0:1 on ground: real text, not decoration */
-  --inchi-ink-faint: #676d70; /* 4.6:1 on the sunken panel, the worst case */
+  --inchi-ink: #16201b; /* 15.8:1 on ground */
+  --inchi-ink-muted: #4c5a52; /* 7.4:1 on ground: real text, not decoration */
+  --inchi-ink-faint: #5e6c64; /* 4.6:1 on the sunken panel, the worst case */
 
   /* ---- Rules ----------------------------------------------------------- */
   /*
-   * The weight scale is the hierarchy system. A hairline separates, a rule
-   * groups, a stroke marks the active or divergent thing. All three clear 3:1
-   * against the ground, because in this world a line is never decoration —
-   * it is the interface telling you where a boundary is (WCAG 1.4.11).
+   * Three line jobs, and only two of them are held to 3:1.
+   *
+   *   hairline  separates rows inside one surface. Decorative: the boundary
+   *             it marks is already carried by the surface change, so it is
+   *             deliberately near-invisible and is NOT a 1.4.11 boundary.
+   *   rule      bounds a control. Every input, select and option chip takes
+   *             its border from this token, so it clears 3:1 against both the
+   *             field it sits on and the ground behind it (WCAG 1.4.11).
+   *   stroke    marks the active or divergent thing — the changed layer's
+   *             gutter, the selected tab, the status accent. It keeps a 3px
+   *             weight where the other two are hairlines, because this one is
+   *             a mark rather than an edge.
    */
-  --inchi-rule-hairline: #848a8c; /* 3.0:1 on white, the worst case */
-  --inchi-rule: #676d70; /* 4.6:1 */
-  --inchi-rule-stroke: #14171a; /* the drawn bond */
+  --inchi-rule-hairline: #dbe3dd;
+  --inchi-rule: #7e8b84; /* 3.1:1 on white, the worst case */
+  --inchi-rule-stroke: #59665f; /* 5.5:1 on white */
   --inchi-rule-weight-hairline: 1px;
-  --inchi-rule-weight: 2px;
+  --inchi-rule-weight: 1px;
   --inchi-rule-weight-stroke: 3px;
 
   /* ---- Brand ----------------------------------------------------------- */
-  /* Institutional. #00612c is 6.9:1 on the ground: safe for text and icons. */
-  --inchi-brand: #00612c;
-  --inchi-brand-hover: #004d22;
-  --inchi-brand-quiet: #e2ece5; /* tint for fills that carry ink on top */
-  --inchi-on-brand: #ffffff;
+  /* Institutional. #0b7440 is 5.1:1 on the ground: safe for text and icons. */
+  --inchi-brand: #0b7440;
+  --inchi-brand-hover: #085a32;
+  --inchi-brand-quiet: #e6f5ec; /* tint for fills that carry ink on top */
+  --inchi-on-brand: #ffffff; /* 5.3:1 on the brand */
 
   /* ---- Focus ----------------------------------------------------------- */
-  /*
-   * One focus system, not two. The old olive companion sat at 3.08:1 on the
-   * sunken panel — passing 1.4.11 by 0.08, which is not a margin. Brand green
-   * carries focus everywhere instead, at 6.9:1.
-   */
+  /* One focus system: brand green everywhere, at 5.1:1. */
   --inchi-focus: var(--inchi-brand);
-  --inchi-focus-ring: rgb(0 97 44 / 0.28);
+  --inchi-focus-ring: rgb(11 116 64 / 0.3);
 
   /*
    * Highlight for the layers that changed, marked inside a complete string.
-   * The institutional green at low alpha: a marker pen over the identifier
-   * rather than a colour change to it, so the string still reads as one run
-   * and the ink on top stays at full contrast.
+   * The brand green at low alpha: a marker pen over the identifier rather than
+   * a colour change to it, so the string still reads as one run and the ink on
+   * top stays at full contrast.
    */
-  --inchi-highlight: rgb(0 97 44 / 0.18);
-  --inchi-highlight-edge: rgb(0 97 44 / 0.7); /* 3.8:1 on the field */
+  --inchi-highlight: rgb(11 116 64 / 0.16);
+  --inchi-highlight-edge: rgb(11 116 64 / 0.85); /* 3.9:1 on the field */
 
   /* ---- Selection ------------------------------------------------------- */
-  /*
-   * White on the old #9db668 was 2.25:1 — worse than not selecting, on a page
-   * whose whole job is text you select and copy. Ink on a brand tint instead.
-   */
-  --inchi-selection-bg: #bcd8c6;
+  /* Ink on a brand tint, on a page whose whole job is text you select. */
+  --inchi-selection-bg: #c8ecd8;
   --inchi-selection-text: #0d1a12;
 
   /* ---- Outcomes -------------------------------------------------------- */
-  --inchi-error: #a92f1e; /* 6.1:1 on ground */
-  --inchi-error-quiet: #fbeae7;
+  --inchi-error: #c02b1d; /* 5.3:1 on ground */
+  --inchi-error-quiet: #fdecea;
   --inchi-success: var(--inchi-brand);
   --inchi-success-quiet: var(--inchi-brand-quiet);
 
@@ -105,12 +114,9 @@
    * A categorical set, not a scale — each marks a different kind of index in
    * the 3D viewer, and they stack on one atom.
    *
-   * The old set was pure-channel rgb(0 255 0), rgb(255 102 255), rgb(0 255 255)
-   * at 70% alpha: all five landed between 1.07:1 and 1.92:1 on white, so they
-   * were separable by hue alone and collapsed under deuteranopia. These five
-   * step through luminance as well as hue (0.27 / 0.39 / 0.51 / 0.64 / 0.78,
-   * no two closer than 0.119), so the key survives greyscale and colour-vision
-   * deficiency, and each carries dark ink at 5.7:1 or better.
+   * These five step through luminance as well as hue (0.27 / 0.39 / 0.51 /
+   * 0.64 / 0.78, no two closer than 0.119), so the key survives greyscale and
+   * colour-vision deficiency, and each carries dark ink at 5.7:1 or better.
    */
   --inchi-annotation-index: #e2e5e7; /* slate,            L 0.78 */
   --inchi-annotation-equivalence-class: #e6d093; /* ochre, L 0.64 */
@@ -121,12 +127,15 @@
 
   /* ---- Elevation and shape --------------------------------------------- */
   /*
-   * No radius anywhere in this world: a drawn rule has a corner, not a fillet.
-   * Dialogs are the one place with depth, and it carries a real offset and
-   * blur rather than a flat halo.
+   * Elevation is the bounding device here: a plate is a white card lifted off
+   * the ground by a soft shadow, not a box drawn with a rule. That is why the
+   * hairline is allowed to stay quiet — the edge is already legible without
+   * it, and a plate that also carried a dark border would read as two edges.
    */
-  --inchi-radius-sm: 0;
-  --inchi-radius-md: 0;
+  --inchi-radius-sm: 8px;
+  --inchi-radius-md: 12px;
+  --inchi-shadow-plate: 0 1px 2px rgb(16 32 24 / 0.06),
+    0 12px 28px -16px rgb(16 32 24 / 0.35);
   --inchi-backdrop: rgb(12 16 14 / 0.55);
   --inchi-shadow-dialog: 0 12px 32px -8px rgb(12 16 14 / 0.35);
 
@@ -134,10 +143,9 @@
 
   /* ---- Type ------------------------------------------------------------ */
   /*
-   * No display face: this world's voice is drawn, not lettered. Identity comes
-   * from rules, weights, locants and register marks, so the UI text stays on
-   * the system stack where it belongs for a dense tool, and the one deliberate
-   * typographic choice is the identifier itself.
+   * No display face: the identity is in the surfaces and the spacing, so the
+   * UI text stays on the system stack where it belongs for a dense tool, and
+   * the one deliberate typographic choice is the identifier itself.
    *
    * Monospace is earned here rather than worn as a costume: an InChI is data
    * whose characters must align column-for-column for a diff to be readable.
@@ -156,52 +164,55 @@
   --bs-body-bg: var(--inchi-ground);
   --bs-body-color: var(--inchi-ink);
   --bs-border-color: var(--inchi-rule-hairline);
-  --bs-border-radius: 0;
-  --bs-border-radius-sm: 0;
-  --bs-border-radius-lg: 0;
+  --bs-border-radius: var(--inchi-radius-sm);
+  --bs-border-radius-sm: 6px;
+  --bs-border-radius-lg: var(--inchi-radius-md);
   /*
    * Bootstrap's own focus glow is blue (49,132,253), so every green button
    * flashed blue on focus. It reads the raw channel triplet, not a colour.
    */
-  --bs-btn-focus-shadow-rgb: 0, 97, 44;
+  --bs-btn-focus-shadow-rgb: 11, 116, 64;
   --bs-focus-ring-color: var(--inchi-focus-ring);
 }
 
 /*
- * Dark: the screen is the light source. Ink and ground swap roles, the rule
- * scale inverts, and the brand green lifts to stay legible — #00612c on a dark
- * field is 1.6:1 and unusable, so dark gets its own tint of the same hue.
+ * Dark: the screen is the light source. Ink and ground swap roles, elevation
+ * stops reading as a shadow and starts reading as a lighter surface, and the
+ * brand green lifts — #0b7440 on a dark field is 1.9:1 and unusable, so dark
+ * gets its own tint of the same hue.
  */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --inchi-ground: #101413;
-    --inchi-field: #171c1a;
-    --inchi-field-sunken: #1e2422;
+    --inchi-ground: #0f1512;
+    --inchi-field: #18201c;
+    --inchi-field-sunken: #141b17;
 
-    --inchi-ink: #e9ecea; /* 15.6:1 on ground */
-    --inchi-ink-muted: #a9b1ae; /* 8.5:1 */
-    --inchi-ink-faint: #868e8b; /* 4.7:1 on the sunken panel */
+    --inchi-ink: #e8efea; /* 15.1:1 on ground */
+    --inchi-ink-muted: #a5b2ab; /* 7.9:1 */
+    --inchi-ink-faint: #85918b; /* 4.9:1 on the sunken panel */
 
-    --inchi-rule-hairline: #676e6c; /* 3.0:1 against the field */
-    --inchi-rule: #6f7875;
-    --inchi-rule-stroke: #e9ecea;
+    /* The hairline stays quiet in both themes; only the two that carry a
+       boundary or a mark are held to 3:1 against the field. */
+    --inchi-rule-hairline: #29332d;
+    --inchi-rule: #6f7d75; /* 3.4:1 against the field */
+    --inchi-rule-stroke: #869489; /* 4.7:1 */
 
-    --inchi-brand: #62b585; /* 7.5:1 on ground */
-    --inchi-brand-hover: #7cc79a;
-    --inchi-brand-quiet: #1b3326;
-    --inchi-on-brand: #0b120e;
+    --inchi-brand: #35c07a; /* 8.0:1 on ground */
+    --inchi-brand-hover: #52d18d;
+    --inchi-brand-quiet: #10291c;
+    --inchi-on-brand: #05130b;
 
-    --inchi-focus-ring: rgb(98 181 133 / 0.32);
+    --inchi-focus-ring: rgb(53 192 122 / 0.34);
 
-    --inchi-highlight: rgb(98 181 133 / 0.22);
-    --inchi-highlight-edge: rgb(98 181 133 / 0.6); /* 3.4:1 on the field */
+    --inchi-highlight: rgb(53 192 122 / 0.2);
+    --inchi-highlight-edge: rgb(53 192 122 / 0.6); /* 3.2:1 on the field */
 
-    --inchi-selection-bg: #2c5c40;
-    --inchi-selection-text: #eef5f0;
+    --inchi-selection-bg: #1d4a33;
+    --inchi-selection-text: #e8f6ee;
 
-    --inchi-error: #f08a76; /* 7.6:1 on ground */
-    --inchi-error-quiet: #35201c;
+    --inchi-error: #f08a76; /* 7.5:1 on ground */
+    --inchi-error-quiet: #2e1a16;
 
     /*
      * The annotation chips deliberately do NOT change between themes: a
@@ -210,48 +221,65 @@
      * better. Only their surroundings change.
      */
 
+    /* On a dark ground a shadow cannot be seen, so the plate is lifted by its
+       own lighter surface and the shadow only deepens the separation. */
+    --inchi-shadow-plate: 0 1px 2px rgb(0 0 0 / 0.5),
+      0 14px 30px -16px rgb(0 0 0 / 0.8);
     --inchi-backdrop: rgb(4 6 5 / 0.68);
     --inchi-shadow-dialog: 0 12px 32px -8px rgb(0 0 0 / 0.6);
 
-    --bs-btn-focus-shadow-rgb: 98, 181, 133;
+    --bs-btn-focus-shadow-rgb: 53, 192, 122;
   }
 }
 
 /* An explicit choice wins over the system preference, in both directions. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --inchi-ground: #101413;
-  --inchi-field: #171c1a;
-  --inchi-field-sunken: #1e2422;
+  --inchi-ground: #0f1512;
+  --inchi-field: #18201c;
+  --inchi-field-sunken: #141b17;
 
-  --inchi-ink: #e9ecea;
-  --inchi-ink-muted: #a9b1ae;
-  --inchi-ink-faint: #868e8b;
+  --inchi-ink: #e8efea; /* 15.1:1 on ground */
+  --inchi-ink-muted: #a5b2ab; /* 7.9:1 */
+  --inchi-ink-faint: #85918b; /* 4.9:1 on the sunken panel */
 
-  --inchi-rule-hairline: #676e6c;
-  --inchi-rule: #6f7875;
-  --inchi-rule-stroke: #e9ecea;
+  /* The hairline stays quiet in both themes; only the two that carry a
+     boundary or a mark are held to 3:1 against the field. */
+  --inchi-rule-hairline: #29332d;
+  --inchi-rule: #6f7d75; /* 3.4:1 against the field */
+  --inchi-rule-stroke: #869489; /* 4.7:1 */
 
-  --inchi-brand: #62b585;
-  --inchi-brand-hover: #7cc79a;
-  --inchi-brand-quiet: #1b3326;
-  --inchi-on-brand: #0b120e;
+  --inchi-brand: #35c07a; /* 8.0:1 on ground */
+  --inchi-brand-hover: #52d18d;
+  --inchi-brand-quiet: #10291c;
+  --inchi-on-brand: #05130b;
 
-  --inchi-focus-ring: rgb(98 181 133 / 0.32);
+  --inchi-focus-ring: rgb(53 192 122 / 0.34);
 
-  --inchi-highlight: rgb(98 181 133 / 0.22);
-  --inchi-highlight-edge: rgb(98 181 133 / 0.6); /* 3.4:1 on the field */
+  --inchi-highlight: rgb(53 192 122 / 0.2);
+  --inchi-highlight-edge: rgb(53 192 122 / 0.6); /* 3.2:1 on the field */
 
-  --inchi-selection-bg: #2c5c40;
-  --inchi-selection-text: #eef5f0;
+  --inchi-selection-bg: #1d4a33;
+  --inchi-selection-text: #e8f6ee;
 
-  --inchi-error: #f08a76;
-  --inchi-error-quiet: #35201c;
+  --inchi-error: #f08a76; /* 7.5:1 on ground */
+  --inchi-error-quiet: #2e1a16;
 
+  /*
+   * The annotation chips deliberately do NOT change between themes: a
+   * categorical key has to mean the same colour in both, and these tints
+   * clear 5.2:1 against the dark field and carry dark ink at 5.8:1 or
+   * better. Only their surroundings change.
+   */
+
+  /* On a dark ground a shadow cannot be seen, so the plate is lifted by its
+     own lighter surface and the shadow only deepens the separation. */
+  --inchi-shadow-plate: 0 1px 2px rgb(0 0 0 / 0.5),
+    0 14px 30px -16px rgb(0 0 0 / 0.8);
   --inchi-backdrop: rgb(4 6 5 / 0.68);
   --inchi-shadow-dialog: 0 12px 32px -8px rgb(0 0 0 / 0.6);
 
-  --bs-btn-focus-shadow-rgb: 98, 181, 133;
+  --bs-btn-focus-shadow-rgb: 53, 192, 122;
 }
 
 /*
@@ -260,11 +288,11 @@
  */
 .nav-pills {
   --bs-nav-pills-link-active-bg: var(--inchi-brand);
-  --bs-nav-pills-border-radius: 0;
+  --bs-nav-pills-border-radius: var(--inchi-radius-sm);
 }
 
 .btn {
-  --bs-btn-border-radius: 0;
+  --bs-btn-border-radius: var(--inchi-radius-sm);
 }
 
 .btn-primary {

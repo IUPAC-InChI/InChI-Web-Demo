@@ -1,25 +1,25 @@
 ---
 name: InChI Web App
-description: A chemical-identifier tool drawn in three rule weights, where the answer reads as notation rather than text.
+description: A chemical-identifier tool built on lifted surfaces and quiet rules, where the answer reads as notation rather than text.
 colors:
-  ground: "#f2f4f3"
+  ground: "#f4f7f5"
   field: "#ffffff"
-  field-sunken: "#eceeed"
-  ink: "#14171a"
-  ink-muted: "#4d5457"
-  ink-faint: "#676d70"
-  rule-hairline: "#848a8c"
-  rule: "#676d70"
-  rule-stroke: "#14171a"
-  brand: "#00612c"
-  brand-hover: "#004d22"
-  brand-quiet: "#e2ece5"
+  field-sunken: "#f0f4f1"
+  ink: "#16201b"
+  ink-muted: "#4c5a52"
+  ink-faint: "#5e6c64"
+  rule-hairline: "#dbe3dd"
+  rule: "#7e8b84"
+  rule-stroke: "#59665f"
+  brand: "#0b7440"
+  brand-hover: "#085a32"
+  brand-quiet: "#e6f5ec"
   on-brand: "#ffffff"
-  focus-ring: "rgb(0 97 44 / 0.28)"
-  selection-bg: "#bcd8c6"
+  focus-ring: "rgb(11 116 64 / 0.3)"
+  selection-bg: "#c8ecd8"
   selection-text: "#0d1a12"
-  error: "#a92f1e"
-  error-quiet: "#fbeae7"
+  error: "#c02b1d"
+  error-quiet: "#fdecea"
   annotation-index: "#e2e5e7"
   annotation-equivalence-class: "#e6d093"
   annotation-canonical-index: "#87cbab"
@@ -67,25 +67,26 @@ typography:
     lineHeight: 1.2
     textTransform: "uppercase"
 rounded:
-  sm: "0"
-  md: "0"
+  sm: "8px"
+  md: "12px"
 spacing:
-  cell: "0.3rem"
   tight: "0.35rem"
-  head: "0.4rem"
+  cell: "0.5rem"
   row: "0.5rem"
-  gutter: "0.75rem"
+  head: "0.75rem"
+  gutter: "1rem"
   block: "1rem"
-  register-clearance: "1.75rem"
+  plate-gap: "1rem"
 components:
   notation-plate:
     backgroundColor: "{colors.field}"
     rounded: "{rounded.md}"
+    shadow: "0 1px 2px rgb(16 32 24 / 0.06), 0 12px 28px -16px rgb(16 32 24 / 0.35)"
   plate-head:
     backgroundColor: "{colors.field}"
     textColor: "{colors.ink-muted}"
     typography: "{typography.apparatus}"
-    padding: "0.4rem 0.75rem"
+    padding: "0.75rem 1rem"
   version-stamp:
     textColor: "{colors.brand}"
     typography: "{typography.apparatus}"
@@ -93,12 +94,12 @@ components:
     backgroundColor: "{colors.field-sunken}"
     textColor: "{colors.ink-muted}"
     typography: "{typography.apparatus}"
-    padding: "0.3rem 0.75rem"
+    padding: "0.5rem 1rem"
   layer-value:
     backgroundColor: "{colors.field}"
     textColor: "{colors.ink}"
     typography: "{typography.identifier}"
-    padding: "0.3rem 0.75rem"
+    padding: "0.5rem 1rem"
   panel:
     backgroundColor: "{colors.field-sunken}"
     textColor: "{colors.ink}"
@@ -160,24 +161,28 @@ components:
 
 ## Overview
 
-**Creative North Star: "Skeletal Notation"**
+**Creative North Star: "Soft Modern"**
 
-A structure diagram carries its meaning in line weight, wedge, hash and locant. It uses colour
-only where chemistry itself does — a heteroatom label — and it is still readable photocopied,
-faxed, or seen by someone who cannot separate green from red. This interface is built the same
-way. Hierarchy comes from three rule weights and a type scale with real steps; colour is held
-back for three jobs and used nowhere else. The identifier, which is the whole point of the tool,
-is not printed as a line of text but *drawn* as a keyed stack of its real layers — version,
-formula, `/c` connections, `/h` hydrogens, `/t` tetrahedral, `/m` parity — one row per layer,
-keyed in the margin, in a monospace where characters align column-for-column so two versions can
-be read against each other.
+A thing on this surface is bounded by the surface it sits on, not by a line drawn around it. A
+plate is a white card lifted off a faintly green-grey ground by a soft shadow and a 12px radius;
+rules retreat to hairlines that separate rows inside a card and do nothing else. Hierarchy comes
+from elevation, surface and space, with a type scale that has real steps; colour is held back for
+three jobs and used nowhere else. The identifier, which is the whole point of the tool, is not
+printed as a line of text but *drawn* as a keyed stack of its real layers — version, formula, `/c`
+connections, `/h` hydrogens, `/t` tetrahedral, `/m` parity — one row per layer, keyed in the
+margin, in a monospace where characters align column-for-column so two versions can be read
+against each other.
 
-The world is dense and unornamented, closer to a printed reference plate than to a product card.
-Plates announce their own edges with register crossings rather than with a radius and a shadow.
-Small tracked uppercase labels — *apparatus*, in the reference-book sense of a running head or a
-plate number — name a layer, a panel or a stamp without competing with the content they sit on.
-Nothing has a corner radius, because a drawn rule meets another drawn rule at a corner. Nothing
-carries a shadow except a modal dialog, which is genuinely above the page.
+Softness is a surface treatment, not a licence to spread out: the plates are roomier than a
+drawn-rule world would allow, but the information density is unchanged, and small tracked
+uppercase labels — *apparatus*, in the reference-book sense of a running head or a plate number —
+still name a layer, a panel or a stamp without competing with the content they sit on.
+
+The one line that stays a line is a control boundary. WCAG 1.4.11 holds it to 3:1, so the rule
+scale splits by job rather than by weight: a decorative hairline that may be quiet, and a control
+rule that may not. Getting this wrong is the characteristic failure of a soft interface — inputs
+that dissolve into the card behind them — and it is the reason there are two rule tokens here
+instead of one.
 
 What this world refuses, explicitly: the category default of four identical cards holding the
 answer, the derived answer, a diagnostic dump and an error channel as visual peers. The answer
@@ -186,13 +191,12 @@ difference — a layer that moved between two versions is marked with a hashed-b
 gutter stroke and heavier ink, never with red and green.
 
 **Key Characteristics:**
-- Three rule weights are the entire hierarchy system: hairline separates, rule bounds, stroke marks.
+- Elevation is the bounding device: a plate is a lifted card, not a box drawn with a rule.
+- The rule scale splits by job, not by weight: hairline separates (decorative, may be quiet), rule bounds a control (3:1, never quiet), stroke marks the active or divergent thing (3px).
 - Colour is scarce by rule, not by accident: one institutional green, one error hue, five categorical atom chips.
-- Zero corner radius anywhere; no shadow outside `.inchi-dialog`.
-- No display typeface — the voice is drawn, not lettered. Monospace only where alignment is data.
-- Light and dark are both first-class, defined in full rather than derived from each other.
+- No display typeface — the voice is in the surfaces, not in a face. Monospace only where alignment is data.
+- Light and dark are both first-class, defined in full rather than derived from each other. In dark the shadow stops carrying the lift and the lighter surface takes over.
 - Difference is carried by mark and weight, so it survives greyscale, print and colour-vision deficiency.
-- Register crossings, not cards, are how a surface says "this is one framed thing".
 
 ## Colors
 
@@ -227,20 +231,20 @@ stays readable in greyscale and under colour-vision deficiency; each carries dar
 better.
 
 ### Neutral
-- **Drawing-Paper Ground** (`ground`): the page. Cool, not cream — this is paper for a structure, not book stock.
+- **Ground** (`ground`): the page. A faintly green-grey the white field lifts off.
 - **Field** (`field`): the surface of a plate, an input, the status line.
-- **Sunken Field** (`field-sunken`): a control panel and the layer-key column; the recessed register.
-- **Ink** (`ink`): body text and the drawn bond. 16.3:1 on the ground.
-- **Muted Ink** (`ink-muted`): real secondary text — apparatus labels, inactive tabs, hints. 7.0:1.
+- **Sunken Field** (`field-sunken`): a control panel and the layer-key column; where something sits *into* the page rather than on it.
+- **Ink** (`ink`): body text and every drawn mark. 15.8:1 on the ground.
+- **Muted Ink** (`ink-muted`): real secondary text — apparatus labels, inactive tabs, hints. 7.4:1.
 - **Faint Ink** (`ink-faint`): placeholders, empty-state copy, separators, disabled labels. 4.6:1 on the sunken panel, its worst case.
-- **Hairline / Rule / Stroke** (`rule-hairline`, `rule`, `rule-stroke`): the three drawn weights. All three clear 3:1 against the ground, because a line here is never decoration — it is the interface saying where a boundary is.
+- **Hairline / Rule / Stroke** (`rule-hairline`, `rule`, `rule-stroke`): three line *jobs*, and only two are held to 3:1. The hairline separates rows inside a surface whose own edge already bounds it, so it is deliberately near-invisible and is not a 1.4.11 boundary. The rule bounds a control — every input, select and chip border — so it clears 3:1 against both the field it sits on and the ground behind it. The stroke marks rather than bounds, and keeps a 3px weight where the other two are hairlines.
 - **Selection** (`selection-bg`, `selection-text`): ink on a brand tint. This page's whole job is text you select and copy, so selection is a legibility requirement.
 
 ### Named Rules
 
 **The Three Jobs Rule.** Colour does exactly three jobs on this surface: the institutional brand,
 an outcome (error or success), and the categorical atom key. A new element that wants a fourth
-job gets a rule weight or a type step instead. Audit test: cover the annotation chips and the
+job gets a surface, a type step or the stroke instead. Audit test: cover the annotation chips and the
 status line — any remaining hue on screen other than brand green is a violation.
 
 **The Mark-Not-Hue Rule.** Divergence is never carried by colour. A layer that differs between two
@@ -250,6 +254,11 @@ struck through, not deleted. The comparison must remain fully readable in greysc
 **The Fixed-Key Rule.** The five annotation chips deliberately do **not** change between themes. A
 categorical key has to mean the same colour in both; only the surroundings change. They clear
 5.2:1 against the dark field as drawn.
+
+**The Quiet-Hairline Exception.** `rule-hairline` is the one token allowed below 3:1, because the
+boundary it marks is already carried by a surface change. Nothing that bounds a control may take
+its border from it. `test/check_contrast.py` encodes this: the hairline pairs are reported as
+deliberate deviations, everything else must pass.
 
 **The Both-Themes-First Rule.** Every colour is defined on bare `:root` for light, redefined under
 `@media (prefers-color-scheme: dark)` guarded as `:root:not([data-theme="light"])`, and redefined
@@ -262,8 +271,8 @@ colour its only definition inside a media block.
 **Body Font:** the system stack, inherited (no `font-family` is declared on `body`).
 **Identifier Font:** `ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace`.
 
-**Character:** This world has no typographic costume. Identity comes from rules, weights, locants
-and register marks, so UI text stays on the system stack where it belongs for a dense tool, and
+**Character:** This world has no typographic costume. Identity comes from the surfaces, the
+spacing and the locants, so UI text stays on the system stack where it belongs for a dense tool, and
 the one deliberate typographic choice is the identifier itself. Monospace is *earned* here rather
 than worn: an InChI is measurement data whose characters must align column-for-column for a diff
 to be readable.
@@ -291,8 +300,8 @@ job.
 values, InChIKey blocks, result text, paste areas. Monospace on UI chrome, headings or prose is a
 costume and is not permitted.
 
-**The Drawn-Not-Lettered Rule.** No display or brand typeface is loaded, ever. If a surface needs
-more presence, it gets a rule, a register mark or a type step — not a face. A webfont added for
+**The No-Face Rule.** No display or brand typeface is loaded, ever. If a surface needs more
+presence, it gets elevation, space or a type step — not a face. A webfont added for
 identity is a violation of the world, not an extension of it.
 
 **The Apparatus Rule.** Anything that *names* a thing rather than being the thing is set in
@@ -302,7 +311,7 @@ uppercasing are allowed.
 ## Layout
 
 The page is a single Bootstrap `container-md` with a 2rem tail. The masthead sits on the page
-grid — logo, then `<h1>` and tagline on one baseline — with a 2px rule under it. Below it, pill
+grid — logo, then `<h1>` and tagline on one baseline — with a `rule` hairline under it. Below it, pill
 tabs (InChI / RInChI / About), then per-tool tab rows.
 
 The tool grid is `col-xl-8` + `col-xl-4`: editor or paste box left, version selector and options
@@ -311,16 +320,17 @@ right as margin apparatus. **That means the layout is single-column below 1200px
 comparison controls, comparison plate, then a collapsed `<details>` holding AuxInfo and the
 library log.
 
-Spacing rhythm is a small reused set rather than a formal scale: 0.3rem/0.75rem inside a layer
-cell, 0.4rem/0.75rem in a plate head, 0.5rem/0.75rem in a status line or key block, 0.75rem of
-panel padding, 1rem between comparison items, and 1.75rem above a plate — that last one exists
-purely to give the register marks room to sit clear of the plate above. Bootstrap's `mt-1`/`mt-2`
+Spacing rhythm is a small reused set rather than a formal scale: 0.5rem/1rem inside a layer cell,
+0.75rem/1rem in a plate head, 0.5rem/0.75rem in a status line or key block, 0.75rem of panel
+padding, and 1rem both between comparison items and above a plate. The cell and head paddings are
+a step more generous than a drawn-rule world would allow — a lifted card needs its content to sit
+*inside* the card, not against its edge — but the row count is unchanged. Bootstrap's `mt-1`/`mt-2`
 utilities carry the rest.
 
 Responsive behaviour that is load-bearing:
 
 - **1200px** — the only real layout breakpoint. The grid stacks, the paste area relaxes from 7rem to 12rem, and the comparison stack drops from two columns to one.
-- **768px** — register marks tuck inside the frame instead of hanging off it, and the NGL viewport goes from a viewport-relative share to a fixed 420px.
+- **768px** — the NGL viewport goes from a viewport-relative share to a fixed 420px.
 - **~855px and below** — the editor's and paste box's `min-height` floors (`min(530px, 62vh)` / `min(530px, 34vh)`) take over from the aspect ratio, so a phone does not get a 530px editor pushing the results two screens down.
 - **Coarse pointer** (`pointer: coarse` **or** `any-pointer: coarse`) — every interactive target reaches 44px. Keyed to the pointer, not the viewport, because a stylus 2-in-1 reports a fine primary pointer and still needs the targets, while a narrow desktop window does not.
 - `env(safe-area-inset-left/right)` padding on `body`, with `viewport-fit=cover`, so landscape on a notched phone does not run text under the cutout.
@@ -348,16 +358,18 @@ several seconds on a cold ~1 MB WebAssembly module is not a loading state.
 
 ## Elevation & Depth
 
-**This system is flat.** Depth is tonal and drawn, never cast. There are exactly three ground
-levels — `ground` (the page), `field` (a plate, an input, the status line), `field-sunken` (a
-control panel, the layer-key column) — and boundaries between them are stated with a rule weight,
-not a shadow. A plate reads as a discrete object because of its 2px bound and its register
-crossings, not because it floats.
+**Depth is the bounding device.** There are exactly three ground levels — `ground` (the page),
+`field` (a plate, an input, the status line), `field-sunken` (a control panel, the layer-key
+column) — and a plate reads as a discrete object because it is lifted off the ground, not because
+a line is drawn around it. Two elevations only: a plate at rest, and a modal dialog genuinely
+above the page over a dimmed backdrop. Nothing lifts on hover, and there is no third step.
 
-The single exception is a modal dialog, which is genuinely above the page and says so with a real
-offset and blur rather than a flat halo, over a dimmed backdrop.
+In dark the shadow stops doing the work — a soft black blur on a near-black ground is invisible —
+so the lighter field surface carries the lift and the shadow only deepens the separation. This is
+why the plate shadow is redefined per theme rather than reused.
 
 ### Shadow Vocabulary
+- **Plate** (`--inchi-shadow-plate`, `0 1px 2px rgb(16 32 24 / 0.06), 0 12px 28px -16px rgb(16 32 24 / 0.35)` light, deepened for dark): every `.notation-frame`. A tight contact shadow plus a wide soft one — the contact shadow is what stops the card looking pasted on.
 - **Dialog** (`--inchi-shadow-dialog`, `0 12px 32px -8px rgb(12 16 14 / 0.35)` light / `rgb(0 0 0 / 0.6)` dark): only on `.inchi-dialog`.
 - **Backdrop** (`--inchi-backdrop`): the `::backdrop` wash behind a modal.
 - **Scroll affordance** (`linear-gradient(to top, rgb(0 0 0 / 0.05), transparent 1.5rem)` on a non-empty `.inchi-result-text`): a bottom fade signalling that a capped result scrolls. A gradient, not a shadow, and the one depth cue outside a dialog.
@@ -365,31 +377,33 @@ offset and blur rather than a flat halo, over a dimmed backdrop.
 
 ### Named Rules
 
-**The Dialog-Only Shadow Rule.** `box-shadow` for elevation appears on `.inchi-dialog` and nowhere
-else. Cards, plates, panels, chips, buttons and popovers are flat at rest and flat on hover.
-`box-shadow: inset` is a different device — a rule the layout engine can draw inside a cell — and
-is unrestricted.
+**The Two-Elevation Rule.** There are exactly two elevations: the plate and the dialog. Panels,
+chips, buttons, inputs and popovers are flat, and nothing lifts on hover or focus — a surface that
+rises when touched is a third elevation nobody declared. `box-shadow: inset` is a different device
+— a rule the layout engine can draw inside a cell — and is unrestricted.
 
 ## Shapes
 
-Zero corner radius, everywhere: `--inchi-radius-sm` and `--inchi-radius-md` are both `0`, and
-Bootstrap's `--bs-border-radius`, `-sm` and `-lg` hooks are set to `0` so the framework's own
-components inherit the decision rather than being overridden selector by selector. Buttons, nav
-pills, inputs, checkboxes, panels, plates and dialogs all meet at square corners.
+Two radii and nothing between them: `--inchi-radius-sm` is `8px` (buttons, inputs, panels, chips,
+tabs, the status line, the logo mount) and `--inchi-radius-md` is `12px` (a plate, a dialog).
+Bootstrap's `--bs-border-radius`, `-sm` and `-lg` hooks are wired to them so the framework's own
+components inherit the decision rather than being overridden selector by selector. Small round
+marks — the option-help badge, the outcome dialog's glyph, the theme knob — are full circles, and
+the theme switch's track is a pill.
 
-Form language is the **three rule weights**, and they are the hierarchy:
+Form language is the **three line jobs**, which are no longer a weight scale:
 
-| Weight | Token | Job |
-| --- | --- | --- |
-| Hairline, 1px | `rule-hairline` | separates rows *inside* one thing |
-| Rule, 2px | `rule` | bounds a thing |
-| Stroke, 3px | `rule-stroke` | marks the active or divergent thing |
+| Token | Weight | Job | Contrast |
+| --- | --- | --- | --- |
+| `rule-hairline` | 1px | separates rows *inside* one surface | decorative, exempt |
+| `rule` | 1px | bounds a control | 3:1 (1.4.11) |
+| `rule-stroke` | 3px | marks the active or divergent thing | 3:1 |
 
-The recurring silhouette is the **framed plate**: a 2px bound plus register crossings at opposite
-corners. A crossing is 22×22px with 2px arms drawn in the stroke ink, offset 11px so it hangs off
-the corner — deliberately large enough to actually be seen, because a mark nobody can distinguish
-from the border is a compliance token, not a device. They are pure backgrounds, so they are
-invisible to assistive technology without needing `aria-hidden`.
+The recurring silhouette is the **plate**: a `field`-coloured card on the ground, 12px corners,
+`--inchi-shadow-plate`, and a hairline border that keeps the edge from dissolving where a shadow
+is hard to see — a dark theme, forced colours, or a printout. It carries `overflow: hidden`,
+which is what lets the corner actually clip the key column and the plate head, both of which paint
+their own background out to the plate's edge.
 
 Icons are one authored 16×16 set at 1.5px stroke, `currentColor`, no fill, square joins and mitre
 corners — the same hand as the chemistry marks. Chemistry marks are a separate 12×12 family in the
@@ -399,15 +413,13 @@ drawn the same way, with `clip-path` on a 0.5rem square.
 
 ### Named Rules
 
-**The Corner, Not Fillet Rule.** No border radius is permitted on any element. A drawn rule has a
-corner. If a shape needs softening it is the wrong shape.
+**The Two-Radii Rule.** `8px` for a control, `12px` for a plate or dialog, `50%` for a small round
+mark. No third value, and no literal pixel radius in a rule that could name a token.
 
-**The Register-Pair Rule.** Register marks work as pairs on a diagonal, and two pairs 12px apart do
-not read as two marks — they read as noise. A plate stacked directly under another **drops its
-top-right mark** and keeps the diagonal pair, so every plate is still marked and no two marks
-collide. Below 768px the marks tuck to `-1px` (inside the frame) and the head's mark is dropped
-entirely, because the page gutter there is narrower than an 11px overhang — measured hard against
-the last column of a 390px viewport.
+**The Clip-The-Card Rule.** Any container with `--inchi-radius-md` whose children paint their own
+background to its edge needs `overflow: hidden`, or the children square off the corners the
+container just rounded. This is why `.notation-frame`, the Ketcher iframe and the NGL viewport all
+carry it.
 
 **The One-Hand Rule.** Every glyph on the surface is authored in `ICON_PATHS` / `notationMark()` at
 one stroke weight. The Bootstrap Icons webfont was removed entirely (121 KB woff2 plus a 95 KB
@@ -418,30 +430,30 @@ carries a self-check that fails if a glyph the interface uses is not authored th
 ## Components
 
 ### Buttons
-- **Shape:** square corners (0), no shadow, no transform.
+- **Shape:** 8px corners, no shadow, no transform — a button is on the plate, not above it.
 - **Primary:** brand green field with `on-brand` ink; hover and active both go to `brand-hover`. Disabled drops to the sunken field with a hairline border and faint ink. Branded through Bootstrap's `--bs-btn-*` hooks on `.btn-primary` rather than by overriding selectors.
-- **Outline / secondary:** transparent field, `ink-muted` ink, hairline border. Hover fills with the sunken field and promotes the border to `rule`; active promotes it to `rule-stroke`. This is the default for result-plate actions (copy, download) and for "Pin this result".
-- **Focus:** one system for everything — a 2px `brand` outline at 2px offset, the element's own border promoted to `rule-stroke`, and `box-shadow: none`. Bootstrap's blue focus glow is neutralised at the token level via `--bs-btn-focus-shadow-rgb`, because a green button flashing blue on focus is two systems arguing.
+- **Outline / secondary:** transparent field, `ink-muted` ink, `rule` border — a control boundary, so never the hairline. Hover fills with the sunken field and promotes the border to `rule`; active promotes it to `rule-stroke`. This is the default for result-plate actions (copy, download) and for "Pin this result".
+- **Focus:** one system for everything — a 1px `brand` outline at 2px offset, the element's own border promoted to `rule-stroke`, and `box-shadow: none`. Bootstrap's blue focus glow is neutralised at the token level via `--bs-btn-focus-shadow-rgb`, because a green button flashing blue on focus is two systems arguing.
 - **Link button** (`.link-button`): a real `<button>` that reads as body text in brand green, underlining on hover. Used where an action must be keyboard-operable but must not look like a control.
 - **Touch:** 44px minimum height on any coarse pointer.
 
 ### Chips
-- **Style:** the five annotation toggles are chips, each carrying its own **swatch at rest** — a 0.85rem square in the annotation colour with a `rule` hairline border. The control *is* the legend: the colour-to-meaning mapping is readable before anything is pressed. Field background, hairline border, `ink` label at 0.8125rem.
-- **State:** `aria-pressed="true"` promotes the border to `rule-stroke` at 2px and the label to weight 600 — weight and border, not a colour change. Hover promotes the border colour only. Disabled drops the label to faint ink and the swatch to 0.4 opacity.
+- **Style:** the five annotation toggles are chips, each carrying its own **swatch at rest** — a 0.85rem 3px-cornered square in the annotation colour with a `rule` border. The control *is* the legend: the colour-to-meaning mapping is readable before anything is pressed. Field background, `rule` border, 8px corners, `ink` label at 0.8125rem.
+- **State:** `aria-pressed="true"` fills with `brand-quiet`, promotes the border to `brand`, and takes the label to weight 600. The pressed state used to be read off a heavier border; both rule weights are 1px in this world, so fill carries it instead — fill *and* weight, so it does not rest on hue alone. Hover promotes the border colour only. Disabled drops the label to faint ink and the swatch to 0.4 opacity.
 - These previously read as a tab strip of white boxes whose colour appeared only once pressed. The swatch-at-rest is the fix and is not optional.
 
 ### Cards / Containers
 There are no cards. There are two container kinds.
 
-- **Notation plate** (`.notation-frame`): 2px `rule` bound, `field` background, register crossings on a diagonal, zero radius, no shadow. Internally divided by hairlines only. Carries a head (apparatus title left, version stamp and actions right, hairline underneath) and a body.
+- **Notation plate** (`.notation-frame`): `field` background, 12px corners, `--inchi-shadow-plate`, a hairline border, and `overflow: hidden` so the corner clips. Internally divided by hairlines only. Carries a head (apparatus title left, version stamp and actions right, hairline underneath, 0.75rem/1rem padding) and a body.
 - **Panel** (`.bounding-box`): 1px hairline border, `field-sunken` background, 0.75rem padding. Groups controls — version selector, options, viewer. Often a `<details>`, whose `<summary>` gets the authored triangle because `display: flex` kills the native `::marker` in Blink and WebKit.
 
 ### Inputs / Fields
-- **Style:** `field` background, `ink` text, `rule` border (the 2px weight — an input bounds a thing), zero radius. Placeholders in faint ink. Checkboxes are square; checked state is brand green, overridden explicitly because Bootstrap 5.2.3 hardcodes it.
-- **Focus:** the shared 2px brand outline at 2px offset.
+- **Style:** `field` background, `ink` text, `rule` border — the token that clears 3:1, because this is exactly the boundary 1.4.11 is about — and 8px corners. Placeholders in faint ink. Checkboxes keep Bootstrap's own small radius; checked state is brand green, overridden explicitly because Bootstrap 5.2.3 hardcodes it.
+- **Focus:** the shared brand outline at 2px offset.
 - **Select caret:** Bootstrap bakes `#343a40` into the caret's data URI, which is 1.5:1 on the dark field — a 1.4.11 failure on the version selector, the most important control here. A data URI cannot read a custom property, so the caret stroke is written literally once per theme.
 - **Paste areas:** identifier mono at 0.8125rem, 12rem tall stacked and 7rem on the wide layout, `resize: none` where the container sizes them.
-- **Option help** (`.option-help`): a 1.15rem square bordered button, 44px on touch. The option explanations used to hang on a non-focusable `<i>` with the text in `data-bs-title` — no accessible name, no keyboard path. They are real buttons.
+- **Option help** (`.option-help`): a 1.15rem round bordered badge, 44px on touch. The option explanations used to hang on a non-focusable `<i>` with the text in `data-bs-title` — no accessible name, no keyboard path. They are real buttons.
 
 ### Navigation
 Tabs in the world's vocabulary: a hairline baseline under the row with 0.35rem of inset, tabs at
@@ -456,7 +468,7 @@ The centre of the system. An InChI is rendered as a two-column CSS grid — `min
 max-content) 1fr` — one row per layer, hairline-separated, with the first row's top border
 suppressed.
 
-- **Key column:** sunken field, apparatus type, `ink-muted`, `white-space: nowrap`. Contains the layer's InChI letter (`/t`) in full-strength ink at weight 600 with tracking reset — the letter is the *locant* of the notation, the thing you cite when you say "the /t layer differs" — followed by its name.
+- **Key column:** sunken field, apparatus type, `ink-muted`, `white-space: nowrap`, 0.5rem/1rem padding. Contains the layer's InChI letter (`/t`) in full-strength ink at weight 600 with tracking reset — the letter is the *locant* of the notation, the thing you cite when you say "the /t layer differs" — followed by its name.
 - **Value column:** field background, `ink`, identifier mono, `word-break: break-all`, `white-space: pre-wrap`.
 - **Divergence:** a changed row gets `box-shadow: inset 3px 0 0 rule-stroke` in the key gutter, weight 600 on both cells, the hashed-bond mark inline, the previous value struck through in `ink-muted` (struck, not deleted — a lab notebook never erases a reading), the word "to", then the new value. A layer only one side emits reads "not emitted" in faint italic. Rows that agree are still shown but recede to faint ink, because knowing the formula and connections are identical is what makes "only the stereo layer moved" mean anything.
 - **Version stamp:** apparatus type in brand green at weight 600, top-right of every plate head. Provenance is part of the answer — a string copied out without its version is not reproducible, and a selector 600px away is not provenance.
@@ -484,15 +496,18 @@ destroying the baseline. Two columns at 1200px and up, one below.
 ### Motion
 Deliberately spare. One token, `--inchi-transition` (140ms `cubic-bezier(0.22, 1, 0.36, 1)`), used
 on three things: the disclosure triangle's quarter turn, the nav tab's underline and colour, and
-the annotation chip's border colour. Plus one keyframed pulse on the busy mark. The triangle and
-the pulse are both guarded by `prefers-reduced-motion`. No entrance animation, no transform, no
-authored motion moment.
+the annotation chip's border colour. Plus one keyframed pulse on the busy mark, and the theme
+switch — a pill track across which ink sweeps at 320ms while a round knob slides and inverts as it
+crosses into the inked half. The track's paper and ink are deliberately literal rather than
+tokens: they *depict* light and dark rather than participating in the current theme. The triangle,
+the pulse and the sweep are all guarded by `prefers-reduced-motion`. Nothing lifts, and no surface
+animates its elevation.
 
 ## Do's and Don'ts
 
 ### Do:
 - **Do** reach for a semantic token (`--inchi-field`, `--inchi-brand`) rather than a hex value. If no token fits, the value is probably one-off — keep it local to the rule that needs it instead of inventing a token for it.
-- **Do** express hierarchy with the three rule weights first: hairline separates inside a thing, 2px rule bounds a thing, 3px stroke marks the active or divergent thing.
+- **Do** express hierarchy with surface and elevation first, then the line jobs: a hairline separates rows inside a card, `rule` bounds a control at 3:1, the 3px stroke marks the active or divergent thing.
 - **Do** define a new colour for light on bare `:root` and redefine it in **both** dark blocks (`@media (prefers-color-scheme: dark) :root:not([data-theme="light"])` and `:root[data-theme="dark"]`).
 - **Do** brand Bootstrap through its `--bs-*` hooks; override a Bootstrap selector only where 5.2.3 hardcodes a value, and say so in a comment when you must.
 - **Do** stamp every result with the version that produced it, and keep the stale result readable while a new one loads.
@@ -501,10 +516,13 @@ authored motion moment.
 - **Do** key touch sizing to `(pointer: coarse), (any-pointer: coarse)` — a stylus 2-in-1 reports a fine primary pointer and still needs 44px targets.
 - **Do** read `INCHI_STACK_BREAKPOINT` when code needs to know whether the layout is stacked; never hardcode a width.
 - **Do** run `node pages/inchi-layers.js` after touching the layer grammar or the icon set — it self-checks both.
+- **Do** run `python3 test/check_contrast.py` after touching a colour token; it fails on anything below its threshold and lists the hairline exemption separately.
+- **Do** give a control its border from `--inchi-rule`, never from `--inchi-rule-hairline` — the hairline is exempt from 3:1 precisely because nothing bounding a control uses it.
 
 ### Don't:
-- **Don't** add a border radius. Anywhere. Both radius tokens are `0` and so are Bootstrap's.
-- **Don't** add a `box-shadow` for elevation outside `.inchi-dialog`. Inset shadows used as drawn rules are a different device and are fine.
+- **Don't** invent a third radius. 8px for a control, 12px for a plate or dialog, 50% for a small round mark.
+- **Don't** add a third elevation. Plates and dialogs lift; nothing else does, and nothing lifts on hover or focus. Inset shadows used as drawn rules are a different device and are fine.
+- **Don't** round a container whose children paint to its edge without `overflow: hidden`.
 - **Don't** load a display, brand or icon webfont. Icons are authored in `ICON_PATHS`; chemistry marks in `notationMark()`.
 - **Don't** use monospace for anything but identifier values.
 - **Don't** carry difference, state or severity with hue alone — the comparison must read in greyscale. Mark, weight and position first; colour at most as reinforcement.
@@ -513,7 +531,7 @@ authored motion moment.
 - **Don't** blank a result field and wait — mark it superseded at 0.45 opacity instead.
 - **Don't** write a status message only into a node that can be hidden; the live region must be always present and must not move.
 - **Don't** put uppercase or letter-spacing on anything that is not an apparatus label.
-- **Don't** invent a second focus treatment. One 2px brand outline at 2px offset, for every focusable thing.
+- **Don't** invent a second focus treatment. One brand outline at 2px offset, for every focusable thing.
 
 ---
 
@@ -521,17 +539,17 @@ authored motion moment.
 
 These are the build's own gaps, not rules to inherit.
 
-- **The masthead is partial.** It has the 2px rule and a paired register crossing at the bottom corners (hidden below 768px), but it still lacks the margin apparatus that would make it read as *drawn on a grid* the way a plate does. Scored partial by the finish review.
-- **Native devices of this world that go unused:** no authored motion moment, no margin-apparatus brackets, no dotted rule weight, and the answer plate begins below a 900px fold on the wide layout.
+- **The masthead is partial.** It is bounded by a single rule and carries no elevation of its own, so it reads as a heading above the page rather than as part of the same lifted system. Not yet resolved either way.
+- **Native devices of this world that go unused:** no hover or focus elevation anywhere (deliberate, but it means the plates never respond), no tonal surface between `field` and `ground`, and the answer plate begins below a 900px fold on the wide layout.
 - **RInChI has no layer grammar.** The RInChI and its three key variants inherit the world (tokens, plates, nav, focus) but render as single runs of text. `pages/inchi-layers.js` parses InChI only.
 - **Comparison handles two results, not three.** Pinning diffs one pinned result against the current one; three-way or a persistent column layout is not built.
 - **No URL state.** A result is not addressable, so a comparison cannot be linked to a colleague or cited from a paper.
 - **Two dialog stylesheets were never migrated to these tokens.** `pages/css/report-mask.css` and `pages/css/report-feedback.css` reference seven custom properties that do not exist anywhere in the project — `--inchi-text-muted`, `--inchi-border-strong`, `--inchi-surface-muted`, `--inchi-success-fg`, `--inchi-success-surface`, `--inchi-error-fg`, `--inchi-error-surface` — so those colours silently fall back to inherited values. The correct tokens are `ink-muted`, `rule`, `field-sunken`, `brand`/`brand-quiet` and `error`/`error-quiet`. **This is a defect, not a system rule.**
-- **`report-feedback.css` draws a `border-radius: 50%` circle** behind the outcome dialog's glyph. It contradicts the zero-radius rule above and is recorded here as a violation to fix, not as an exception to inherit.
 - A comment in `pages/css/index.css` refers to "`--inchi-stack-breakpoint` in index.js"; the actual name is the JS constant `INCHI_STACK_BREAKPOINT`. There is no such CSS custom property.
 
 ## Verification in-repo
 
 - `node pages/inchi-layers.js` — self-check on the layer parser, the diff, the InChIKey split, HTML escaping and the icon set.
 - `cd test && npx jest` — 3 suites (`inchi`, `rinchi`, `inchi-layers`), ~80 parameterised cases. Requires the WASM build to have run.
+- `python3 test/check_contrast.py` — every text pair at 4.5:1 and every boundary pair at 3:1, in both themes, with the hairline exemption reported separately.
 - `node <impeccable>/scripts/detect.mjs --json pages/index.html pages/components` — returns `[]`.
