@@ -1,17 +1,19 @@
 /*
- * App styles for the Skeletal Notation world. Colours, weights and type
- * tokens come from css/tokens.css.
+ * App styles for the Soft Modern world. Colours, weights and type tokens come
+ * from css/tokens.css.
  *
  * The grammar, in one place so it stays consistent:
  *
- *   hairline (1px, --inchi-rule-hairline)  separates rows inside one thing
- *   rule     (2px, --inchi-rule)           bounds a thing
+ *   hairline (1px, --inchi-rule-hairline)  separates rows inside one surface
+ *   rule     (1px, --inchi-rule)           bounds a control (1.4.11: 3:1)
  *   stroke   (3px, --inchi-rule-stroke)    marks the active or divergent thing
  *
- * Nothing here has a corner radius and nothing but a dialog has a shadow: a
- * drawn rule meets another drawn rule at a corner. Where an element needs to
- * read as "a framed plate", it gets register marks (.notation-frame) rather
- * than a border-radius-and-shadow card.
+ * A thing is bounded by its own surface, not by a line around it: .notation-
+ * frame is a field-coloured card on a tinted ground, lifted by
+ * --inchi-shadow-plate and cornered by --inchi-radius-md. The hairline is
+ * therefore free to be quiet — it separates rows *inside* a card, where the
+ * card's own edge has already done the bounding. Only the stroke keeps a real
+ * weight, because it marks rather than bounds.
  */
 
 /* ---- Type scale -------------------------------------------------------- */
@@ -66,117 +68,24 @@ h1 {
   font-weight: 500;
 }
 
-/* ---- Frames and register marks ----------------------------------------- */
+/* ---- Plates ------------------------------------------------------------ */
 /*
- * A framed plate: 1px rule plus a register mark at two opposite corners. The
- * marks are how a plate in a printed reference announces its own edges, and
- * they carry the world with no colour and no elevation. Decorative, so they
- * are hidden from assistive technology by virtue of being backgrounds.
+ * A plate: a field-coloured card lifted off the ground. The shadow and the
+ * radius do the bounding, so the border is a hairline that only keeps the edge
+ * from dissolving where a shadow is hard to see — a dark theme, a high-
+ * contrast mode, or a printout.
+ *
+ * `overflow: hidden` is what lets the rounded corner actually clip: the key
+ * column and the plate head paint their own backgrounds to the plate's edge,
+ * and without it they square off the corners they sit in.
  */
 .notation-frame {
   position: relative;
-  /*
-   * `rule` (2px), not `hairline`: this weight is what *bounds* a thing. The
-   * hairline is reserved for separators inside one plate, so the two are
-   * distinguishable and the three-weight scale is real rather than declared.
-   */
-  border: var(--inchi-rule-weight) solid var(--inchi-rule);
+  overflow: hidden;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-md);
+  box-shadow: var(--inchi-shadow-plate);
   background-color: var(--inchi-field);
-}
-
-/*
- * Register marks: a crossing at each corner of a plate, the way a plate in a
- * printed reference announces its own edges. Drawn at 22px in the stroke ink
- * so they are actually seen — a mark nobody can distinguish from the border is
- * a compliance token, not a device.
- *
- * One element per pair of corners, each drawing two crossings with a repeating
- * background, so a plate needs no extra markup.
- */
-.notation-frame::before,
-.notation-frame::after {
-  content: "";
-  position: absolute;
-  width: 22px;
-  height: 22px;
-  pointer-events: none;
-  /* horizontal arm, then vertical arm, centred on the corner */
-  background-image: linear-gradient(
-      to bottom,
-      transparent calc(50% - 1px),
-      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
-      transparent calc(50% + 1px)
-    ),
-    linear-gradient(
-      to right,
-      transparent calc(50% - 1px),
-      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
-      transparent calc(50% + 1px)
-    );
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-}
-
-.notation-frame::before {
-  top: -11px;
-  left: -11px;
-}
-
-.notation-frame::after {
-  bottom: -11px;
-  right: -11px;
-}
-
-/*
- * The other two corners. A second pair of marks needs a real element, so the
- * plate head carries them: it spans the full width at the top of every plate.
- */
-.identifier-head {
-  position: relative;
-}
-
-.identifier-head::before,
-.identifier-head::after {
-  content: "";
-  position: absolute;
-  top: -12px;
-  width: 22px;
-  height: 22px;
-  pointer-events: none;
-  background-image: linear-gradient(
-      to bottom,
-      transparent calc(50% - 1px),
-      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
-      transparent calc(50% + 1px)
-    ),
-    linear-gradient(
-      to right,
-      transparent calc(50% - 1px),
-      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
-      transparent calc(50% + 1px)
-    );
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-}
-
-.identifier-head::before {
-  right: -12px;
-}
-
-/*
- * Register marks work as pairs, and two pairs 12px apart do not read as two
- * marks. A plate stacked under another drops its top-right mark and keeps the
- * diagonal pair, so each plate is still marked and no two marks collide.
- */
-inchi-result-field + inchi-result-field .identifier-head::before,
-.secondary-plates .identifier-head::before {
-  display: none;
-}
-
-.identifier-head::after {
-  left: -12px;
-  top: auto;
-  display: none; /* the plate's own ::after already marks bottom-right */
 }
 
 /* ---- Panels ------------------------------------------------------------ */
@@ -265,8 +174,7 @@ details[open] > summary::before {
  * alignment carries the comparison.
  */
 .identifier-plate {
-  /* Room for the register marks to sit clear of the plate above. */
-  margin-top: 1.75rem;
+  margin-top: 1rem;
 }
 
 .identifier-head {
@@ -274,7 +182,7 @@ details[open] > summary::before {
   align-items: baseline;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.4rem 0.75rem;
+  padding: 0.75rem 1rem;
   /* A separator inside one plate, so: hairline. */
   border-bottom: var(--inchi-rule-weight-hairline) solid
     var(--inchi-rule-hairline);
@@ -304,7 +212,7 @@ details[open] > summary::before {
 
 .layer-key,
 .layer-value {
-  padding: 0.3rem 0.75rem;
+  padding: 0.5rem 1rem;
   border-top: var(--inchi-rule-weight-hairline) solid
     var(--inchi-rule-hairline);
 }
@@ -464,6 +372,7 @@ details[open] > summary::before {
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-sm);
   border-left-width: var(--inchi-rule-weight-stroke);
   border-left-color: var(--inchi-rule-hairline);
   background-color: var(--inchi-field);
@@ -573,7 +482,7 @@ details[open] > summary::before {
 .nav-tabs .nav-link,
 .nav-pills .nav-link {
   border: 0;
-  border-radius: 0;
+  border-radius: var(--inchi-radius-sm) var(--inchi-radius-sm) 0 0;
   padding: 0.4rem 0.7rem;
   color: var(--inchi-ink-muted);
   background: none;
@@ -618,16 +527,12 @@ input.form-check-input {
   background-color: var(--inchi-field);
 }
 
-input.form-check-input:is([type="checkbox"]) {
-  border-radius: 0;
-}
-
 .form-control,
 .form-select {
   background-color: var(--inchi-field);
   color: var(--inchi-ink);
   border-color: var(--inchi-rule);
-  border-radius: 0;
+  border-radius: var(--inchi-radius-sm);
 }
 
 .form-control::placeholder {
@@ -699,6 +604,7 @@ button.form-select.multiselect:has(
   padding: 0;
   margin-left: 0.15rem;
   border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule);
+  border-radius: 50%;
   background: var(--inchi-field);
   color: var(--inchi-ink-muted);
   font-size: 0.6875rem;
@@ -748,6 +654,8 @@ button.form-select.multiselect:has(
   --bs-aspect-ratio: 62%;
   min-height: min(530px, 62vh);
   border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-sm);
+  overflow: hidden;
 }
 
 .inputtextarea {
@@ -780,6 +688,8 @@ button.form-select.multiselect:has(
   width: 100%;
   height: max(300px, 45vh);
   border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-sm);
+  overflow: hidden;
 }
 
 @media (min-width: 768px) {
@@ -823,7 +733,8 @@ button.form-select.multiselect:has(
   gap: 0.4rem;
   padding: 0.25rem 0.5rem;
   background-color: var(--inchi-field);
-  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule);
+  border-radius: var(--inchi-radius-sm);
   color: var(--inchi-ink);
   font-size: 0.8125rem;
   cursor: pointer;
@@ -836,15 +747,20 @@ button.form-select.multiselect:has(
   width: 0.85rem;
   height: 0.85rem;
   border: 1px solid var(--inchi-rule);
+  border-radius: 3px;
 }
 
 .annotation-button:not([disabled]):hover {
   border-color: var(--inchi-rule-stroke);
 }
 
+/*
+ * Pressed used to be read off a heavier border. Both rule weights are 1px in
+ * this world, so the state is carried by a brand fill instead.
+ */
 .annotation-button[aria-pressed="true"] {
-  border-color: var(--inchi-rule-stroke);
-  border-width: var(--inchi-rule-weight);
+  border-color: var(--inchi-brand);
+  background-color: var(--inchi-brand-quiet);
   font-weight: 600;
 }
 
@@ -912,6 +828,7 @@ button.form-select.multiselect:has(
   background-color: #ffffff;
   padding: 4px 6px;
   border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-sm);
 }
 
 .masthead-text {
@@ -922,55 +839,6 @@ button.form-select.multiselect:has(
   font-size: 0.875rem;
   color: var(--inchi-ink-muted);
   margin: 0.15rem 0 0;
-}
-
-/*
- * A register crossing at each end of the rule, the same mark that bounds every
- * plate. They work as a pair: a lone one reads as a stray glyph.
- */
-.masthead::before,
-.masthead::after {
-  content: "";
-  position: absolute;
-  bottom: -11px;
-  width: 22px;
-  height: 22px;
-  pointer-events: none;
-  background-image: linear-gradient(
-      to bottom,
-      transparent calc(50% - 1px),
-      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
-      transparent calc(50% + 1px)
-    ),
-    linear-gradient(
-      to right,
-      transparent calc(50% - 1px),
-      var(--inchi-rule-stroke) calc(50% - 1px) calc(50% + 1px),
-      transparent calc(50% + 1px)
-    );
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-}
-
-.masthead::before {
-  left: -11px;
-}
-
-.masthead::after {
-  right: -11px;
-}
-
-/*
- * Below the point where the page gutter is narrower than a mark's 11px
- * overhang, the marks would run into the edge of the screen — measured hard
- * against the last column of a 390px viewport. The rule alone carries the
- * masthead there.
- */
-@media (max-width: 767.98px) {
-  .masthead::before,
-  .masthead::after {
-    display: none;
-  }
 }
 
 /* ---- Touch ------------------------------------------------------------- */
@@ -1229,27 +1097,6 @@ button.form-select.multiselect:has(
   text-decoration: none;
 }
 
-/*
- * Same overhang problem on the plates themselves: at phone widths the page
- * gutter is narrower than a mark's 11px reach, so the marks tuck inside the
- * frame rather than hanging off it.
- */
-@media (max-width: 767.98px) {
-  .notation-frame::before {
-    top: -1px;
-    left: -1px;
-  }
-
-  .notation-frame::after {
-    bottom: -1px;
-    right: -1px;
-  }
-
-  .identifier-head::before {
-    display: none;
-  }
-}
-
 /* ---- Atom annotation labels (in the 3D viewer) ------------------------- */
 /*
  * The labels NGL paints onto atoms. These carry the category colour as a
@@ -1310,10 +1157,9 @@ button.form-select.multiselect:has(
  * The one authored motion moment on this surface, and it is made of the
  * world's own idea: darkness is ink coverage.
  *
- * The knob is a square that slides while ink sweeps across the track behind
- * it, and the knob inverts as it crosses into the inked half — paper on ink
- * where it was ink on paper. No pill, no circle, no radius: a drafting slider
- * leaving an inked trail, not a phone-settings toggle.
+ * The knob slides while ink sweeps across the track behind it, and the knob
+ * inverts as it crosses into the inked half — paper on ink where it was ink on
+ * paper. The shape is the world's: a pill track and a round knob.
  */
 .theme-switch {
   display: inline-flex;
@@ -1359,6 +1205,7 @@ button.form-select.multiselect:has(
   height: 1.375rem;
   flex: none;
   border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule);
+  border-radius: 999px;
   background-color: #f4f5f4;
   overflow: hidden;
 }
@@ -1382,22 +1229,7 @@ button.form-select.multiselect:has(
   height: 0.875rem;
   margin-top: -0.4375rem;
   background-color: #14171a;
-  /*
-   * Two hairlines crossing the knob: the same register mark that bounds every
-   * plate, at the size a 14px square allows.
-   */
-  background-image: linear-gradient(
-      to bottom,
-      transparent calc(50% - 0.5px),
-      #f4f5f4 calc(50% - 0.5px) calc(50% + 0.5px),
-      transparent calc(50% + 0.5px)
-    ),
-    linear-gradient(
-      to right,
-      transparent calc(50% - 0.5px),
-      #f4f5f4 calc(50% - 0.5px) calc(50% + 0.5px),
-      transparent calc(50% + 0.5px)
-    );
+  border-radius: 50%;
   transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
     background-color 320ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1411,18 +1243,6 @@ button.form-select.multiselect:has(
 .theme-switch[aria-checked="true"] .theme-switch-knob {
   transform: translateX(1.5rem);
   background-color: #f4f5f4;
-  background-image: linear-gradient(
-      to bottom,
-      transparent calc(50% - 0.5px),
-      #14171a calc(50% - 0.5px) calc(50% + 0.5px),
-      transparent calc(50% + 0.5px)
-    ),
-    linear-gradient(
-      to right,
-      transparent calc(50% - 0.5px),
-      #14171a calc(50% - 0.5px) calc(50% + 0.5px),
-      transparent calc(50% + 0.5px)
-    );
 }
 
 @media (prefers-reduced-motion: reduce) {

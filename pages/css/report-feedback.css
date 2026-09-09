@@ -13,11 +13,8 @@
 .feedback-icon {
   width: 52px;
   height: 52px;
-  /*
-   * Square, not a circle: nothing in this world has a radius — a drawn rule
-   * meets another drawn rule at a corner.
-   */
-  border-radius: var(--inchi-radius-sm);
+  /* A round badge, like the rest of this world's small marks. */
+  border-radius: 50%;
   border: var(--inchi-rule-weight-hairline) solid currentColor;
   display: flex;
   align-items: center;
