@@ -563,6 +563,92 @@ if (document.readyState === "loading") {
 }
 
 /*
+ * Easter egg. Typing "3270" outside a field opens the same tool rendered as an
+ * IBM 3270 green-screen panel (retro.html).
+ *
+ * Matched only outside inputs and the paste areas: a molfile is full of digits
+ * and would trip the sequence while someone was pasting one. Keys longer than
+ * one character (Shift, Tab, arrows) are ignored rather than treated as a
+ * mismatch, so holding Shift for a moment does not break the run.
+ */
+const RETRO_SEQUENCE = "3270";
+
+function setupRetroEasterEgg() {
+  let typed = "";
+
+  const onKeydown = (event) => {
+    if (event.key.length !== 1) {
+      return;
+    }
+
+    /*
+     * Duck-typed rather than `instanceof Element`: this handler also runs on
+     * the editor's document, and an element from another frame fails an
+     * instanceof against this realm's constructor — which would have made the
+     * in-a-field guard silently useless there.
+     */
+    const target = event.target;
+    const inField =
+      typeof target?.matches === "function" &&
+      target.matches("input, textarea, select, [contenteditable]");
+
+    if (event.metaKey || event.ctrlKey || event.altKey || inField) {
+      typed = "";
+      return;
+    }
+
+    typed = (typed + event.key).slice(-RETRO_SEQUENCE.length);
+    if (typed === RETRO_SEQUENCE) {
+      typed = "";
+      window.location.href = "retro.html";
+    }
+  };
+
+  /*
+   * Capture phase, so nothing on the page can swallow the run before it is
+   * seen — Ketcher treats bare keys as hotkeys and stops their propagation.
+   */
+  document.addEventListener("keydown", onKeydown, true);
+
+  /*
+   * Ketcher takes focus the moment it mounts, so keystrokes land in its
+   * iframe's document and never reach this one: without hooking the frames
+   * the sequence is unreachable whenever an editor is on screen. They are
+   * same-origin, so the listener goes on their documents directly.
+   *
+   * One capture-phase "load" listener rather than a poll per frame, because
+   * "load" does not bubble but is still visible during capture — and the three
+   * editor iframes are added by the tab components long after this runs.
+   */
+  const hookFrame = (frame) => {
+    try {
+      frame.contentDocument?.addEventListener("keydown", onKeydown, true);
+    } catch {
+      // A cross-origin frame has no reachable document; nothing to hook.
+    }
+  };
+
+  document.addEventListener(
+    "load",
+    (event) => {
+      if (event.target instanceof HTMLIFrameElement) {
+        hookFrame(event.target);
+      }
+    },
+    true
+  );
+
+  // Anything already loaded before this ran.
+  document.querySelectorAll("iframe").forEach(hookFrame);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", setupRetroEasterEgg);
+} else {
+  setupRetroEasterEgg();
+}
+
+/*
  * The width at which the tool grid stops being two columns.
  *
  * The InChI and RInChI panes are laid out with Bootstrap's col-xl-8/col-xl-4,
