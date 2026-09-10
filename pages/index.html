@@ -146,7 +146,7 @@
       FINISH: unreviewed and undocumented is unfinished; this build ends with
       the finish review, the verdict, and DESIGN.md
     -->
-    <div class="container-md" style="margin-bottom: 2rem">
+    <div class="page-shell">
       <header class="masthead">
         <a
           href="https://www.inchi-trust.org/"
@@ -265,8 +265,14 @@
           display:none tab pane has no computed position, so the browser
           fetches it immediately.
         -->
+        <!--
+          The tool panes take the whole screen; this one does not. About is a
+          Read surface, so it keeps the measure the page used to have — hence
+          Bootstrap's own container-md, rather than a second set of widths
+          invented here.
+        -->
         <inchi-about
-          class="tab-pane fade"
+          class="tab-pane fade container-md"
           id="pills-about"
           role="tabpanel"
           aria-labelledby="pills-about-tab"

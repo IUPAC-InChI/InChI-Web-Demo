@@ -649,16 +649,21 @@ if (document.readyState === "loading") {
 }
 
 /*
- * The width at which the tool grid stops being two columns.
+ * The width at which a tool pane stops being one column.
  *
- * The InChI and RInChI panes are laid out with Bootstrap's col-xl-8/col-xl-4,
- * and `xl` is 1200px — so below this the editor, the options and the results
- * are one column. Anything that reasons about "is the layout stacked?" reads
- * this constant instead of hardcoding a width, because the two drifted apart
- * once already: the options panel checked 992px and opened itself expanded
- * across the whole 992-1199px band.
+ * Every pane is a .tool-workbench grid of three children — input, controls,
+ * output. Below this width they stack; at this width the input and the
+ * controls share a row and the output runs full width beneath them.
  *
- * css/index.css keys its own stacking rules to the same 1200px.
+ * Anything that reasons about "is the layout stacked?" reads this constant
+ * instead of hardcoding a width, because the two drifted apart once already:
+ * the options panel checked 992px against a grid that stacked below 1200px
+ * and opened itself expanded across the whole 992-1199px band.
+ *
+ * css/index.css keys its own stacking rules to the same 1200px. It carries a
+ * second, CSS-only width — 1400px — at which the output moves *beside* the
+ * input rather than beneath it. Nothing in JavaScript depends on that one, so
+ * it is not mirrored here; .tool-workbench in css/index.css documents it.
  */
 const INCHI_STACK_BREAKPOINT = 1200;
 
