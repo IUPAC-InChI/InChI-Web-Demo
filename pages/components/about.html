@@ -1,20 +1,27 @@
 <hr />
 
 <p>
-  This web application runs entirely in your browser using WebAssembly
-  (https://webassembly.org). All data is processed locally in your browser and
-  is not transmitted anywhere. This benefit comes at the cost that the initial
-  loading might take a while since we need to download all the resources (that
-  would otherwise live on a server). If the application behaves unexpectedly,
-  try clearing your browser cache and reloading the page (CTRL + F5 in most
-  browsers). Clearing the cache helps because an update might have changed files
-  that are now in conflict with the files in your browser cache.
+  This web application runs entirely in your browser using
+  <a href="https://webassembly.org" target="_blank" rel="noopener"
+    >WebAssembly</a
+  >. Structures you draw or paste are converted in your browser and are not sent
+  to a server. The exception is the report form, which sends a structure you
+  explicitly choose to report. Running everything locally comes at the cost that
+  the initial loading might take a while, since the structure editor and the
+  InChI libraries
+  have to be downloaded first (they would otherwise live on a server). If the
+  application behaves unexpectedly, try clearing your browser cache and
+  reloading the page (CTRL + F5 in most browsers). Clearing the cache helps
+  because an update might have changed files that are now in conflict with the
+  files in your browser cache.
 </p>
 
 <h2>Acknowledgements</h2>
 <p>
-  We'd like to express our gratitude to the developers of the open source projects we're depending on:
-  <ul>
+  We'd like to express our gratitude to the developers of the open source
+  projects we're depending on:
+</p>
+<ul>
     <li>
       We're rendering structures using the NGL Viewer (<a href="https://github.com/nglviewer/ngl" target="_blank"
     >github.com/nglviewer/ngl</a>, <a href="https://doi.org/10.1093/bioinformatics/bty419" target="_blank">doi:10.1093/bioinformatics/bty419</a>)</li>
@@ -22,8 +29,7 @@
       We're using Ketcher as our structure editor (<a href="https://github.com/epam/ketcher" target="_blank"
     >github.com/epam/ketcher</a>)
     </li>
-  </ul>
-</p>
+</ul>
 
 <h2>Contact</h2>
 <p>
@@ -59,9 +65,13 @@
   <div class="col-lg-3 offset-lg-1">
     <a href="https://www.volkswagenstiftung.de" target="_blank">
       <img
-        style="width: 100%; height: auto"
+        class="funder-logo"
         src="img/Logo_Volkswagenstiftung.svg"
-        alt="Volkswagenstiftung Logo"
+        width="200"
+        height="50"
+        loading="lazy"
+        decoding="async"
+        alt="Volkswagenstiftung"
       />
     </a>
   </div>
@@ -80,18 +90,26 @@
   <div class="col-lg-3 offset-lg-1">
     <a href="https://www.dfg.de" target="_blank">
       <img
-        style="width: 100%; height: auto"
+        class="funder-logo"
         src="img/dfg_logo_schriftzug_blau_foerderung_en.gif"
-        alt="DFG Logo"
+        width="800"
+        height="260"
+        loading="lazy"
+        decoding="async"
+        alt="Deutsche Forschungsgemeinschaft"
       />
     </a>
   </div>
   <div class="col-lg-3 offset-lg-1">
     <a href="https://www.nfdi4chem.de" target="_blank">
       <img
-        style="width: 100%; height: auto"
+        class="funder-logo"
         src="img/NFDI4Chem-Logo_mehrfarbig_schwarz.png"
-        alt="NFDI4Chem Logo"
+        width="1756"
+        height="696"
+        loading="lazy"
+        decoding="async"
+        alt="NFDI4Chem"
       />
     </a>
     <small>
@@ -124,22 +142,34 @@
   <div class="col-lg-3 offset-lg-1">
     <a href="https://www.bmbf.de" target="_blank">
       <img
-        style="width: 100%; height: auto"
+        class="funder-logo"
         src="img/Foerderhinweis_BMBF.jpg"
-        alt="BMBF Logo"
+        width="881"
+        height="625"
+        loading="lazy"
+        decoding="async"
+        alt="Bundesministerium für Bildung und Forschung"
       />
     </a>
     <img
-      style="width: 100%; height: auto"
+      class="funder-logo"
       src="img/Foerderhinweis_EU_horizontal.jpg"
-      alt="Next Generation EU Logo"
+        width="3938"
+        height="1019"
+        loading="lazy"
+        decoding="async"
+      alt="Funded by the European Union — NextGenerationEU"
     />
   </div>
   <div class="col-lg-3 offset-lg-1">
     <img
-      style="width: 100%; height: auto"
+      class="funder-logo"
       src="img/Dalia_Wortmarke_Kompakt_Blau_RGB.svg"
-      alt="Dalia Logo"
+        width="1000"
+        height="200"
+        loading="lazy"
+        decoding="async"
+      alt="DALIA"
     />
   </div>
 </div>
@@ -157,9 +187,13 @@
   <div class="col-lg-3 offset-lg-1">
     <a href="https://www.beilstein-institut.de/en/" target="_blank">
       <img
-        style="width: 100%; height: auto"
+        class="funder-logo"
         src="img/Logo_Beilstein_sRGB.jpg"
-        alt="Volkswagenstiftung Logo"
+        width="800"
+        height="365"
+        loading="lazy"
+        decoding="async"
+        alt="Beilstein-Institut"
       />
     </a>
   </div>

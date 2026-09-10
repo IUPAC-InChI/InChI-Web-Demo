@@ -1,13 +1,30 @@
 "use strict";
 
 const RINCHI_VERSION = "1.1-dev with Latest InChI";
+
 /*
- * WASM module(s) initialization
+ * WASM module initialization, deferred to first use.
  *
- * Calling the factory function returns a Promise which resolves to the module object.
+ * Calling the factory function returns a Promise which resolves to the module
+ * object, and that promise is reused for every later call.
  * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
+ *
+ * In the browser the 1.7 MB module is only fetched once something needs a
+ * RInChI; under Node the test harness has already put the factory on `global`.
  */
-const RINCHI_MODULE = rinchiModule11();
+let rinchiModulePromise;
+
+function rinchiModule() {
+  if (!rinchiModulePromise) {
+    rinchiModulePromise =
+      typeof window === "undefined"
+        ? Promise.resolve(rinchiModule11())
+        : loadScriptOnce("rinchi/librinchi-1.1.js").then(() =>
+            window.rinchiModule11()
+          );
+  }
+  return rinchiModulePromise;
+}
 
 /*
  * Glue code to invoke rinchi_lib's C functions.
@@ -16,7 +33,7 @@ const RINCHI_MODULE = rinchiModule11();
  * on how to cope with char** arguments.
  */
 async function rinchiFromRxnfile(rxnfile, forceEquilibrium) {
-  const module = await RINCHI_MODULE;
+  const module = await rinchiModule();
 
   const out_rinchi_stringPtr = module._malloc(4);
   const out_rinchi_auxinfoPtr = module._malloc(4);
@@ -50,7 +67,7 @@ async function rinchiFromRxnfile(rxnfile, forceEquilibrium) {
 }
 
 async function fileTextFromRinchi(rinchi, rauxinfo, format) {
-  const module = await RINCHI_MODULE;
+  const module = await rinchiModule();
 
   const out_file_textPtr = module._malloc(4);
   const res = module.ccall(
@@ -73,7 +90,7 @@ async function fileTextFromRinchi(rinchi, rauxinfo, format) {
 }
 
 async function rinchikeyFromRinchi(rinchi, keyType) {
-  const module = await RINCHI_MODULE;
+  const module = await rinchiModule();
 
   const out_rinchi_keyPtr = module._malloc(4);
   const res = module.ccall(

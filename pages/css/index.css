@@ -1,116 +1,1485 @@
-a {
-  color: #00612c !important;
+/*
+ * App styles for the Soft Modern world. Colours, weights and type tokens come
+ * from css/tokens.css.
+ *
+ * The grammar, in one place so it stays consistent:
+ *
+ *   hairline (1px, --inchi-rule-hairline)  separates rows inside one surface
+ *   rule     (1px, --inchi-rule)           bounds a control (1.4.11: 3:1)
+ *   stroke   (3px, --inchi-rule-stroke)    marks the active or divergent thing
+ *
+ * A thing is bounded by its own surface, not by a line around it: .notation-
+ * frame is a field-coloured card on a tinted ground, lifted by
+ * --inchi-shadow-plate and cornered by --inchi-radius-md. The hairline is
+ * therefore free to be quiet — it separates rows *inside* a card, where the
+ * card's own edge has already done the bounding. Only the stroke keeps a real
+ * weight, because it marks rather than bounds.
+ */
+
+/* ---- Type scale -------------------------------------------------------- */
+/*
+ * A deliberate scale with visible steps. The audit measured nine sizes
+ * spanning 2.0:1 — Bootstrap's defaults, which is a flat hierarchy pretending
+ * to be a rich one. These five steps span 3.6:1 and each one has a job.
+ */
+body {
+  font-size: 1rem;
+  line-height: 1.5;
+  background-color: var(--inchi-ground);
+  color: var(--inchi-ink);
+  /* Landscape on a notched phone would otherwise run under the cutout. */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
-::selection {
-  color: #ffffff;
-  background-color: #9db668;
+h1 {
+  font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0;
 }
 
+/*
+ * Section headings on the tool surface. The audit found no headings at all
+ * here — "Version" and "Options" were a <label class="h4"> and a
+ * <summary class="h4">, so a screen-reader user had no way to move between
+ * the editor, the options and the results.
+ */
+.inchi-section-heading {
+  font-size: var(--inchi-apparatus-size);
+  font-weight: 600;
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+  color: var(--inchi-ink-muted);
+  margin: 0;
+}
+
+/*
+ * Apparatus: the small tracked labels that name a layer, a panel or a stamp.
+ * Borrowed from reference-book practice, where the running head and the plate
+ * number are set small and tracked so they never compete with the content.
+ */
+.apparatus {
+  font-size: var(--inchi-apparatus-size);
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+  color: var(--inchi-ink-muted);
+  font-weight: 500;
+}
+
+/* ---- Plates ------------------------------------------------------------ */
+/*
+ * A plate: a field-coloured card lifted off the ground. The shadow and the
+ * radius do the bounding, so the border is a hairline that only keeps the edge
+ * from dissolving where a shadow is hard to see — a dark theme, a high-
+ * contrast mode, or a printout.
+ *
+ * `overflow: hidden` is what lets the rounded corner actually clip: the key
+ * column and the plate head paint their own backgrounds to the plate's edge,
+ * and without it they square off the corners they sit in.
+ */
+.notation-frame {
+  position: relative;
+  overflow: hidden;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-md);
+  box-shadow: var(--inchi-shadow-plate);
+  background-color: var(--inchi-field);
+}
+
+/* ---- Panels ------------------------------------------------------------ */
+/*
+ * Panel around a group of controls: version selector, options, 3D viewer.
+ * Keeps its class name so the components and the touch-sizing rules below
+ * still find it.
+ */
+.bounding-box {
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-sm);
+  padding: 0.75rem;
+  background-color: var(--inchi-field-sunken);
+  width: 100%;
+}
+
+.bounding-box > summary,
+.secondary-plates > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+/*
+ * A <summary> with `display: flex` loses its ::marker in Blink and WebKit, and
+ * nothing replaced it: the options panel was a grey bar with no indication it
+ * opened at all. Authored disclosure mark instead — a triangle in the same
+ * hand as the icons, rotating a quarter turn when open.
+ */
+.bounding-box > summary::marker,
+.secondary-plates > summary::marker,
+.bounding-box > summary::-webkit-details-marker,
+.secondary-plates > summary::-webkit-details-marker {
+  display: none;
+  content: "";
+}
+
+.bounding-box > summary::before,
+.secondary-plates > summary::before {
+  content: "";
+  flex: none;
+  align-self: center;
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: currentColor;
+  /* A solid triangle, pointing right when closed. */
+  clip-path: polygon(15% 0%, 100% 50%, 15% 100%);
+  transition: transform var(--inchi-transition);
+}
+
+details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bounding-box > summary::before,
+  .secondary-plates > summary::before {
+    transition: none;
+  }
+}
+
+/*
+ * The options panel says how many flags differ from this version's defaults,
+ * so "Reset" is no longer a button that discards seventeen settings blind.
+ */
+.options-changed-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--inchi-ink);
+  border-bottom: var(--inchi-rule-weight) solid var(--inchi-rule-stroke);
+}
+
+.options-changed-count[hidden] {
+  display: none;
+}
+
+/* ---- The identifier: a keyed notation stack ---------------------------- */
+/*
+ * This is the centre of the redesign. An InChI is not a line of text, it is
+ * a layered notation — version, formula, connections, hydrogens, stereo — and
+ * a chemist comparing two algorithm versions needs to see *which layer moved*.
+ * So the string is set as one row per layer, keyed in the margin, in a
+ * monospace where characters align column-for-column between versions.
+ *
+ * Monospace is earned here rather than worn: this is measurement data whose
+ * alignment carries the comparison.
+ */
+.identifier-plate {
+  margin-top: 1rem;
+}
+
+.identifier-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  /* A separator inside one plate, so: hairline. */
+  border-bottom: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+}
+
+/*
+ * The version stamp. "Provenance is part of the answer": a string without the
+ * version that produced it is incomplete, so every plate carries its version
+ * where a printed plate carries its number.
+ */
+.version-stamp {
+  font-size: var(--inchi-apparatus-size);
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+  color: var(--inchi-brand);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.identifier-layers {
+  display: grid;
+  /* key column sized to the longest layer name, value column takes the rest */
+  grid-template-columns: minmax(6.5rem, max-content) 1fr;
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.9375rem;
+}
+
+.layer-key,
+.layer-value {
+  padding: 0.5rem 1rem;
+  border-top: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+}
+
+.identifier-layers > .layer-key:first-child,
+.identifier-layers > .layer-key:first-child + .layer-value {
+  border-top: 0;
+}
+
+/*
+ * The layer key: its InChI letter, then its name. The letter is the locant of
+ * the notation — the thing you cite when you say "the /t layer differs".
+ */
+.layer-key {
+  font-size: var(--inchi-apparatus-size);
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+  color: var(--inchi-ink-muted);
+  background-color: var(--inchi-field-sunken);
+  white-space: nowrap;
+}
+
+.layer-letter {
+  color: var(--inchi-ink);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.layer-value {
+  color: var(--inchi-ink);
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+/*
+ * Divergence. A structure diagram marks a bond that differs from the default
+ * assumption with a wedge or a hash, not with a colour — so a layer that
+ * differs between two versions gets a stroke in the gutter and its value in
+ * heavier ink, and the mark carries the meaning without hue. Colour-blind,
+ * greyscale and print safe by construction.
+ */
+.layer-cell-changed.layer-key {
+  box-shadow: inset var(--inchi-rule-weight-stroke) 0 0 var(--inchi-rule-stroke);
+  color: var(--inchi-ink);
+  font-weight: 600;
+}
+
+.layer-cell-changed.layer-value {
+  font-weight: 600;
+}
+
+/*
+ * The previous value, kept plainly beside the new one. Not struck through:
+ * a crossed-out layer reads as "wrong", and neither side of a version
+ * comparison is wrong — they are two algorithms' answers for one structure.
+ * Weight carries which one is current.
+ */
+.layer-before {
+  color: var(--inchi-ink-muted);
+  font-weight: 400;
+}
+
+.layer-arrow {
+  color: var(--inchi-ink-faint);
+  padding-inline: 0.4rem;
+}
+
+.layer-mark {
+  display: inline-block;
+  vertical-align: -1px;
+  margin-right: 0.3rem;
+  color: var(--inchi-ink);
+}
+
+/* ---- The InChIKey's block grammar -------------------------------------- */
+/*
+ * TXBHLLHHHQAFNN-UHFFFAOYSA-N is 14 characters of skeleton, then stereo and
+ * isotopes, then a protonation flag. Two versions that disagree only about
+ * stereochemistry share the first block exactly — invisible in one run of
+ * 27 characters, obvious once the blocks are separated.
+ */
+.inchikey-blocks {
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.9375rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: 0.35rem;
+  row-gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.inchikey-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+/*
+ * The hyphen is a separate flex item rather than a ::before on the block, so
+ * it sits on the identifier's baseline instead of stretching the column and
+ * pushing the block's own label out from under it.
+ */
+.inchikey-separator {
+  color: var(--inchi-ink-faint);
+}
+
+.inchikey-block > .apparatus {
+  font-size: 0.5625rem;
+  line-height: 1.2;
+  color: var(--inchi-ink-faint);
+  white-space: nowrap;
+}
+
+/* ---- Empty states ------------------------------------------------------ */
+.plate-empty {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--inchi-ink-faint);
+}
+
+/* ---- Demoted plates ---------------------------------------------------- */
+/*
+ * AuxInfo and the library log are evidence, not the answer. They used to get
+ * containers identical to the InChI's, which made the diagnostic dump a peer
+ * of the identifier. Collapsed by default, one hairline summary each.
+ */
+.secondary-plates {
+  margin-top: 1rem;
+  border-top: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+  padding-top: 0.5rem;
+}
+
+.secondary-plates > summary {
+  color: var(--inchi-ink-muted);
+  font-size: var(--inchi-apparatus-size);
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+}
+
+.secondary-plates[open] > summary {
+  margin-bottom: 0.25rem;
+}
+
+/* ---- Conversion status ------------------------------------------------- */
+/*
+ * The audit's worst finding: an invalid structure produced four empty boxes
+ * and a log containing the literal string "InChI options:". Success was
+ * equally unsignalled. This line always says what happened.
+ */
+.conversion-status {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-sm);
+  border-left-width: var(--inchi-rule-weight-stroke);
+  border-left-color: var(--inchi-rule-hairline);
+  background-color: var(--inchi-field);
+  font-size: 0.875rem;
+  color: var(--inchi-ink-muted);
+}
+
+.conversion-status[hidden] {
+  display: none;
+}
+
+.conversion-status-mark {
+  flex: none;
+  margin-top: 0.15rem;
+  color: var(--inchi-ink-faint);
+}
+
+.conversion-status-ok {
+  border-left-color: var(--inchi-brand);
+  color: var(--inchi-ink);
+}
+
+.conversion-status-ok .conversion-status-mark {
+  color: var(--inchi-brand);
+}
+
+.conversion-status-error {
+  border-left-color: var(--inchi-error);
+  background-color: var(--inchi-error-quiet);
+  color: var(--inchi-ink);
+}
+
+.conversion-status-error .conversion-status-mark {
+  color: var(--inchi-error);
+}
+
+/*
+ * Busy. The version switch used to blank all four fields and then wait several
+ * seconds on a cold ~1 MB WebAssembly module with no indication at all.
+ */
+.conversion-status-busy .conversion-status-mark {
+  animation: inchi-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes inchi-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .conversion-status-busy .conversion-status-mark {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+/*
+ * A result that is being replaced stays readable while the new one loads,
+ * stamped with the version it came from. Never blank-then-fill.
+ */
+.identifier-plate-stale {
+  opacity: 0.45;
+}
+
+.identifier-plate-stale .version-stamp::after {
+  content: " · superseded";
+  color: var(--inchi-ink-faint);
+}
+
+/* ---- Comparison -------------------------------------------------------- */
+/*
+ * Pinned results accumulate instead of being destroyed. Comparing versions is
+ * the job this tool exists for; it used to be a <select> that deleted the
+ * answer you were comparing against.
+ */
+.comparison-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 1200px) {
+  .comparison-stack-paired {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---- Navigation -------------------------------------------------------- */
+/*
+ * Tabs in the world's vocabulary: a hairline baseline, and the active tab
+ * marked by a 3px stroke rather than a filled pill. The detector flagged
+ * `cramped-padding` on the old nav — its children sat flush against the
+ * border-bottom with no inset.
+ */
+.nav-tabs,
+.nav-pills {
+  border-bottom: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+  gap: 0.25rem;
+  padding-bottom: 0.35rem;
+}
+
+.nav-tabs .nav-link,
+.nav-pills .nav-link {
+  border: 0;
+  border-radius: var(--inchi-radius-sm) var(--inchi-radius-sm) 0 0;
+  padding: 0.4rem 0.7rem;
+  color: var(--inchi-ink-muted);
+  background: none;
+  box-shadow: inset 0 -2px 0 transparent;
+  transition: box-shadow var(--inchi-transition), color var(--inchi-transition);
+}
+
+.nav-tabs .nav-link:hover,
+.nav-pills .nav-link:hover {
+  color: var(--inchi-ink);
+  box-shadow: inset 0 -2px 0 var(--inchi-rule-hairline);
+}
+
+.nav-tabs .nav-link.active,
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  color: var(--inchi-ink);
+  background: none;
+  font-weight: 600;
+  box-shadow: inset 0 calc(-1 * var(--inchi-rule-weight-stroke)) 0
+    var(--inchi-rule-stroke);
+}
+
+/*
+ * Bootstrap's own .nav-link colour would otherwise win against the tokens.
+ * The old rule painted every inactive tab brand green, which is why a wrapped
+ * tab row read as three green links and one white box.
+ */
 button.nav-link:not(.active) {
-  color: #00612c;
+  color: var(--inchi-ink-muted);
 }
 
-ul.nav-pills button.nav-link.active {
-  background-color: #00612c;
-}
-
+/* ---- Forms ------------------------------------------------------------- */
+/* Bootstrap 5.2.3 hardcodes the checked colour, so it needs a real override. */
 input.form-check-input:is([type="checkbox"], [type="radio"]):checked {
-  background-color: #00612c;
-  border-color: #00612c;
+  background-color: var(--inchi-brand);
+  border-color: var(--inchi-brand);
+}
+
+input.form-check-input {
+  border-color: var(--inchi-rule);
+  background-color: var(--inchi-field);
+}
+
+.form-control,
+.form-select {
+  background-color: var(--inchi-field);
+  color: var(--inchi-ink);
+  border-color: var(--inchi-rule);
+  border-radius: var(--inchi-radius-sm);
+}
+
+.form-control::placeholder {
+  color: var(--inchi-ink-faint);
 }
 
 /*
  * Used when at least one item is selected in Bootstrap Multiselect.
  * Background image is a copy from Bootstrap with altered color ("stroke").
+ * The stroke has to stay literal: a data URI cannot read a custom property.
  */
 button.form-select.multiselect:has(
     ~ div.multiselect-container > button.active
   ) {
-  color: #ffffff;
-  background-color: #00612c;
+  color: var(--inchi-on-brand);
+  background-color: var(--inchi-brand);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
 }
 
-input.form-check-input:is([type="checkbox"], [type="radio"]):focus,
-select.form-select:focus,
-textarea.form-control:focus,
-button.form-select.multiselect:focus {
-  border-color: #7e9849;
-  box-shadow: 0 0 0 0.25rem rgba(126, 152, 73, 0.25);
+/*
+ * One focus system. The audit found two — a 3.08:1 olive ring on controls and
+ * brand green on the annotation buttons — plus Bootstrap's blue glow on the
+ * green buttons, because --bs-btn-focus-shadow-rgb was never overridden.
+ */
+:is(
+    input.form-check-input,
+    select.form-select,
+    textarea.form-control,
+    input.form-control,
+    button.form-select.multiselect,
+    .btn,
+    .nav-link,
+    .link-button,
+    .annotation-button,
+    .theme-switch,
+    summary,
+    a
+  ):focus-visible {
+  outline: var(--inchi-rule-weight) solid var(--inchi-focus);
+  outline-offset: 2px;
+  border-color: var(--inchi-rule-stroke);
+  box-shadow: none;
 }
 
+/* A button that reads as a link: keyboard-operable, styled like the text around it. */
+.link-button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--inchi-brand);
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+/*
+ * The option explanations used to hang on a non-focusable <i> with the text in
+ * data-bs-title: no accessible name, no keyboard path, and no native title
+ * fallback either. They are real buttons now.
+ */
+.option-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0;
+  margin-left: 0.15rem;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule);
+  border-radius: 50%;
+  background: var(--inchi-field);
+  color: var(--inchi-ink-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.option-help:hover {
+  border-color: var(--inchi-rule-stroke);
+  color: var(--inchi-ink);
+}
+
+/* ---- Result text ------------------------------------------------------- */
+/*
+ * The 500px cap on result panels used to clip anything longer out of reach;
+ * overflow makes the rest scrollable instead of invisible. The inset shadow
+ * signals that it scrolls, which the audit found nothing did.
+ */
 .inchi-result-text {
   white-space: pre-wrap;
   word-break: break-all;
+  overflow: auto;
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.875rem;
+  color: var(--inchi-ink);
+  background-color: var(--inchi-field);
+  scrollbar-gutter: stable;
 }
 
-.inchi-sdf-result-text {
-  white-space: pre-wrap;
-  word-break: break-all;
-  min-height: 615px;
-  max-height: 615px;
+.inchi-result-text:not(:empty) {
+  background-image: linear-gradient(
+    to top,
+    rgb(0 0 0 / 0.05),
+    transparent 1.5rem
+  );
 }
 
-.inchi-log {
-  white-space: pre-wrap;
+/* ---- Page shell -------------------------------------------------------- */
+/*
+ * The page takes the screen. It used to be a Bootstrap `container-md`, which
+ * caps at 1320px however wide the display is — on a 2560px monitor that left
+ * a third of the screen as margin on either side of a tool whose two halves
+ * both want room. A workbench earns the glass it is given.
+ *
+ * 2400px is where it stops, in px rather than rem because this is a cap on
+ * screen real estate, not on text: it should not move when someone raises
+ * their browser's font size. Past that the two columns are wider than either
+ * half has any use for, and an ultrawide would put the masthead logo and the
+ * theme switch a metre apart.
+ *
+ * The About surface caps again inside this: it keeps `container-md` on its
+ * own pane and a measure on its prose, because a paragraph is not a
+ * workbench.
+ */
+.page-shell {
+  width: 100%;
+  max-width: 2400px;
+  margin-inline: auto;
+  margin-bottom: 2rem;
+  /* The gutter Bootstrap's container gave us, kept, then widened where the
+     workbench appears and the content is running to the screen edges. */
+  padding-inline: 0.75rem;
 }
 
-.ketcher,
+@media (min-width: 1400px) {
+  .page-shell {
+    padding-inline: 1.5rem;
+  }
+}
+
+/* ---- Tool workbench ---------------------------------------------------- */
+/*
+ * Every tool pane is the same three things in the same DOM order — what you
+ * feed the conversion, what configures it, what it produced — arranged three
+ * ways by width:
+ *
+ *   below 1200px      one column: input, controls, output
+ *   1200 - 1399px     input | controls on one row, output full width beneath
+ *   1400px and up     input above controls in a left rail, output alongside
+ *
+ * Grid areas rather than nested Bootstrap rows, because the three children
+ * change *arrangement*, not just width: expressing the wide case with columns
+ * would mean writing the output markup twice and letting the two copies drift.
+ * One DOM order also means reading order, tab order and visual order agree in
+ * all three states without a single `order` declaration.
+ *
+ * TWO widths now, and both are load-bearing. 1200px is where a pane stops
+ * being one column; JavaScript reasons about that one too, so it is named
+ * INCHI_STACK_BREAKPOINT in index.js and the two must stay in step. 1400px is
+ * where the answer moves *beside* the input instead of beneath it; nothing in
+ * JavaScript depends on it, so this rule is its only home.
+ *
+ * The second width is not cosmetic. The page is a container-md, so at 1200px
+ * there are 1140px to divide and half of that is narrower than either the
+ * structure editor or the notation stack wants; the side-by-side arrangement
+ * only pays for itself once the container reaches its 1320px maximum.
+ */
+.tool-workbench {
+  display: grid;
+  gap: 1rem;
+  grid-template-areas:
+    "input"
+    "controls"
+    "output";
+  margin-top: 0.25rem;
+}
+
+/*
+ * min-width: 0 on all three: a grid item's automatic minimum size is its
+ * content, and an InChI is one unbreakable-looking 60-character run. Without
+ * this the notation column refuses to shrink and the whole grid overflows.
+ */
+.tool-input,
+.tool-controls,
+.tool-output {
+  min-width: 0;
+}
+
+.tool-input {
+  grid-area: input;
+}
+
+.tool-controls {
+  grid-area: controls;
+}
+
+.tool-output {
+  grid-area: output;
+}
+
+@media (min-width: 1200px) {
+  .tool-workbench {
+    grid-template-columns: 2fr 1fr;
+    grid-template-areas:
+      "input    controls"
+      "output   output";
+  }
+}
+
+/*
+ * The version selector used to carry `mt-auto`, sitting on the editor's
+ * baseline rather than floating at the top of a short column. That only makes
+ * sense while the two share a row, so it ends at the workbench breakpoint.
+ */
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .tool-controls-bottom {
+    align-self: end;
+  }
+}
+
+@media (min-width: 1400px) {
+  .tool-workbench {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    /*
+     * The third row is slack. The output spans all three, so when it is the
+     * taller column the surplus lands in an empty row *below* the controls
+     * instead of being shared out between the input and the controls — which
+     * would prise the left rail apart down the middle.
+     */
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "input    output"
+      "controls output"
+      ".        output";
+    align-items: start;
+  }
+
+  /*
+   * Width stops being scarce here, and two things in the rail have to be told
+   * that. A checkbox list does not get better at 1200px wide — it just leaves
+   * a column of empty ground beside it — so the controls keep the width they
+   * had when the container was capped.
+   */
+  .tool-controls {
+    max-width: 42rem;
+  }
+
+  /*
+   * And an editor sized by aspect ratio would climb with the column: 62% of a
+   * 1200px half is a 750px-tall canvas, taller than the screen it is drawn
+   * on. Past this width the height answers to the viewport instead, and the
+   * ratio is switched off rather than fought.
+   */
+  .tool-input > .ratio.ketcher,
+  .tool-output > .ratio.ketcher {
+    --bs-aspect-ratio: 0;
+    height: clamp(24rem, 62vh, 45rem);
+  }
+
+  /*
+   * A paste box is not an editor. It holds text you dropped in and read back
+   * once; at the editor's height it was 720px of empty field opposite a
+   * four-row identifier. Roughly the height the aspect ratio used to give it
+   * before the column got wide.
+   */
+  .tool-input > .ratio.inputtextarea {
+    --bs-aspect-ratio: 0;
+    height: clamp(18rem, 42vh, 30rem);
+  }
+
+  /*
+   * The answer follows you down the rail.
+   *
+   * The two columns are lopsided by nature and always the same way round: the
+   * input rail is an editor plus twenty-odd option checkboxes, the output is
+   * an identifier and its key. Reaching an option means scrolling the answer
+   * off the top of the screen, and the loop this tool exists for is "change a
+   * flag, watch which layer moves". So the *short* column is the one that
+   * sticks — the reverse of the usual sidebar, because here the sidebar is
+   * the tall one.
+   *
+   * No height cap and no nested scrollbar, deliberately. The sticky
+   * containing block is the grid area, which is as tall as the taller of the
+   * two columns — so once a pinned comparison makes the output the taller
+   * one, there is no travel left and this quietly stops being sticky. It
+   * helps in exactly the case where the output is short, and gets out of the
+   * way in the case where clipping it would hurt.
+   */
+  .tool-output {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+/*
+ * The output column opens level with the top of the input: the grid gap is
+ * the only separation, so whatever leads the column does not add its own. The
+ * status line is always first in the DOM and hides itself when there is
+ * nothing to say, so the plate behind it takes the leading position back
+ * whenever it does.
+ */
+.tool-output > .conversion-status {
+  margin-top: 0;
+}
+
+.tool-output > inchi-result-field:first-of-type > .identifier-plate {
+  margin-top: 0;
+}
+
+.tool-output > .conversion-status:not([hidden]) ~ inchi-result-field:first-of-type > .identifier-plate {
+  margin-top: 1rem;
+}
+
+/* ---- Editor, paste box, viewer ---------------------------------------- */
+/*
+ * Editor and paste box: on wide screens the aspect ratio governs and the
+ * min-height never applies. It only takes over below ~855px, which is where
+ * these floors are aimed — a fixed 530px filled four fifths of a phone screen
+ * and pushed the results two screens down.
+ */
+.ketcher {
+  --bs-aspect-ratio: 62%;
+  min-height: min(530px, 62vh);
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-sm);
+  overflow: hidden;
+}
+
 .inputtextarea {
   --bs-aspect-ratio: 62%;
-  min-height: 530px;
+  min-height: min(530px, 34vh);
+}
+
+/*
+ * Paste fields whose placeholder shows the expected format. That example wraps
+ * over several lines on a phone and fits in two on the wide layout, so the box
+ * is generous first and tightens once the text fits.
+ *
+ * Keyed to 1200px, not 992px: the .tool-workbench grid is still one column
+ * until 1200px. See INCHI_STACK_BREAKPOINT in index.js.
+ */
+.paste-area {
+  height: 12rem;
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.8125rem;
+}
+
+@media (min-width: 1200px) {
+  .paste-area {
+    height: 7rem;
+  }
+}
+
+/* Structure viewer: a share of the phone screen, its full size from tablet up. */
+.ngl-viewport {
+  width: 100%;
+  height: max(300px, 45vh);
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-sm);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .ngl-viewport {
+    /*
+     * 600px used to outweigh the identifier it explains by about 3:1 in
+     * visual area. The evidence should not dwarf the answer.
+     */
+    height: 420px;
+  }
 }
 
 .colored-icon {
-  color: #00612c;
+  color: var(--inchi-brand);
 }
 
+/* Room for the multi-paragraph option explanations, but never wider than the screen. */
 .custom-tooltip .tooltip-inner {
-  max-width: 500px !important;
-  text-align: left !important;
+  max-width: min(500px, 90vw);
+  text-align: left;
 }
 
-.bounding-box {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 12px;
-  background-color: #f9f9f9;
-  width: 100%;
+/*
+ * The five annotation toggles used to read as a tab strip — white boxes in a
+ * row above the viewer, whose colour appeared only once pressed, so the
+ * colour-to-meaning mapping was undiscoverable. They are chips now, each
+ * carrying its own swatch at rest: the control *is* the legend.
+ */
+.annotation-selection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0;
+  margin: 0;
+  border: 0;
 }
 
 .annotation-button {
-  background-color: #fff;
-  border: 3px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--inchi-field);
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule);
+  border-radius: var(--inchi-radius-sm);
+  color: var(--inchi-ink);
+  font-size: 0.8125rem;
   cursor: pointer;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  transition: border-color var(--inchi-transition);
+}
+
+/* The swatch is always visible, so the key is readable before anything is pressed. */
+.annotation-swatch {
+  flex: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 1px solid var(--inchi-rule);
+  border-radius: 3px;
 }
 
 .annotation-button:not([disabled]):hover {
-  border: 3px solid #add8e6;
+  border-color: var(--inchi-rule-stroke);
 }
 
-.annotation-button:not([disabled]):focus-visible {
-  border: 3px solid #add8e6;
-  outline: none;
+/*
+ * Pressed used to be read off a heavier border. Both rule weights are 1px in
+ * this world, so the state is carried by a brand fill instead.
+ */
+.annotation-button[aria-pressed="true"] {
+  border-color: var(--inchi-brand);
+  background-color: var(--inchi-brand-quiet);
+  font-weight: 600;
 }
 
-.annotation-index.active {
-  background-color: rgb(209, 213, 220, 0.7);
+.annotation-button[disabled] {
+  color: var(--inchi-ink-faint);
+  cursor: not-allowed;
 }
 
-.annotation-canonical-index.active {
-  background-color: rgb(0, 255, 0, 0.7);
+.annotation-button[disabled] .annotation-swatch {
+  opacity: 0.4;
 }
 
-.annotation-equivalence-class.active {
-  background-color: rgb(255, 255, 0, 0.7);
+.annotation-index .annotation-swatch {
+  background-color: var(--inchi-annotation-index);
 }
 
-.annotation-hydrogen-group.active {
-  background-color: rgb(255, 102, 255, 0.7);
+.annotation-canonical-index .annotation-swatch {
+  background-color: var(--inchi-annotation-canonical-index);
 }
 
-.annotation-hydrogen-group-class.active {
-  background-color: rgb(0, 255, 255, 0.7);
+.annotation-equivalence-class .annotation-swatch {
+  background-color: var(--inchi-annotation-equivalence-class);
+}
+
+.annotation-hydrogen-group .annotation-swatch {
+  background-color: var(--inchi-annotation-hydrogen-group);
+}
+
+.annotation-hydrogen-group-class .annotation-swatch {
+  background-color: var(--inchi-annotation-hydrogen-group-class);
+}
+
+/* ---- Masthead ---------------------------------------------------------- */
+/*
+ * The banner strip: logo, wordmark, tagline and the theme switch, over the
+ * rule that separates it from the tabs.
+ *
+ * The <h1> used to sit in a col-md-9 beside the logo, so its left edge landed
+ * ~270px right of every other element on the page. It aligns to the page grid
+ * now, with the logo beside it on one baseline.
+ */
+.masthead {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0 0.85rem;
+  /* `rule`, not `hairline`: this bounds the masthead rather than dividing it. */
+  border-bottom: var(--inchi-rule-weight) solid var(--inchi-rule);
+  margin-bottom: 0.5rem;
+}
+
+/*
+ * The supplied logo has an opaque light background baked in, so on the dark
+ * theme it was a bright rectangle floating on the ground. Given a deliberate
+ * plate with the same hairline as everything else, it reads as a mounted mark
+ * rather than an artefact. The asset itself is a brand commitment; the mount
+ * is ours.
+ */
+.masthead-logo {
+  display: block;
+  flex: none;
+  height: 56px;
+  width: auto;
+  background-color: #ffffff;
+  padding: 4px 6px;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-sm);
+}
+
+.masthead-text {
+  min-width: 0;
+}
+
+.masthead-tagline {
+  font-size: 0.875rem;
+  color: var(--inchi-ink-muted);
+  margin: 0.15rem 0 0;
+}
+
+/* ---- Touch ------------------------------------------------------------- */
+/*
+ * Touch sizing, keyed to the pointer rather than the viewport: a laptop with a
+ * touchscreen needs it and a narrow desktop window does not.
+ *
+ * `any-pointer: coarse` as well as `pointer: coarse`, because a stylus 2-in-1
+ * reports a fine primary pointer and still needs the targets — the audit found
+ * those devices getting 30px buttons in a stack of seventeen checkboxes.
+ */
+@media (pointer: coarse), (any-pointer: coarse) {
+  .nav-link,
+  .btn,
+  .btn-group .btn-sm,
+  .annotation-button,
+  .link-button,
+  .option-help,
+  select[data-version],
+  button.form-select.multiselect {
+    min-height: 44px;
+  }
+
+  .btn-group .btn-sm,
+  .annotation-button {
+    min-width: 44px;
+  }
+
+  .option-help {
+    min-width: 44px;
+    font-size: 0.875rem;
+  }
+
+  .annotation-button {
+    padding-inline: 0.75rem;
+  }
+
+  .annotation-selection {
+    gap: 0.5rem;
+  }
+
+  .mask-close {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  /* Room to hit the right checkbox in a stack of twenty. */
+  .bounding-box .form-check {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* ---- About surface ----------------------------------------------------- */
+/*
+ * The one Read surface here, and the only place on this site where a line is
+ * meant to be read start to finish rather than scanned. Its paragraphs ran
+ * the full width of the pane — about 165 characters a line, more than twice a
+ * comfortable measure — so the running text gets a measure and nothing else
+ * does.
+ *
+ * Scoped to the prose deliberately. The funder rows are a logo grid, not
+ * text: `.funder-logo` is `width: 100%`, so narrowing their columns halves
+ * the credits, and those credits are a commitment.
+ */
+inchi-about > p,
+inchi-about > ul,
+inchi-about > h2 {
+  /* 64ch of the system stack renders as roughly 73 characters, inside the
+     65-75 the type scale is built for. */
+  max-width: 64ch;
+}
+
+.funder-logo {
+  width: 100%;
+  height: auto;
+}
+
+/*
+ * The file-input textareas are sized by their container, so the drag handle
+ * would only let the visitor break the layout.
+ */
+.resize-none {
+  resize: none;
+}
+
+/* Prose measure: 65-75 characters is the readable range, and About is prose. */
+.prose {
+  max-width: 68ch;
+}
+
+/* ---- Comparison plate -------------------------------------------------- */
+/*
+ * Three columns: the segment key, then both answers. Every segment shows both
+ * sides whether or not it moved — knowing the formula and connections are
+ * identical is what gives "only the stereo layer moved" its meaning.
+ */
+.comparison-layers {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, max-content) 1fr 1fr;
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.9375rem;
+}
+
+.comparison-layers > .layer-key,
+.comparison-layers > .layer-value {
+  padding: 0.3rem 0.75rem;
+  border-top: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+}
+
+/* The head row names the two sides and carries no rule above it. */
+.comparison-layers > :nth-child(-n + 3) {
+  border-top: 0;
+}
+
+.comparison-layers > .layer-key {
+  font-size: var(--inchi-apparatus-size);
+  letter-spacing: var(--inchi-apparatus-tracking);
+  text-transform: uppercase;
+  color: var(--inchi-ink-muted);
+  background-color: var(--inchi-field-sunken);
+  white-space: nowrap;
+}
+
+.comparison-layers > .layer-value {
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+/* The current side of a segment that moved is the one in full ink. */
+.comparison-layers > .layer-value-current {
+  font-weight: 600;
+  color: var(--inchi-ink);
+}
+
+/*
+ * Below the point where three columns stop fitting, the two answers stack
+ * under their segment key, each labelled with the side it came from — the
+ * label rides on the cell as data-side.
+ */
+@media (max-width: 767.98px) {
+  /*
+   * A long version stamp ("Dev with Enhanced Stereochemistry") pushed the copy
+   * and download buttons off the right edge of a phone screen and made the
+   * whole page scroll sideways. The head wraps instead.
+   */
+  .identifier-head {
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+  }
+
+  .version-stamp {
+    white-space: normal;
+  }
+
+  .comparison-layers {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-layers > .layer-key {
+    white-space: normal;
+  }
+
+  .comparison-layers > .layer-value::before {
+    content: attr(data-side);
+    display: block;
+    font-family: system-ui, sans-serif;
+    font-size: var(--inchi-apparatus-size);
+    letter-spacing: var(--inchi-apparatus-tracking);
+    text-transform: uppercase;
+    color: var(--inchi-ink-faint);
+  }
+
+  /* The head row is redundant once every cell names its own side. */
+  .comparison-layers > :nth-child(2),
+  .comparison-layers > :nth-child(3) {
+    display: none;
+  }
+}
+.comparison-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.comparison-clear {
+  font-size: 0.8125rem;
+}
+
+.comparison-plate {
+  margin-top: 0.75rem;
+}
+
+.comparison-subhead {
+  margin: 0;
+  padding: 0.45rem 0.75rem 0.3rem;
+  border-top: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+  color: var(--inchi-ink-muted);
+}
+
+.comparison-summary {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--inchi-ink);
+  border-bottom: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+}
+
+/*
+ * Layers that agree are still shown — knowing the formula and connections are
+ * identical is what makes "only the stereo layer moved" meaningful — but they
+ * recede so the marked rows carry the eye.
+ */
+.layer-value-same {
+  color: var(--inchi-ink-faint);
+}
+
+/*
+ * The whole identifier, leading the plate. Heavier than the layers beneath it:
+ * this is the thing you copy, and the breakdown below explains it.
+ */
+.layer-value-complete {
+  font-weight: 600;
+}
+
+.identifier-layers:has(+ .inchikey-blocks) {
+  border-bottom: var(--inchi-rule-weight-hairline) solid
+    var(--inchi-rule-hairline);
+}
+
+.layer-absent {
+  color: var(--inchi-ink-faint);
+  font-style: italic;
+}
+
+/* ---- Icons ------------------------------------------------------------- */
+.app-icon {
+  flex: none;
+  vertical-align: -0.125em;
+}
+
+/* ---- Select caret ------------------------------------------------------ */
+/*
+ * Bootstrap 5.2.3 bakes #343a40 into the caret's data URI, which is 1.5:1
+ * against the dark field — a WCAG 1.4.11 failure on the version selector, the
+ * most important control on the surface for the primary user. A data URI
+ * cannot read a custom property, so the stroke is literal in each theme.
+ */
+.form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2314171a' stroke-linecap='square' stroke-width='1.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e9ecea' stroke-linecap='square' stroke-width='1.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  }
+}
+
+:root[data-theme="dark"] .form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23e9ecea' stroke-linecap='square' stroke-width='1.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* ---- Disabled comparison controls -------------------------------------- */
+.comparison-controls > [disabled],
+.comparison-controls > .link-button[disabled] {
+  color: var(--inchi-ink-faint);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.comparison-controls > .link-button[disabled]:hover {
+  text-decoration: none;
+}
+
+/* ---- Atom annotation labels (in the 3D viewer) ------------------------- */
+/*
+ * The labels NGL paints onto atoms. These carry the category colour as a
+ * fill, where the toggle chip carries it as a swatch — same token, different
+ * job. Scoped to .annotation-label so pressing a chip does not flood the chip.
+ *
+ * The ink is fixed rather than theme-dependent: these sit on the viewer's own
+ * white canvas in both themes, and the five chip colours were chosen so that
+ * dark ink clears 5.7:1 on every one of them.
+ */
+.annotation-label {
+  color: var(--inchi-annotation-ink);
+  font-weight: 500;
+  padding-inline: 0.25em;
+}
+
+.annotation-label.annotation-index {
+  background-color: var(--inchi-annotation-index);
+}
+
+.annotation-label.annotation-canonical-index {
+  background-color: var(--inchi-annotation-canonical-index);
+}
+
+.annotation-label.annotation-equivalence-class {
+  background-color: var(--inchi-annotation-equivalence-class);
+}
+
+.annotation-label.annotation-hydrogen-group {
+  background-color: var(--inchi-annotation-hydrogen-group);
+}
+
+.annotation-label.annotation-hydrogen-group-class {
+  background-color: var(--inchi-annotation-hydrogen-group-class);
+}
+
+/* ---- Changed-layer highlight ------------------------------------------- */
+/*
+ * A marker pen over the parts of a complete identifier that differ between the
+ * two versions. Translucent, so the monospace ink underneath keeps its full
+ * contrast and the string still reads as one continuous run — the highlight
+ * marks a region, it does not recolour the text.
+ *
+ * <mark> already means "marked for reference" to assistive technology, which
+ * is exactly the meaning here, so the element does the semantic work and the
+ * rule only supplies the paint.
+ */
+.layer-highlight {
+  background-color: var(--inchi-highlight);
+  color: inherit;
+  /* A hairline under the run, so the marked region survives greyscale too. */
+  box-shadow: inset 0 -1px 0 var(--inchi-highlight-edge);
+  padding-block: 0.05em;
+}
+
+/* ---- Theme switch ------------------------------------------------------ */
+/*
+ * The one authored motion moment on this surface, and it is made of the
+ * world's own idea: darkness is ink coverage.
+ *
+ * The knob slides while ink sweeps across the track behind it, and the knob
+ * inverts as it crosses into the inked half — paper on ink where it was ink on
+ * paper. The shape is the world's: a pill track and a round knob.
+ */
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  align-self: flex-start;
+  padding: 0.25rem;
+  border: 0;
+  background: none;
+  color: var(--inchi-ink-muted);
+  cursor: pointer;
+  flex: none;
+}
+
+.theme-switch:hover {
+  color: var(--inchi-ink);
+}
+
+.theme-switch-mode {
+  /*
+   * The label reports the current mode and its text changes, so it is sized
+   * to the wider of the two words. Otherwise the track jumps sideways by a
+   * few pixels every time you flip it.
+   */
+  min-width: 2.5rem;
+  text-align: right;
+  color: inherit;
+}
+
+/*
+ * The track's paper and ink are deliberately NOT tokens: they are literal in
+ * both themes, because they *depict* light and dark rather than participating
+ * in the current theme. Tokenised, --inchi-rule-stroke inverts per theme and
+ * switching to dark filled the track with near-white — darkness shown as
+ * light. Only the border follows the theme, so the control still sits in the
+ * page it belongs to.
+ */
+.theme-switch-track {
+  position: relative;
+  display: block;
+  width: 2.75rem;
+  height: 1.375rem;
+  flex: none;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule);
+  border-radius: 999px;
+  background-color: #f4f5f4;
+  overflow: hidden;
+}
+
+/* The ink sweeping in from the left. */
+.theme-switch-track::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: #14171a;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.theme-switch-knob {
+  position: absolute;
+  top: 50%;
+  left: 0.1875rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-top: -0.4375rem;
+  background-color: #14171a;
+  border-radius: 50%;
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Checked: the ink has swept in, and the knob is now paper sitting on ink. */
+.theme-switch[aria-checked="true"] .theme-switch-track::before {
+  transform: scaleX(1);
+}
+
+/* Checked: paper sitting on ink, where it was ink sitting on paper. */
+.theme-switch[aria-checked="true"] .theme-switch-knob {
+  transform: translateX(1.5rem);
+  background-color: #f4f5f4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-switch-track::before,
+  .theme-switch-knob {
+    transition: none;
+  }
+}
+
+@media (pointer: coarse), (any-pointer: coarse) {
+  .theme-switch {
+    min-height: 44px;
+  }
 }

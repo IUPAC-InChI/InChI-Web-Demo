@@ -1,0 +1,352 @@
+/*
+ * Design tokens for the Soft Modern world.
+ *
+ * This file loads after Bootstrap and before the app stylesheets, so app rules
+ * win ties against the framework without needing "!important".
+ *
+ * The governing idea: things are bounded by the surface they sit on, not by a
+ * line drawn around them. A plate is a white card lifted off a tinted ground
+ * by a soft shadow and a 12px radius; rules retreat to hairlines that separate
+ * rows and nothing else. Hierarchy comes from elevation, surface and space;
+ * colour is reserved for three jobs only: the institutional brand, an outcome
+ * (error), and the categorical atom annotations.
+ *
+ * The one place a line still has to be a line is a control boundary, which
+ * WCAG 1.4.11 holds to 3:1 — hence two rule tokens with different jobs and
+ * different contrast obligations. See the Rules block below.
+ *
+ * How to use it:
+ *   - Reach for a semantic token (--inchi-field, --inchi-brand) rather than a
+ *     hex value. If no token fits, the value is probably one-off: keep it local
+ *     to the rule that needs it instead of inventing a token for it.
+ *   - Every colour token is defined here for light, then redefined once for
+ *     dark. Never give a colour its only definition inside a media block.
+ *   - Brand colour belongs to --inchi-brand only. Bootstrap components pick it
+ *     up through the --bs-* hooks at the bottom of this file; where Bootstrap
+ *     5.2.3 hardcodes a colour instead of exposing a variable, index.css
+ *     overrides the selector explicitly and says so.
+ *
+ * Light and dark are both first-class: this tool is opened at a daylight desk,
+ * in a dim room between a dark editor and a dark terminal, and on a bench
+ * tablet under overhead light. Neither theme is a toggle bolted onto the other.
+ */
+
+:root {
+  /*
+   * The resolved theme, not "light dark". Advertising both lets the UA style
+   * form controls, scrollbars and the caret from the *system* preference,
+   * which contradicts an explicit [data-theme] choice — a light page whose
+   * text inputs were painted near-black.
+   */
+  color-scheme: light;
+
+  /* ---- Ground and paper ------------------------------------------------ */
+  /*
+   * Three surfaces, one step apart. The ground is a faintly green-grey the
+   * white field lifts off; the sunken panel is where controls sit *into* the
+   * page rather than on it.
+   */
+  --inchi-ground: #f4f7f5;
+  --inchi-field: #ffffff;
+  --inchi-field-sunken: #f0f4f1;
+
+  /* ---- Ink ------------------------------------------------------------- */
+  --inchi-ink: #16201b; /* 15.8:1 on ground */
+  --inchi-ink-muted: #4c5a52; /* 7.4:1 on ground: real text, not decoration */
+  --inchi-ink-faint: #5e6c64; /* 4.6:1 on the sunken panel, the worst case */
+
+  /* ---- Rules ----------------------------------------------------------- */
+  /*
+   * Three line jobs, and only two of them are held to 3:1.
+   *
+   *   hairline  separates rows inside one surface. Decorative: the boundary
+   *             it marks is already carried by the surface change, so it is
+   *             deliberately near-invisible and is NOT a 1.4.11 boundary.
+   *   rule      bounds a control. Every input, select and option chip takes
+   *             its border from this token, so it clears 3:1 against both the
+   *             field it sits on and the ground behind it (WCAG 1.4.11).
+   *   stroke    marks the active or divergent thing — the changed layer's
+   *             gutter, the selected tab, the status accent. It keeps a 3px
+   *             weight where the other two are hairlines, because this one is
+   *             a mark rather than an edge.
+   */
+  --inchi-rule-hairline: #dbe3dd;
+  --inchi-rule: #7e8b84; /* 3.1:1 on white, the worst case */
+  --inchi-rule-stroke: #59665f; /* 5.5:1 on white */
+  --inchi-rule-weight-hairline: 1px;
+  --inchi-rule-weight: 1px;
+  --inchi-rule-weight-stroke: 3px;
+
+  /* ---- Brand ----------------------------------------------------------- */
+  /* Institutional. #0b7440 is 5.1:1 on the ground: safe for text and icons. */
+  --inchi-brand: #0b7440;
+  --inchi-brand-hover: #085a32;
+  --inchi-brand-quiet: #e6f5ec; /* tint for fills that carry ink on top */
+  --inchi-on-brand: #ffffff; /* 5.3:1 on the brand */
+
+  /* ---- Focus ----------------------------------------------------------- */
+  /* One focus system: brand green everywhere, at 5.1:1. */
+  --inchi-focus: var(--inchi-brand);
+  --inchi-focus-ring: rgb(11 116 64 / 0.3);
+
+  /*
+   * Highlight for the layers that changed, marked inside a complete string.
+   * The brand green at low alpha: a marker pen over the identifier rather than
+   * a colour change to it, so the string still reads as one run and the ink on
+   * top stays at full contrast.
+   */
+  --inchi-highlight: rgb(11 116 64 / 0.16);
+  --inchi-highlight-edge: rgb(11 116 64 / 0.85); /* 3.9:1 on the field */
+
+  /* ---- Selection ------------------------------------------------------- */
+  /* Ink on a brand tint, on a page whose whole job is text you select. */
+  --inchi-selection-bg: #c8ecd8;
+  --inchi-selection-text: #0d1a12;
+
+  /* ---- Outcomes -------------------------------------------------------- */
+  --inchi-error: #c02b1d; /* 5.3:1 on ground */
+  --inchi-error-quiet: #fdecea;
+  --inchi-success: var(--inchi-brand);
+  --inchi-success-quiet: var(--inchi-brand-quiet);
+
+  /* ---- Atom annotations ------------------------------------------------ */
+  /*
+   * A categorical set, not a scale — each marks a different kind of index in
+   * the 3D viewer, and they stack on one atom.
+   *
+   * These five step through luminance as well as hue (0.27 / 0.39 / 0.51 /
+   * 0.64 / 0.78, no two closer than 0.119), so the key survives greyscale and
+   * colour-vision deficiency, and each carries dark ink at 5.7:1 or better.
+   */
+  --inchi-annotation-index: #e2e5e7; /* slate,            L 0.78 */
+  --inchi-annotation-equivalence-class: #e6d093; /* ochre, L 0.64 */
+  --inchi-annotation-canonical-index: #87cbab; /* green,   L 0.51 */
+  --inchi-annotation-hydrogen-group: #8aaad4; /* N blue,   L 0.39 */
+  --inchi-annotation-hydrogen-group-class: #ae7bbe; /* violet, L 0.27 */
+  --inchi-annotation-ink: #0b120e;
+
+  /* ---- Elevation and shape --------------------------------------------- */
+  /*
+   * Elevation is the bounding device here: a plate is a white card lifted off
+   * the ground by a soft shadow, not a box drawn with a rule. That is why the
+   * hairline is allowed to stay quiet — the edge is already legible without
+   * it, and a plate that also carried a dark border would read as two edges.
+   */
+  --inchi-radius-sm: 8px;
+  --inchi-radius-md: 12px;
+  --inchi-shadow-plate: 0 1px 2px rgb(16 32 24 / 0.06),
+    0 12px 28px -16px rgb(16 32 24 / 0.35);
+  --inchi-backdrop: rgb(12 16 14 / 0.55);
+  --inchi-shadow-dialog: 0 12px 32px -8px rgb(12 16 14 / 0.35);
+
+  --inchi-transition: 140ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ---- Type ------------------------------------------------------------ */
+  /*
+   * No display face: the identity is in the surfaces and the spacing, so the
+   * UI text stays on the system stack where it belongs for a dense tool, and
+   * the one deliberate typographic choice is the identifier itself.
+   *
+   * Monospace is earned here rather than worn as a costume: an InChI is data
+   * whose characters must align column-for-column for a diff to be readable.
+   */
+  --inchi-font-identifier: ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+    Consolas, "Liberation Mono", monospace;
+
+  /* Apparatus: the small tracked labels that name a layer or a panel. */
+  --inchi-apparatus-size: 0.6875rem;
+  --inchi-apparatus-tracking: 0.09em;
+
+  /* ---- Bootstrap hooks ------------------------------------------------- */
+  /* Brand the framework instead of overriding its selectors. */
+  --bs-link-color: var(--inchi-brand);
+  --bs-link-hover-color: var(--inchi-brand-hover);
+  --bs-body-bg: var(--inchi-ground);
+  --bs-body-color: var(--inchi-ink);
+  --bs-border-color: var(--inchi-rule-hairline);
+  --bs-border-radius: var(--inchi-radius-sm);
+  --bs-border-radius-sm: 6px;
+  --bs-border-radius-lg: var(--inchi-radius-md);
+  /*
+   * Bootstrap's own focus glow is blue (49,132,253), so every green button
+   * flashed blue on focus. It reads the raw channel triplet, not a colour.
+   */
+  --bs-btn-focus-shadow-rgb: 11, 116, 64;
+  --bs-focus-ring-color: var(--inchi-focus-ring);
+}
+
+/*
+ * Dark: the screen is the light source. Ink and ground swap roles, elevation
+ * stops reading as a shadow and starts reading as a lighter surface, and the
+ * brand green lifts — #0b7440 on a dark field is 1.9:1 and unusable, so dark
+ * gets its own tint of the same hue.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --inchi-ground: #0f1512;
+    --inchi-field: #18201c;
+    --inchi-field-sunken: #141b17;
+
+    --inchi-ink: #e8efea; /* 15.1:1 on ground */
+    --inchi-ink-muted: #a5b2ab; /* 7.9:1 */
+    --inchi-ink-faint: #85918b; /* 4.9:1 on the sunken panel */
+
+    /* The hairline stays quiet in both themes; only the two that carry a
+       boundary or a mark are held to 3:1 against the field. */
+    --inchi-rule-hairline: #29332d;
+    --inchi-rule: #6f7d75; /* 3.4:1 against the field */
+    --inchi-rule-stroke: #869489; /* 4.7:1 */
+
+    --inchi-brand: #35c07a; /* 8.0:1 on ground */
+    --inchi-brand-hover: #52d18d;
+    --inchi-brand-quiet: #10291c;
+    --inchi-on-brand: #05130b;
+
+    --inchi-focus-ring: rgb(53 192 122 / 0.34);
+
+    --inchi-highlight: rgb(53 192 122 / 0.2);
+    --inchi-highlight-edge: rgb(53 192 122 / 0.6); /* 3.2:1 on the field */
+
+    --inchi-selection-bg: #1d4a33;
+    --inchi-selection-text: #e8f6ee;
+
+    --inchi-error: #f08a76; /* 7.5:1 on ground */
+    --inchi-error-quiet: #2e1a16;
+
+    /*
+     * The annotation chips deliberately do NOT change between themes: a
+     * categorical key has to mean the same colour in both, and these tints
+     * clear 5.2:1 against the dark field and carry dark ink at 5.8:1 or
+     * better. Only their surroundings change.
+     */
+
+    /* On a dark ground a shadow cannot be seen, so the plate is lifted by its
+       own lighter surface and the shadow only deepens the separation. */
+    --inchi-shadow-plate: 0 1px 2px rgb(0 0 0 / 0.5),
+      0 14px 30px -16px rgb(0 0 0 / 0.8);
+    --inchi-backdrop: rgb(4 6 5 / 0.68);
+    --inchi-shadow-dialog: 0 12px 32px -8px rgb(0 0 0 / 0.6);
+
+    --bs-btn-focus-shadow-rgb: 53, 192, 122;
+  }
+}
+
+/* An explicit choice wins over the system preference, in both directions. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --inchi-ground: #0f1512;
+  --inchi-field: #18201c;
+  --inchi-field-sunken: #141b17;
+
+  --inchi-ink: #e8efea; /* 15.1:1 on ground */
+  --inchi-ink-muted: #a5b2ab; /* 7.9:1 */
+  --inchi-ink-faint: #85918b; /* 4.9:1 on the sunken panel */
+
+  /* The hairline stays quiet in both themes; only the two that carry a
+     boundary or a mark are held to 3:1 against the field. */
+  --inchi-rule-hairline: #29332d;
+  --inchi-rule: #6f7d75; /* 3.4:1 against the field */
+  --inchi-rule-stroke: #869489; /* 4.7:1 */
+
+  --inchi-brand: #35c07a; /* 8.0:1 on ground */
+  --inchi-brand-hover: #52d18d;
+  --inchi-brand-quiet: #10291c;
+  --inchi-on-brand: #05130b;
+
+  --inchi-focus-ring: rgb(53 192 122 / 0.34);
+
+  --inchi-highlight: rgb(53 192 122 / 0.2);
+  --inchi-highlight-edge: rgb(53 192 122 / 0.6); /* 3.2:1 on the field */
+
+  --inchi-selection-bg: #1d4a33;
+  --inchi-selection-text: #e8f6ee;
+
+  --inchi-error: #f08a76; /* 7.5:1 on ground */
+  --inchi-error-quiet: #2e1a16;
+
+  /*
+   * The annotation chips deliberately do NOT change between themes: a
+   * categorical key has to mean the same colour in both, and these tints
+   * clear 5.2:1 against the dark field and carry dark ink at 5.8:1 or
+   * better. Only their surroundings change.
+   */
+
+  /* On a dark ground a shadow cannot be seen, so the plate is lifted by its
+     own lighter surface and the shadow only deepens the separation. */
+  --inchi-shadow-plate: 0 1px 2px rgb(0 0 0 / 0.5),
+    0 14px 30px -16px rgb(0 0 0 / 0.8);
+  --inchi-backdrop: rgb(4 6 5 / 0.68);
+  --inchi-shadow-dialog: 0 12px 32px -8px rgb(0 0 0 / 0.6);
+
+  --bs-btn-focus-shadow-rgb: 53, 192, 122;
+}
+
+/*
+ * Bootstrap declares component variables on the component root, so these have
+ * to be set there too rather than on :root.
+ */
+.nav-pills {
+  --bs-nav-pills-link-active-bg: var(--inchi-brand);
+  --bs-nav-pills-border-radius: var(--inchi-radius-sm);
+}
+
+.btn {
+  --bs-btn-border-radius: var(--inchi-radius-sm);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--inchi-brand);
+  --bs-btn-border-color: var(--inchi-brand);
+  --bs-btn-color: var(--inchi-on-brand);
+  --bs-btn-hover-bg: var(--inchi-brand-hover);
+  --bs-btn-hover-border-color: var(--inchi-brand-hover);
+  --bs-btn-hover-color: var(--inchi-on-brand);
+  --bs-btn-active-bg: var(--inchi-brand-hover);
+  --bs-btn-active-border-color: var(--inchi-brand-hover);
+  --bs-btn-disabled-bg: var(--inchi-field-sunken);
+  --bs-btn-disabled-border-color: var(--inchi-rule-hairline);
+  --bs-btn-disabled-color: var(--inchi-ink-faint);
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--inchi-ink-muted);
+  --bs-btn-border-color: var(--inchi-rule-hairline);
+  --bs-btn-hover-bg: var(--inchi-field-sunken);
+  --bs-btn-hover-border-color: var(--inchi-rule);
+  --bs-btn-hover-color: var(--inchi-ink);
+  --bs-btn-active-bg: var(--inchi-field-sunken);
+  --bs-btn-active-border-color: var(--inchi-rule-stroke);
+  --bs-btn-active-color: var(--inchi-ink);
+  --bs-btn-disabled-color: var(--inchi-ink-faint);
+  --bs-btn-disabled-border-color: var(--inchi-rule-hairline);
+}
+
+::selection {
+  color: var(--inchi-selection-text);
+  background-color: var(--inchi-selection-bg);
+}
+
+/*
+ * Modal dialog shell, shared by the report form and the outcome dialog.
+ * Padding sits on the body rather than the <dialog> so that a click anywhere
+ * inside hits content: the dialog element itself is only the click target for
+ * its ::backdrop. Each dialog sets its own max-width.
+ */
+.inchi-dialog {
+  background: var(--inchi-field);
+  color: var(--inchi-ink);
+  padding: 0;
+  border: var(--inchi-rule-weight) solid var(--inchi-rule-stroke);
+  width: 90%;
+  border-radius: var(--inchi-radius-md);
+  box-shadow: var(--inchi-shadow-dialog);
+}
+
+.inchi-dialog::backdrop {
+  background: var(--inchi-backdrop);
+}
+
+.inchi-dialog-body {
+  padding: 20px;
+}

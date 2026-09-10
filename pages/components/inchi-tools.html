@@ -68,11 +68,17 @@
     aria-labelledby="inchi-tab1"
     tabindex="0"
   >
-    <div class="row mt-1">
-      <div class="col-xl-8">
+    <!--
+      Input left, answer right. The three children are the pane's whole
+      content in reading order — what you feed the conversion, what configures
+      it, what it produced — and .tool-workbench rearranges them by width.
+    -->
+    <div class="tool-workbench">
+      <div class="tool-input">
         <div class="ratio ketcher">
           <iframe
             id="inchi-tab1-ketcher"
+            title="Ketcher structure editor"
             class="w-100"
             src="ketcher/index.html"
             loading="lazy"
@@ -82,27 +88,80 @@
           ></iframe>
         </div>
       </div>
-      <div class="col-xl-4 mt-auto">
+      <div class="tool-controls tool-controls-bottom">
         <inchi-version-selection
           onVersionChange="onChangeInChIVersionTab1()"
         ></inchi-version-selection>
         <div data-inchi-options></div>
       </div>
+      <div class="tool-output">
+        <!--
+          Always says what happened. An invalid structure used to produce four
+          empty plates and a log containing the literal string "InChI options:",
+          which is indistinguishable from "you have not drawn anything yet".
+        -->
+        <div class="visually-hidden" data-status-announcer role="status" aria-live="polite"></div>
+        <div class="conversion-status" data-status hidden></div>
+        <inchi-result-field
+          id="inchi-tab1-inchi"
+          title="InChI"
+          placeholder="The InChI appears here as you draw, split into its layers."
+          notation="inchi"
+          live
+        ></inchi-result-field>
+        <inchi-result-field
+          id="inchi-tab1-inchikey"
+          title="InChIKey"
+          placeholder="The hashed key, derived from the InChI above."
+          notation="inchikey"
+        ></inchi-result-field>
+        <!--
+          Comparing versions is the job. Pinning keeps a result so the next
+          conversion can be diffed against it layer by layer, instead of the
+          previous answer being destroyed the moment you switch version.
+        -->
+        <div class="comparison-controls">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            data-pin
+            disabled
+            onclick="pinCurrentResult('inchi-tab1-pane')"
+          >
+            Pin this result to compare
+          </button>
+          <button
+            type="button"
+            class="link-button comparison-clear"
+            data-clear-comparison
+            disabled
+            onclick="clearComparison('inchi-tab1-pane')"
+          >
+            Clear comparison
+          </button>
+        </div>
+        <div data-comparison hidden></div>
+        <!--
+          Evidence, not the answer. These used to get containers identical to
+          the InChI's, which made the diagnostic dump a peer of the identifier.
+          The status line above carries anything the user has to act on.
+        -->
+        <details class="secondary-plates">
+          <summary>Auxiliary information and library log</summary>
+          <inchi-result-field
+            id="inchi-tab1-auxinfo"
+            title="AuxInfo"
+            placeholder="Auxiliary information: atom numbering and coordinates."
+          ></inchi-result-field>
+          <inchi-result-field
+            id="inchi-tab1-logs"
+            title="Log"
+            placeholder="Messages from the InChI library, when it has any."
+          ></inchi-result-field>
+        </details>
+        <report-mask tabId="inchi-tab1"></report-mask>
+      </div>
     </div>
-    <inchi-result-field
-      id="inchi-tab1-inchi"
-      title="InChI"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="inchi-tab1-inchikey"
-      title="InChIKey"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="inchi-tab1-auxinfo"
-      title="AuxInfo"
-    ></inchi-result-field>
-    <inchi-result-field id="inchi-tab1-logs" title="Log"></inchi-result-field>
-    <report-mask tabId="inchi-tab1"></report-mask>
   </div>
 
   <!-- Convert Molfile to InChI -->
@@ -113,62 +172,112 @@
     aria-labelledby="inchi-tab2"
     tabindex="0"
   >
-    <div class="row mt-1">
-      <div class="col-xl-8">
+    <div class="tool-workbench">
+      <div class="tool-input">
         <div class="ratio inputtextarea">
           <div class="w-100">
             <textarea
               id="inchi-tab2-molfile"
-              class="form-control pe-5 h-100"
-              style="resize: none"
+              aria-label="Molfile"
+              class="form-control pe-5 h-100 resize-none"
               autocomplete="off"
               placeholder="Paste or drag-and-drop a Molfile here"
               ondragover="onTextareaDragover(event)"
               ondrop="onTextareaDrop(event, () => updateInchiTab2())"
-              oninput="updateInchiTab2()"
+              oninput="updateInchiTab2Debounced()"
             ></textarea>
             <button
+              type="button"
               class="btn btn-outline-secondary border-0"
+              aria-label="Clear the pasted molfile"
               style="position: absolute; top: 10px; right: 10px"
               onclick="
                 document.getElementById('inchi-tab2-molfile').value = '';
                 updateInchiTab2();
               "
             >
-              <i class="bi bi-trash"></i>
+              <svg class="app-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 4.5H13M6.5 4.5V2.5H9.5V4.5M4.6 4.5 5.4 14H10.6L11.4 4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
             </button>
           </div>
         </div>
       </div>
-      <div class="col-xl-4">
+      <div class="tool-controls">
         <inchi-version-selection
           onVersionChange="onChangeInChIVersionTab2()"
         ></inchi-version-selection>
         <div data-inchi-options></div>
       </div>
-    </div>
-    <div class="row mt-1">
-      <div class="col-xl-5">
+      <div class="tool-output">
+        <!--
+          Always says what happened. An invalid structure used to produce four
+          empty plates and a log containing the literal string "InChI options:",
+          which is indistinguishable from "you have not drawn anything yet".
+        -->
+        <div class="visually-hidden" data-status-announcer role="status" aria-live="polite"></div>
+        <div class="conversion-status" data-status hidden></div>
         <inchi-result-field
           id="inchi-tab2-inchi"
           title="InChI"
+          placeholder="The InChI appears here as you draw, split into its layers."
+          notation="inchi"
+          live
         ></inchi-result-field>
         <inchi-result-field
           id="inchi-tab2-inchikey"
           title="InChIKey"
+          placeholder="The hashed key, derived from the InChI above."
+          notation="inchikey"
         ></inchi-result-field>
-        <inchi-result-field
-          id="inchi-tab2-auxinfo"
-          title="AuxInfo"
-        ></inchi-result-field>
-        <inchi-result-field
-          id="inchi-tab2-logs"
-          title="Log"
-        ></inchi-result-field>
+        <!--
+          Comparing versions is the job. Pinning keeps a result so the next
+          conversion can be diffed against it layer by layer, instead of the
+          previous answer being destroyed the moment you switch version.
+        -->
+        <div class="comparison-controls">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            data-pin
+            disabled
+            onclick="pinCurrentResult('inchi-tab2-pane')"
+          >
+            Pin this result to compare
+          </button>
+          <button
+            type="button"
+            class="link-button comparison-clear"
+            data-clear-comparison
+            disabled
+            onclick="clearComparison('inchi-tab2-pane')"
+          >
+            Clear comparison
+          </button>
+        </div>
+        <div data-comparison hidden></div>
+        <!--
+          The 3D view sits with the answer, not with the paste box: its atom
+          annotations — canonical index, equivalence class, hydrogen group —
+          are read off the InChI, so it explains the identifier beside it.
+          Putting it on the input side also left the output column ending
+          two-thirds of the way up an otherwise full page.
+        -->
+        <div class="bounding-box mt-3">
+          <inchi-ngl-viewer id="inchi-tab2-ngl-viewer"></inchi-ngl-viewer>
+        </div>
+        <details class="secondary-plates">
+          <summary>Auxiliary information and library log</summary>
+          <inchi-result-field
+            id="inchi-tab2-auxinfo"
+            title="AuxInfo"
+            placeholder="Auxiliary information: atom numbering and coordinates."
+          ></inchi-result-field>
+          <inchi-result-field
+            id="inchi-tab2-logs"
+            title="Log"
+            placeholder="Messages from the InChI library, when it has any."
+          ></inchi-result-field>
+        </details>
         <report-mask tabId="inchi-tab2"></report-mask>
-      </div>
-      <div class="col-xl-7 bounding-box">
-        <inchi-ngl-viewer id="inchi-tab2-ngl-viewer"></inchi-ngl-viewer>
       </div>
     </div>
   </div>
@@ -181,30 +290,53 @@
     aria-labelledby="inchi-tab3"
     tabindex="0"
   >
-    <div class="row mt-1">
-      <div class="col-xl-8">
-        <div class="ratio" style="height: 115px">
+    <div class="tool-workbench">
+      <div class="tool-input">
+        <div class="ratio paste-area">
           <div class="w-100">
             <textarea
               id="inchi-tab3-inputTextarea"
-              class="form-control pe-5 h-100"
-              style="resize: none"
+              aria-label="AuxInfo string"
+              class="form-control pe-5 h-100 resize-none"
               autocomplete="off"
-              placeholder="Paste an AuxInfo string here, e.g., AuxInfo=1/0/N:1,2,3/E:(1,2,3)/rA:3nCCC/rB:s1;s1s2;/rC:5.1494,-3.6325,0;6.1506,-3.6325,0;5.6501,-2.7675,0;&#10;Note that the AuxInfo needs to contain coordinates, otherwise no structure can be displayed (InChI cannot generate coordinates)."
+              aria-describedby="inchi-tab3-hint"
+              placeholder="Paste an AuxInfo string here, e.g. AuxInfo=1/0/N:1,2,3/E:(1,2,3)/rA:3nCCC/rB:s1;s1s2;/rC:5.1494,-3.6325,0;6.1506,-3.6325,0;5.6501,-2.7675,0;"
               oninput="updateInchiTab3()"
             ></textarea>
           </div>
         </div>
+        <small id="inchi-tab3-hint" class="text-muted"
+          >The AuxInfo has to contain atom coordinates. InChI cannot generate
+          them, so no structure can be shown without them.</small
+        >
       </div>
-      <div class="col-xl-4 mt-auto">
+      <div class="tool-controls tool-controls-bottom">
         <inchi-version-selection
           onVersionChange="onChangeInChIVersionTab3()"
         ></inchi-version-selection>
       </div>
-    </div>
-    <inchi-result-field id="inchi-tab3-logs" title="Log"></inchi-result-field>
-    <div class="bounding-box">
-      <inchi-ngl-viewer id="inchi-tab3-ngl-viewer"></inchi-ngl-viewer>
+      <!--
+        This tab converts the other way, so the structure is the answer: the
+        viewer leads the output column and the library log follows it.
+      -->
+      <div class="tool-output">
+        <!--
+          Always says what happened. An invalid structure used to produce four
+          empty plates and a log containing the literal string "InChI options:",
+          which is indistinguishable from "you have not drawn anything yet".
+        -->
+        <div class="visually-hidden" data-status-announcer role="status" aria-live="polite"></div>
+        <div class="conversion-status" data-status hidden></div>
+        <div class="bounding-box mt-2">
+          <inchi-ngl-viewer id="inchi-tab3-ngl-viewer"></inchi-ngl-viewer>
+        </div>
+        <inchi-result-field
+          id="inchi-tab3-logs"
+          title="Log"
+          placeholder="Messages from the InChI library, when it has any."
+          live
+        ></inchi-result-field>
+      </div>
     </div>
   </div>
 
@@ -216,27 +348,45 @@
     aria-labelledby="inchi-tab4"
     tabindex="0"
   >
-    <div class="row mt-1">
-      <div class="col-xl-8">
-        <div class="w-100 d-flex align-items-center gap-2">
+    <div class="tool-workbench">
+      <div class="tool-input">
+        <div class="w-100">
+          <label class="form-label" for="inchi-tab4-sdfFileInput"
+            >SD file</label
+          >
           <input
             id="inchi-tab4-sdfFileInput"
             type="file"
-            class="form-control pe-5 h-100"
+            class="form-control"
             accept=".sdf"
+            aria-describedby="inchi-tab4-sdfFileInput-hint"
             onchange="updateInchiTab4()"
           />
+          <small id="inchi-tab4-sdfFileInput-hint" class="text-muted"
+            >One InChI, AuxInfo and InChIKey is generated per record.</small
+          >
         </div>
-        <inchi-result-field
-          id="inchi-tab4-inchis"
-          title="InChIs"
-        ></inchi-result-field>
       </div>
-      <div class="col-xl-4">
+      <div class="tool-controls">
         <inchi-version-selection
           onVersionChange="onChangeInChIVersionTab4()"
         ></inchi-version-selection>
         <div data-inchi-options></div>
+      </div>
+      <div class="tool-output">
+        <!--
+          Always says what happened. An invalid structure used to produce four
+          empty plates and a log containing the literal string "InChI options:",
+          which is indistinguishable from "you have not drawn anything yet".
+        -->
+        <div class="visually-hidden" data-status-announcer role="status" aria-live="polite"></div>
+        <div class="conversion-status" data-status hidden></div>
+        <inchi-result-field
+          id="inchi-tab4-inchis"
+          title="InChIs"
+          placeholder="One InChI per record, once you choose an SD file."
+          live
+        ></inchi-result-field>
       </div>
     </div>
   </div>
