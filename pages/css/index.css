@@ -643,6 +643,212 @@ button.form-select.multiselect:has(
   );
 }
 
+/* ---- Page shell -------------------------------------------------------- */
+/*
+ * The page takes the screen. It used to be a Bootstrap `container-md`, which
+ * caps at 1320px however wide the display is — on a 2560px monitor that left
+ * a third of the screen as margin on either side of a tool whose two halves
+ * both want room. A workbench earns the glass it is given.
+ *
+ * 2400px is where it stops, in px rather than rem because this is a cap on
+ * screen real estate, not on text: it should not move when someone raises
+ * their browser's font size. Past that the two columns are wider than either
+ * half has any use for, and an ultrawide would put the masthead logo and the
+ * theme switch a metre apart.
+ *
+ * The About surface caps again inside this: it keeps `container-md` on its
+ * own pane and a measure on its prose, because a paragraph is not a
+ * workbench.
+ */
+.page-shell {
+  width: 100%;
+  max-width: 2400px;
+  margin-inline: auto;
+  margin-bottom: 2rem;
+  /* The gutter Bootstrap's container gave us, kept, then widened where the
+     workbench appears and the content is running to the screen edges. */
+  padding-inline: 0.75rem;
+}
+
+@media (min-width: 1400px) {
+  .page-shell {
+    padding-inline: 1.5rem;
+  }
+}
+
+/* ---- Tool workbench ---------------------------------------------------- */
+/*
+ * Every tool pane is the same three things in the same DOM order — what you
+ * feed the conversion, what configures it, what it produced — arranged three
+ * ways by width:
+ *
+ *   below 1200px      one column: input, controls, output
+ *   1200 - 1399px     input | controls on one row, output full width beneath
+ *   1400px and up     input above controls in a left rail, output alongside
+ *
+ * Grid areas rather than nested Bootstrap rows, because the three children
+ * change *arrangement*, not just width: expressing the wide case with columns
+ * would mean writing the output markup twice and letting the two copies drift.
+ * One DOM order also means reading order, tab order and visual order agree in
+ * all three states without a single `order` declaration.
+ *
+ * TWO widths now, and both are load-bearing. 1200px is where a pane stops
+ * being one column; JavaScript reasons about that one too, so it is named
+ * INCHI_STACK_BREAKPOINT in index.js and the two must stay in step. 1400px is
+ * where the answer moves *beside* the input instead of beneath it; nothing in
+ * JavaScript depends on it, so this rule is its only home.
+ *
+ * The second width is not cosmetic. The page is a container-md, so at 1200px
+ * there are 1140px to divide and half of that is narrower than either the
+ * structure editor or the notation stack wants; the side-by-side arrangement
+ * only pays for itself once the container reaches its 1320px maximum.
+ */
+.tool-workbench {
+  display: grid;
+  gap: 1rem;
+  grid-template-areas:
+    "input"
+    "controls"
+    "output";
+  margin-top: 0.25rem;
+}
+
+/*
+ * min-width: 0 on all three: a grid item's automatic minimum size is its
+ * content, and an InChI is one unbreakable-looking 60-character run. Without
+ * this the notation column refuses to shrink and the whole grid overflows.
+ */
+.tool-input,
+.tool-controls,
+.tool-output {
+  min-width: 0;
+}
+
+.tool-input {
+  grid-area: input;
+}
+
+.tool-controls {
+  grid-area: controls;
+}
+
+.tool-output {
+  grid-area: output;
+}
+
+@media (min-width: 1200px) {
+  .tool-workbench {
+    grid-template-columns: 2fr 1fr;
+    grid-template-areas:
+      "input    controls"
+      "output   output";
+  }
+}
+
+/*
+ * The version selector used to carry `mt-auto`, sitting on the editor's
+ * baseline rather than floating at the top of a short column. That only makes
+ * sense while the two share a row, so it ends at the workbench breakpoint.
+ */
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .tool-controls-bottom {
+    align-self: end;
+  }
+}
+
+@media (min-width: 1400px) {
+  .tool-workbench {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    /*
+     * The third row is slack. The output spans all three, so when it is the
+     * taller column the surplus lands in an empty row *below* the controls
+     * instead of being shared out between the input and the controls — which
+     * would prise the left rail apart down the middle.
+     */
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "input    output"
+      "controls output"
+      ".        output";
+    align-items: start;
+  }
+
+  /*
+   * Width stops being scarce here, and two things in the rail have to be told
+   * that. A checkbox list does not get better at 1200px wide — it just leaves
+   * a column of empty ground beside it — so the controls keep the width they
+   * had when the container was capped.
+   */
+  .tool-controls {
+    max-width: 42rem;
+  }
+
+  /*
+   * And an editor sized by aspect ratio would climb with the column: 62% of a
+   * 1200px half is a 750px-tall canvas, taller than the screen it is drawn
+   * on. Past this width the height answers to the viewport instead, and the
+   * ratio is switched off rather than fought.
+   */
+  .tool-input > .ratio.ketcher,
+  .tool-output > .ratio.ketcher {
+    --bs-aspect-ratio: 0;
+    height: clamp(24rem, 62vh, 45rem);
+  }
+
+  /*
+   * A paste box is not an editor. It holds text you dropped in and read back
+   * once; at the editor's height it was 720px of empty field opposite a
+   * four-row identifier. Roughly the height the aspect ratio used to give it
+   * before the column got wide.
+   */
+  .tool-input > .ratio.inputtextarea {
+    --bs-aspect-ratio: 0;
+    height: clamp(18rem, 42vh, 30rem);
+  }
+
+  /*
+   * The answer follows you down the rail.
+   *
+   * The two columns are lopsided by nature and always the same way round: the
+   * input rail is an editor plus twenty-odd option checkboxes, the output is
+   * an identifier and its key. Reaching an option means scrolling the answer
+   * off the top of the screen, and the loop this tool exists for is "change a
+   * flag, watch which layer moves". So the *short* column is the one that
+   * sticks — the reverse of the usual sidebar, because here the sidebar is
+   * the tall one.
+   *
+   * No height cap and no nested scrollbar, deliberately. The sticky
+   * containing block is the grid area, which is as tall as the taller of the
+   * two columns — so once a pinned comparison makes the output the taller
+   * one, there is no travel left and this quietly stops being sticky. It
+   * helps in exactly the case where the output is short, and gets out of the
+   * way in the case where clipping it would hurt.
+   */
+  .tool-output {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+/*
+ * The output column opens level with the top of the input: the grid gap is
+ * the only separation, so whatever leads the column does not add its own. The
+ * status line is always first in the DOM and hides itself when there is
+ * nothing to say, so the plate behind it takes the leading position back
+ * whenever it does.
+ */
+.tool-output > .conversion-status {
+  margin-top: 0;
+}
+
+.tool-output > inchi-result-field:first-of-type > .identifier-plate {
+  margin-top: 0;
+}
+
+.tool-output > .conversion-status:not([hidden]) ~ inchi-result-field:first-of-type > .identifier-plate {
+  margin-top: 1rem;
+}
+
 /* ---- Editor, paste box, viewer ---------------------------------------- */
 /*
  * Editor and paste box: on wide screens the aspect ratio governs and the
@@ -668,8 +874,8 @@ button.form-select.multiselect:has(
  * over several lines on a phone and fits in two on the wide layout, so the box
  * is generous first and tightens once the text fits.
  *
- * Keyed to 1200px, not 992px: the tool grid is col-xl-*, so it is still one
- * column until 1200px. See INCHI_STACK_BREAKPOINT in index.js.
+ * Keyed to 1200px, not 992px: the .tool-workbench grid is still one column
+ * until 1200px. See INCHI_STACK_BREAKPOINT in index.js.
  */
 .paste-area {
   height: 12rem;
@@ -890,6 +1096,26 @@ button.form-select.multiselect:has(
   .bounding-box .form-check {
     margin-bottom: 0.5rem;
   }
+}
+
+/* ---- About surface ----------------------------------------------------- */
+/*
+ * The one Read surface here, and the only place on this site where a line is
+ * meant to be read start to finish rather than scanned. Its paragraphs ran
+ * the full width of the pane — about 165 characters a line, more than twice a
+ * comfortable measure — so the running text gets a measure and nothing else
+ * does.
+ *
+ * Scoped to the prose deliberately. The funder rows are a logo grid, not
+ * text: `.funder-logo` is `width: 100%`, so narrowing their columns halves
+ * the credits, and those credits are a commitment.
+ */
+inchi-about > p,
+inchi-about > ul,
+inchi-about > h2 {
+  /* 64ch of the system stack renders as roughly 73 characters, inside the
+     65-75 the type scale is built for. */
+  max-width: 64ch;
 }
 
 .funder-logo {

@@ -68,8 +68,8 @@
     aria-labelledby="rinchi-tab1"
     tabindex="0"
   >
-    <div class="row mt-1">
-      <div class="col-xl-8">
+    <div class="tool-workbench">
+      <div class="tool-input">
         <div class="ratio ketcher">
           <iframe
             id="rinchi-tab1-ketcher"
@@ -81,36 +81,38 @@
           ></iframe>
         </div>
       </div>
-      <div class="col-xl-4 mt-auto">
+      <div class="tool-controls tool-controls-bottom">
         <span class="rinchi-version"></span>
       </div>
+      <div class="tool-output">
+        <inchi-result-field
+          id="rinchi-tab1-rinchi"
+          title="RInChI"
+          live
+        ></inchi-result-field>
+        <inchi-result-field
+          id="rinchi-tab1-longrinchikey"
+          title="Long-RInChIKey"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="rinchi-tab1-shortrinchikey"
+          title="Short-RInChIKey"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="rinchi-tab1-webrinchikey"
+          title="Web-RInChIKey"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="rinchi-tab1-rauxinfo"
+          title="RAuxInfo"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="rinchi-tab1-logs"
+          title="Log"
+          live
+        ></inchi-result-field>
+      </div>
     </div>
-    <inchi-result-field
-      id="rinchi-tab1-rinchi"
-      title="RInChI"
-      live
-    ></inchi-result-field>
-    <inchi-result-field
-      id="rinchi-tab1-longrinchikey"
-      title="Long-RInChIKey"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="rinchi-tab1-shortrinchikey"
-      title="Short-RInChIKey"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="rinchi-tab1-webrinchikey"
-      title="Web-RInChIKey"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="rinchi-tab1-rauxinfo"
-      title="RAuxInfo"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="rinchi-tab1-logs"
-      title="Log"
-      live
-    ></inchi-result-field>
   </div>
 
   <!-- Tab 2: Convert RXN/RD file to RInChI -->
@@ -121,8 +123,8 @@
     aria-labelledby="rinchi-tab2"
     tabindex="0"
   >
-    <div class="row mt-1">
-      <div class="col-xl-8">
+    <div class="tool-workbench">
+      <div class="tool-input">
         <div class="ratio inputtextarea">
           <div class="w-100">
             <textarea
@@ -147,7 +149,7 @@
           </div>
         </div>
       </div>
-      <div class="col-xl-4 mt-auto">
+      <div class="tool-controls tool-controls-bottom">
         <div>
           <input
             id="rinchi-tab2-forceequilibrium"
@@ -161,33 +163,35 @@
         </div>
         <span class="rinchi-version"></span>
       </div>
+      <div class="tool-output">
+        <inchi-result-field
+          id="rinchi-tab2-rinchi"
+          title="RInChI"
+          live
+        ></inchi-result-field>
+        <inchi-result-field
+          id="rinchi-tab2-longrinchikey"
+          title="Long-RInChIKey"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="rinchi-tab2-shortrinchikey"
+          title="Short-RInChIKey"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="rinchi-tab2-webrinchikey"
+          title="Web-RInChIKey"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="rinchi-tab2-rauxinfo"
+          title="RAuxInfo"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="rinchi-tab2-logs"
+          title="Log"
+          live
+        ></inchi-result-field>
+      </div>
     </div>
-    <inchi-result-field
-      id="rinchi-tab2-rinchi"
-      title="RInChI"
-      live
-    ></inchi-result-field>
-    <inchi-result-field
-      id="rinchi-tab2-longrinchikey"
-      title="Long-RInChIKey"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="rinchi-tab2-shortrinchikey"
-      title="Short-RInChIKey"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="rinchi-tab2-webrinchikey"
-      title="Web-RInChIKey"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="rinchi-tab2-rauxinfo"
-      title="RAuxInfo"
-    ></inchi-result-field>
-    <inchi-result-field
-      id="rinchi-tab2-logs"
-      title="Log"
-      live
-    ></inchi-result-field>
   </div>
 
   <!-- Tab 3: Convert RInChI to reaction -->
@@ -198,8 +202,8 @@
     aria-labelledby="rinchi-tab3"
     tabindex="0"
   >
-    <div class="row mt-1">
-      <div class="col-xl-8">
+    <div class="tool-workbench">
+      <div class="tool-input">
         <div class="ratio paste-area">
           <div class="w-100">
             <textarea
@@ -230,17 +234,14 @@
           coordinates.</small
         >
       </div>
-      <div class="col-xl-4">
+      <div class="tool-controls tool-controls-bottom">
         <span class="rinchi-version"></span>
       </div>
-    </div>
-    <inchi-result-field
-      id="rinchi-tab3-logs"
-      title="Log"
-      live
-    ></inchi-result-field>
-    <div class="row mt-1">
-      <div class="col-xl-8">
+      <!--
+        This tab converts the other way, so the rebuilt reaction is the
+        answer and the second Ketcher leads the output column.
+      -->
+      <div class="tool-output">
         <div class="ratio ketcher">
           <iframe
             id="rinchi-tab3-ketcher"
@@ -250,12 +251,17 @@
             loading="lazy"
           ></iframe>
         </div>
-      </div>
-      <div class="col-xl-4">
-        Please note: The generated RXN file will contain zero atom coordinates
-        in case no RAuxInfo with atom coordinates is provided. Unfortunately,
-        the "clean" function of the Ketcher structure editor cannot properly
-        recalculate the coordinates at the moment.
+        <p class="text-muted mt-2">
+          Please note: The generated RXN file will contain zero atom
+          coordinates in case no RAuxInfo with atom coordinates is provided.
+          Unfortunately, the "clean" function of the Ketcher structure editor
+          cannot properly recalculate the coordinates at the moment.
+        </p>
+        <inchi-result-field
+          id="rinchi-tab3-logs"
+          title="Log"
+          live
+        ></inchi-result-field>
       </div>
     </div>
   </div>
@@ -268,8 +274,8 @@
     aria-labelledby="rinchi-tab4"
     tabindex="0"
   >
-    <div class="row mt-1">
-      <div class="col-xl-8">
+    <div class="tool-workbench">
+      <div class="tool-input">
         <div class="ratio paste-area">
           <div class="w-100">
             <textarea
@@ -300,7 +306,7 @@
           coordinates.</small
         >
       </div>
-      <div class="col-xl-4 mt-auto">
+      <div class="tool-controls tool-controls-bottom">
         <fieldset>
           <legend class="form-check-label mb-2">Select output format</legend>
         <div class="form-check">
@@ -333,15 +339,17 @@
         </fieldset>
         <span class="rinchi-version"></span>
       </div>
+      <div class="tool-output">
+        <inchi-result-field
+          id="rinchi-tab4-rxnfile"
+          title="RXN/RD file"
+        ></inchi-result-field>
+        <inchi-result-field
+          id="rinchi-tab4-logs"
+          title="Log"
+          live
+        ></inchi-result-field>
+      </div>
     </div>
-    <inchi-result-field
-      id="rinchi-tab4-logs"
-      title="Log"
-      live
-    ></inchi-result-field>
-    <inchi-result-field
-      id="rinchi-tab4-rxnfile"
-      title="RXN/RD file"
-    ></inchi-result-field>
   </div>
 </div>

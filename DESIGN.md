@@ -288,6 +288,7 @@ job.
 - **Identifier** (400, 0.9375rem, mono): layer values and InChIKey blocks — the answer. A slightly smaller sibling (0.875rem mono) sets the raw `<pre>` result text, and 0.8125rem mono sets paste areas, where the placeholder is a format example rather than prose.
 - **Secondary** (400, 0.875rem): the status line, the comparison summary, the masthead tagline, hints.
 - **Fine** (400, 0.8125rem): empty-state copy, annotation chip labels, the "clear comparison" link.
+- **Measure:** only one surface here sets one. `inchi-about`'s paragraphs, lists and headings cap at `64ch` — about 73 characters — because About is the one place a line is read start to finish. The tool surface has no measure: an identifier is not prose and wants every character it can get on one line. The funder rows are deliberately outside the cap; they are a logo grid, and `.funder-logo` is `width: 100%`, so narrowing their columns shrinks credits the product has committed to.
 - **Apparatus** (500–600, 0.6875rem, ls 0.09em, uppercase): section headings, layer keys, version stamps, plate titles, the demoted-plate summary. Weight 600 when it is a real heading or a stamp, 500 when it is a caption.
 - **Apparatus Micro** (0.5625rem, lh 1.2, `ink-faint`): the label under each InChIKey block. The only step below apparatus, and it exists solely to name three blocks without pushing them apart.
 
@@ -310,15 +311,34 @@ uppercasing are allowed.
 
 ## Layout
 
-The page is a single Bootstrap `container-md` with a 2rem tail. The masthead sits on the page
-grid — logo, then `<h1>` and tagline on one baseline — with a `rule` hairline under it. Below it, pill
-tabs (InChI / RInChI / About), then per-tool tab rows.
+The page is a `.page-shell`: full-bleed up to a 2400px cap, a 0.75rem gutter that opens to 1.5rem
+at the workbench breakpoint, and a 2rem tail. The cap is in `px`, not `rem`, because it limits
+screen real estate rather than text and must not move when someone raises their browser font
+size. It used to be a Bootstrap `container-md`, which
+caps at 1320px however wide the display is — on a 2560px monitor that left a third of the screen
+as margin beside a tool whose two halves both want room. **The About pane opts back out**: it
+carries `container-md` on itself, and its running text is capped again at `64ch` inside that —
+prose has a measure and the tool surface does not.
+The masthead sits on the page grid — logo, then `<h1>` and tagline on one baseline — with a `rule`
+hairline under it. Below it, pill tabs (InChI / RInChI / About), then per-tool tab rows.
 
-The tool grid is `col-xl-8` + `col-xl-4`: editor or paste box left, version selector and options
-right as margin apparatus. **That means the layout is single-column below 1200px**, not below
-992px. Within one column the order is: status line, answer plate, derived answer plate,
+Every tool pane is one `.tool-workbench` grid holding the same three children in the same DOM
+order — `.tool-input` (what you feed the conversion), `.tool-controls` (version and options),
+`.tool-output` (what it produced) — and CSS grid areas arrange them three ways by width. Bootstrap
+rows and `col-*` classes are gone from the panes: the three children change *arrangement*, not
+just width, and expressing the widest case with columns would mean writing the output markup
+twice. One DOM order also means reading order, tab order and visual order agree in all three
+states without a single `order` declaration.
+
+- **Below 1200px** — one column: input, controls, output.
+- **1200-1399px** — input and controls share a row (`2fr 1fr`), output full width beneath.
+- **1400px and up** — the workbench: input above controls in a left rail, output alongside in an equal column, and the output sticky at `top: 1rem`.
+
+Within the output column the order is: status line, answer plate, derived answer plate,
 comparison controls, comparison plate, then a collapsed `<details>` holding AuxInfo and the
-library log.
+library log. The 3D viewer sits with the output on the tabs where it explains or *is* the answer
+(molfile, AuxInfo); a tab that converts the other way puts its result — a rebuilt structure or
+reaction — at the head of the output column and demotes the library log beneath it.
 
 Spacing rhythm is a small reused set rather than a formal scale: 0.5rem/1rem inside a layer cell,
 0.75rem/1rem in a plate head, 0.5rem/0.75rem in a status line or key block, 0.75rem of panel
@@ -329,7 +349,8 @@ utilities carry the rest.
 
 Responsive behaviour that is load-bearing:
 
-- **1200px** — the only real layout breakpoint. The grid stacks, the paste area relaxes from 7rem to 12rem, and the comparison stack drops from two columns to one.
+- **1400px** — the workbench breakpoint. The output moves beside the input instead of beneath it and becomes sticky, the page gutter opens to 1.5rem, and two things in the rail get caps they do not need at narrower widths: the controls stop at 42rem, and the editor and paste box swap their aspect ratio for a viewport-relative height. Separate from the stacking width on purpose — half of a 1200px screen is narrower than either the editor or the notation stack wants.
+- **1200px** — the stacking breakpoint. The pane stops being one column, the paste area tightens from 12rem to 7rem, and the comparison stack goes from one column to two.
 - **768px** — the NGL viewport goes from a viewport-relative share to a fixed 420px.
 - **~855px and below** — the editor's and paste box's `min-height` floors (`min(530px, 62vh)` / `min(530px, 34vh)`) take over from the aspect ratio, so a phone does not get a 530px editor pushing the results two screens down.
 - **Coarse pointer** (`pointer: coarse` **or** `any-pointer: coarse`) — every interactive target reaches 44px. Keyed to the pointer, not the viewport, because a stylus 2-in-1 reports a fine primary pointer and still needs the targets, while a narrow desktop window does not.
@@ -337,14 +358,36 @@ Responsive behaviour that is load-bearing:
 
 ### Named Rules
 
-**The One Breakpoint Rule.** The stacking breakpoint is 1200px and it lives in three places that
-must stay in step: `INCHI_STACK_BREAKPOINT` in `pages/index.js`, the `@media (min-width: 1200px)`
-rules in `pages/css/index.css`, and the `col-xl-*` classes in the markup. **These have already
-drifted apart once** — the options panel checked 991.98px while the grid stacks below 1200px, so
-between 992 and 1199.98px the layout was single-column and the panel opened itself expanded
-anyway, which is the exact regression its own comment claimed to prevent. Anything reasoning about
-"is the layout stacked?" reads the constant. Changing the grid to `col-lg-*` means changing all
-three.
+**The Two Widths Rule.** There are exactly two layout widths and they are not interchangeable.
+1200px is the *stacking* width: JavaScript reasons about it too, so it lives in
+`INCHI_STACK_BREAKPOINT` in `pages/index.js` and in the `@media (min-width: 1200px)` rules in
+`pages/css/index.css`, and the two must stay in step. **They have already drifted apart once** —
+the options panel checked 991.98px while the grid stacked below 1200px, so between 992 and
+1199.98px the layout was single-column and the panel opened itself expanded anyway, which is the
+exact regression its own comment claimed to prevent. Anything reasoning about "is the layout
+stacked?" reads the constant, never a literal.
+
+1400px is the *workbench* width, and nothing in JavaScript depends on it, so the
+`@media (min-width: 1400px)` block on `.tool-workbench` is its only home and it is not mirrored
+into JS "for symmetry" — an unread constant is one more thing to drift. A third width needs a
+reason of the same kind: a real change of arrangement, not a width that merely looks better.
+
+**The Width-Is-Not-Free Rule.** A full-bleed page gives every element as much width as the screen
+has, and not everything improves with it. Three things are capped inside the workbench and each
+cap names its reason: the controls at 42rem, because a checkbox list 1200px wide is a list with a
+column of empty ground beside it; the editor at `clamp(24rem, 62vh, 45rem)` and the paste box at
+`clamp(18rem, 42vh, 30rem)`, because an aspect ratio turns extra width into extra height and a
+750px-tall canvas is taller than the screen it is drawn on. Anything new that is placed in the
+rail is asked the same question before it is allowed to span it.
+
+**The Sticky-Is-For-The-Short-Column Rule.** In the workbench the output is sticky, not the input
+rail — the reverse of the usual sidebar, because here the sidebar is the tall one: an editor plus
+twenty-odd option checkboxes against an identifier and its key. Reaching an option would
+otherwise scroll the answer off the top, and "change a flag, watch which layer moves" is the loop
+this tool exists for. It carries no height cap and no nested scrollbar: the sticky containing
+block is the grid area, so once a pinned comparison makes the output the taller column there is
+no travel left and it quietly stops sticking. A sticky pane that clips its own foot is worse than
+one that scrolls.
 
 **The Answer-Above-Evidence Rule.** In one column the order is status, then answer, then evidence.
 AuxInfo and the library log are collapsed by default behind one hairline summary; they are never

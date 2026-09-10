@@ -863,7 +863,7 @@ class InChIOptionsElement extends HTMLElement {
     );
 
     /*
-     * A <details> rather than a plain panel. Below 992px the grid is still one
+     * A <details> rather than a plain panel. Below 1200px the grid is one
      * column, so these twenty-odd checkboxes sit between the editor and the
      * results — measured at 500px of scrolling on a portrait tablet. It starts
      * collapsed there and open on the wide layout that has room for a sidebar.
@@ -883,7 +883,7 @@ class InChIOptionsElement extends HTMLElement {
      * has to stick.
      *
      * Keyed to the breakpoint at which the tool grid actually stacks. This
-     * used to read 991.98px while the grid is col-xl-*, which stacks below
+     * used to read 991.98px while the .tool-workbench grid stacks below
      * 1200px — so between 992 and 1199.98px the layout was single-column and
      * the panel opened anyway, producing the exact regression the comment
      * above claims to prevent. INCHI_STACK_BREAKPOINT is defined in index.js
