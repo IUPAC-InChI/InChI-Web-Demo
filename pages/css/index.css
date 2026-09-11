@@ -1514,3 +1514,84 @@ inchi-about > h2 {
 .option-group-legend + * {
   clear: both;
 }
+
+/*
+ * The record list. A plate, divided by hairlines like every other plate here
+ * — a row is not a card, so none of these has a border of its own.
+ */
+.record-list .record-rows {
+  max-height: 18rem;
+  overflow-y: auto;
+}
+
+.record-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+  width: 100%;
+  padding: 0.45rem 1rem;
+  border: 0;
+  border-top: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  background: var(--inchi-field);
+  color: var(--inchi-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.record-row:first-child {
+  border-top: 0;
+}
+
+.record-row:hover {
+  background: var(--inchi-field-sunken);
+}
+
+/*
+ * The selected row carries the 3px stroke in its gutter — the same mark a
+ * divergent layer gets in the notation stack, because it is the same job:
+ * this is the one being read.
+ */
+.record-row[aria-pressed="true"] {
+  background: var(--inchi-field-sunken);
+  box-shadow: inset 3px 0 0 var(--inchi-rule-stroke);
+  font-weight: 600;
+}
+
+.record-number {
+  min-width: 2.5rem;
+  color: var(--inchi-ink-muted);
+  text-align: right;
+}
+
+.record-identifier {
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.8125rem;
+  word-break: break-all;
+}
+
+@media (pointer: coarse), (any-pointer: coarse) {
+  .record-row {
+    min-height: 44px;
+  }
+}
+
+/*
+ * Stale rows get the same treatment a superseded result plate gets — 0.45
+ * opacity — except the one still being read, which the editor and the plates
+ * below do describe correctly.
+ */
+.records-stale-notice {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.records-stale .record-row:not([aria-pressed="true"]) {
+  opacity: 0.45;
+}
+
+/* Some records failed. The count itself carries the message; this is only
+ * reinforcement, per the rule against hue doing the work alone. */
+.record-list-failures {
+  color: var(--inchi-error);
+}

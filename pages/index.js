@@ -881,6 +881,12 @@ async function updateWorkbench() {
    */
   markResultsStale(true);
 
+  /*
+   * Whatever happens below, the record list is judged against the settings in
+   * force now — a version or option change reaches it here.
+   */
+  markSdfRecordsStale();
+
   if (ketcher.containsReaction()) {
     showOutput("rinchi");
     /* First reaction of the visit: start the 1.6 MB RInChI fetch before the
@@ -1190,67 +1196,282 @@ async function onChangeInchiVersion() {
   await updateKetcherOptions(getKetcher("workbench-ketcher"), getVersion());
 }
 
-async function writeInchisFromSdFileToOutput(
-  sdFile,
-  options,
-  inchiVersion,
-  output
-) {
-  const sdfText = await sdFile.text();
+/*
+ * The records of the chosen SD file, converted once. Selecting one afterwards
+ * is a redraw, not a reconversion — a 2000-record file is minutes of
+ * WebAssembly work and must not be repeated because someone clicked a row.
+ */
+let sdfRecords = [];
+let selectedSdfRecord = -1;
 
+/*
+ * The version and flags the list was converted under.
+ *
+ * A later version or option change re-converts only the selected record, so
+ * every other row becomes a claim about settings that no longer apply. The
+ * old tab re-ran the whole file on every change; doing that to a 2000-record
+ * file because someone ticked a checkbox is worse. The list says it is stale
+ * instead, and offers to run again.
+ */
+let sdfRecordsSettings = "";
+
+function sdfSettingsNow() {
+  return `${getVersion()} ${collectInchiOptions(optionsPanel())}`;
+}
+
+function markSdfRecordsStale() {
+  const host = document.querySelector("[data-sdf-records]");
+  if (!host || sdfRecords.length === 0) {
+    return;
+  }
+  const stale = sdfRecordsSettings !== sdfSettingsNow();
+  host.classList.toggle("records-stale", stale);
+  const notice = host.querySelector("[data-records-stale]");
+  if (notice) {
+    notice.hidden = !stale;
+  }
+}
+
+async function loadSdFile() {
+  const input = document.getElementById("workbench-sdf");
+  const host = document.querySelector("[data-sdf-records]");
+  const file = input.files[0];
+
+  sdfRecords = [];
+  selectedSdfRecord = -1;
+  host.hidden = true;
+  host.replaceChildren();
+  writeResult("", "workbench-sdf-export");
+  document.getElementById("workbench-sdf-export-wrapper").hidden = true;
+
+  if (!file) {
+    return;
+  }
+  // Case-insensitive: Windows tools routinely write ".SDF".
+  if (!file.name.toLowerCase().endsWith(".sdf")) {
+    setConversionStatus(
+      "error",
+      `"${file.name}" is not an SD file. Please choose a file with the .sdf extension.`
+    );
+    return;
+  }
+  if (file.size === 0) {
+    setConversionStatus("error", `"${file.name}" is empty.`);
+    return;
+  }
+
+  const sdfText = await file.text();
   const delimiter = getSDFDelimiter(sdfText);
   /*
-   * A single-record file exported as .sdf often has no "$$$$" terminator. That
-   * is still something we can convert, so treat the whole text as one record
-   * instead of rejecting the file.
+   * A single-record file exported as .sdf often has no "$$$$" terminator.
+   * That is still something we can convert, so treat the whole text as one
+   * record instead of rejecting the file.
    */
   const entries = (delimiter ? sdfText.split(delimiter) : [sdfText]).filter(
     (entry) => entry.trim() !== ""
   );
 
   if (entries.length === 0) {
-    writeResult(
-      `No records found in "${sdFile.name}". Records are separated by "$$$$".`,
-      output.id
+    setConversionStatus(
+      "error",
+      `No records found in "${file.name}". Records are separated by "$$$$".`
     );
     return;
   }
 
+  const options = collectInchiOptions(optionsPanel());
+  const inchiVersion = getVersion();
   let completed = 0;
-  const reportProgress = () => {
-    completed++;
-    // Coarse enough not to thrash layout on a file with thousands of records.
-    if (completed % 20 === 0) {
-      output.textContent = `Converted ${completed} of ${entries.length} records…`;
-    }
-  };
-  output.textContent = `Converting ${entries.length} record${
-    entries.length === 1 ? "" : "s"
-  }…`;
+  setConversionStatus(
+    "busy",
+    `Converting ${entries.length} record${entries.length === 1 ? "" : "s"} with InChI ${inchiVersion}…`
+  );
 
   try {
-    const results = await throttleMap(entries, async (mol, index) => {
+    sdfRecords = await throttleMap(entries, async (molfile, index) => {
       try {
-        const inchiResult = await getAllFromMolfile(mol, options, inchiVersion);
-        if (inchiResult.inchi !== "") {
-          return `${inchiResult.inchi}\n${inchiResult.auxinfo}\n${inchiResult.inchikey}\n`;
-        }
-        return `Record ${index + 1} could not be converted.\nDetail: ${inchiResult.log}\n`;
-      } catch (e) {
-        console.error(`Caught exception from inchiFromMolfile(): ${e}`);
-        return `Record ${index + 1} could not be converted.\nDetail: ${e.message}\n`;
+        const result = await getAllFromMolfile(molfile, options, inchiVersion);
+        return {
+          molfile,
+          inchi: result.inchi,
+          auxinfo: result.auxinfo,
+          inchikey: result.inchikey,
+          log: result.inchi === "" ? `Record ${index + 1} could not be converted.` : "",
+        };
+      } catch (error) {
+        console.error(`Caught exception from getAllFromMolfile(): ${error}`);
+        return {
+          molfile,
+          inchi: "",
+          auxinfo: "",
+          inchikey: "",
+          log: `Record ${index + 1} could not be converted. Detail: ${error.message}`,
+        };
       } finally {
-        reportProgress();
+        completed++;
+        // Coarse enough not to thrash layout on a file with thousands of records.
+        if (completed % 20 === 0) {
+          setConversionStatus(
+            "busy",
+            `Converted ${completed} of ${entries.length} records…`
+          );
+        }
       }
     });
-    /*
-     * textContent, not innerHTML: the records come from a file the user was
-     * given by someone else, and the <pre> renders the line breaks anyway.
-     */
-    output.textContent = results.join("\n");
   } catch (error) {
     console.error(`Error processing SD file: ${error}`);
-    output.textContent = `The SD file could not be processed.\nDetail: ${error.message}`;
+    setConversionStatus(
+      "error",
+      `The SD file could not be processed. Detail: ${error.message}`
+    );
+    return;
+  }
+
+  /*
+   * The batch outcome goes on the list, not into the status line.
+   *
+   * The status line describes one conversion — the record currently in the
+   * editor — and selectSdfRecord below draws the first record, which fires
+   * exactly such a conversion and would overwrite anything written here. A
+   * file-level summary also belongs with the file-level thing.
+   */
+  sdfRecordsSettings = sdfSettingsNow();
+  renderSdfRecords();
+  renderSdfExport();
+  await selectSdfRecord(0);
+}
+
+/*
+ * The file as one text, in the same shape old tab 4 emitted: InChI, AuxInfo
+ * and InChIKey per record, blank-line separated, failures named in place.
+ * This is the export — the result plate it is written into already has copy
+ * and download.
+ */
+function renderSdfExport() {
+  const field = document.getElementById("workbench-sdf-export-wrapper");
+  const text = sdfRecords
+    .map((record, index) =>
+      record.inchi === ""
+        ? `Record ${index + 1} could not be converted.\n${record.log}\n`
+        : `${record.inchi}\n${record.auxinfo}\n${record.inchikey}\n`
+    )
+    .join("\n");
+  writeResult(text, "workbench-sdf-export");
+  field.hidden = sdfRecords.length === 0;
+}
+
+/*
+ * textContent throughout, never innerHTML: these records come from a file the
+ * visitor was handed by someone else.
+ */
+function renderSdfRecords() {
+  const host = document.querySelector("[data-sdf-records]");
+  host.replaceChildren();
+  if (sdfRecords.length === 0) {
+    host.hidden = true;
+    return;
+  }
+
+  const plate = document.createElement("div");
+  plate.className = "notation-frame record-list";
+
+  const head = document.createElement("div");
+  head.className = "identifier-head";
+  const title = document.createElement("span");
+  title.className = "apparatus";
+  const failed = sdfRecords.filter((record) => record.inchi === "").length;
+  title.textContent =
+    `${sdfRecords.length} record${sdfRecords.length === 1 ? "" : "s"}` +
+    (failed === 0 ? "" : ` · ${failed} could not be converted`);
+  head.appendChild(title);
+  if (failed > 0) {
+    /* Not by colour alone: the count is in the words above. */
+    title.classList.add("record-list-failures");
+  }
+
+  /*
+   * The staleness notice. Hidden until the version or the flags move away from
+   * the ones these rows were converted under, at which point every row except
+   * the selected one is describing settings that no longer apply. Rerunning is
+   * the visitor's decision, because on a large file it is minutes of work.
+   */
+  const stale = document.createElement("span");
+  stale.className = "records-stale-notice";
+  stale.dataset.recordsStale = "";
+  stale.hidden = true;
+  const staleText = document.createElement("span");
+  staleText.className = "apparatus";
+  staleText.textContent = "Converted with earlier settings";
+  const again = document.createElement("button");
+  again.type = "button";
+  again.className = "link-button";
+  again.textContent = "Convert again";
+  again.addEventListener("click", () => loadSdFile());
+  stale.append(staleText, again);
+  head.appendChild(stale);
+
+  plate.appendChild(head);
+
+  const list = document.createElement("div");
+  list.className = "record-rows";
+  /*
+   * Not role="listbox". A listbox's options are not buttons and it promises
+   * arrow-key navigation that is not implemented here; a group of pressable
+   * buttons is what this actually is.
+   */
+  list.setAttribute("role", "group");
+  list.setAttribute("aria-label", "SD file records");
+
+  sdfRecords.forEach((record, index) => {
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "record-row";
+    row.setAttribute("aria-pressed", String(index === selectedSdfRecord));
+    row.dataset.record = String(index);
+    row.addEventListener("click", () => selectSdfRecord(index));
+
+    const number = document.createElement("span");
+    number.className = "record-number apparatus";
+    number.textContent = String(index + 1);
+
+    const identifier = document.createElement("span");
+    identifier.className = "record-identifier";
+    identifier.textContent = record.inchikey || record.log || "no InChI";
+
+    row.append(number, identifier);
+    list.appendChild(row);
+  });
+
+  plate.appendChild(list);
+  host.appendChild(plate);
+  host.hidden = false;
+}
+
+/*
+ * Draw the chosen record and let the ordinary conversion path describe it.
+ * The identifier is already known, but going back through updateWorkbench()
+ * means the plates, the version stamp, the comparison and the 3D viewer are
+ * filled by the same code as a drawn structure — one path, not two.
+ */
+async function selectSdfRecord(index) {
+  const record = sdfRecords[index];
+  if (!record) {
+    return;
+  }
+  selectedSdfRecord = index;
+
+  document.querySelectorAll(".record-row").forEach((row) => {
+    row.setAttribute(
+      "aria-pressed",
+      String(Number(row.dataset.record) === index)
+    );
+  });
+
+  const ketcher = getKetcher("workbench-ketcher");
+  if (ketcher) {
+    /* setMolecule fires the editor's `change` event, which updateWorkbench is
+     * already subscribed to. See the note in loadPastedInput. */
+    await ketcher.setMolecule(record.molfile);
   }
 }
 
