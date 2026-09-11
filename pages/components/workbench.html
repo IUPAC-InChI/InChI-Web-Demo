@@ -52,6 +52,23 @@
         generate them, so no structure can be shown without them.
       </small>
     </details>
+
+    <div class="bounding-box mt-2">
+      <h2 class="inchi-section-heading" id="workbench-sdf-heading">SD file</h2>
+      <label class="visually-hidden" for="workbench-sdf">SD file</label>
+      <input
+        id="workbench-sdf"
+        type="file"
+        class="form-control mt-1"
+        accept=".sdf"
+        aria-describedby="workbench-sdf-hint"
+        onchange="loadSdFile()"
+      />
+      <small id="workbench-sdf-hint" class="text-muted">
+        One InChI and InChIKey per record. Choosing a record draws it in the
+        editor above, with the full apparatus.
+      </small>
+    </div>
   </div>
 
   <div class="tool-controls tool-controls-bottom">
@@ -76,6 +93,26 @@
       aria-live="polite"
     ></div>
     <div class="conversion-status" data-status hidden></div>
+
+    <!--
+      An SD file is the one input with many answers, so it is the one that
+      changes the output column instead of filling the editor. The list leads
+      the column; selecting a record draws it above and the plates below then
+      describe that record.
+    -->
+    <div data-sdf-records hidden></div>
+    <!--
+      The whole file as text, which old tab 4 produced and the row list does
+      not: one InChI, AuxInfo and InChIKey per record, in file order. The
+      plate's own copy and download buttons are the export — there is no
+      second mechanism.
+    -->
+    <inchi-result-field
+      id="workbench-sdf-export"
+      title="All records"
+      placeholder="Every record's InChI, AuxInfo and InChIKey, once an SD file is chosen."
+      hidden
+    ></inchi-result-field>
 
     <!--
       The molecule answer. Hidden as a block when the editor holds a
