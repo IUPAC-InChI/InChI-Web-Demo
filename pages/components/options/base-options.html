@@ -29,7 +29,8 @@
   <!--
     OUTSIDE the label, and this is not cosmetic. A popover nested in a <label>
     is a label descendant, so clicking its prose would activate the labelled
-    checkbox and fire a conversion. It would also land in label.textContent.
+    checkbox and fire a conversion. It would also land in label.textContent,
+    which pages/retro.js reads to build its 3270 captions.
 
     A native popover toggles, dismisses on Escape and on a click outside, and
     sits in the top layer — all without script. The Bootstrap version put this

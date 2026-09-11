@@ -365,9 +365,10 @@ select[data-version] {
 }
 
 /*
- * The sub-option indent. This was Bootstrap's `.ms-4`. The templates also
- * mark the inputs with data-inchi-sub-option; this class is only the
- * visual half.
+ * The sub-option indent. This was Bootstrap's `.ms-4`, which pages/retro.js
+ * read as its indent signal — a spacing utility carrying meaning. The
+ * templates mark the inputs with data-inchi-sub-option now, and retro.js
+ * reads that; this class is only the visual half.
  */
 .option-indent {
   margin-left: 1.5rem;
