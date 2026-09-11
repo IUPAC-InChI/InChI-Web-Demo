@@ -1015,26 +1015,6 @@ class InChIOptionsElement extends HTMLElement {
     });
 
     /*
-     * Initialize the Bootstrap Multiselect widget for tautomer options if it exists.
-     */
-    $(this)
-      .find("select[data-tautomer-multiselect]")
-      .multiselect({
-        buttonContainer: '<div class="btn-group mw-100"></div>',
-        includeSelectAllOption: true,
-        nonSelectedText: "Tautomer options",
-        numberDisplayed: 1,
-        onChange: () => updateFunction(),
-        onDeselectAll: () => updateFunction(),
-        onSelectAll: () => updateFunction(),
-        // Workaround for Bootstrap 5
-        templates: {
-          button:
-            '<button type="button" class="form-select multiselect dropdown-toggle" data-bs-toggle="dropdown"><span class="multiselect-selected-text"></span></button>',
-        },
-      });
-
-    /*
      * Initialize Bootstrap tooltips
      */
     [...this.querySelectorAll('[data-bs-toggle="tooltip"]')].map(

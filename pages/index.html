@@ -38,12 +38,6 @@
       integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
       crossorigin="anonymous"
     />
-    <link
-      href="bootstrap-multiselect/bootstrap-multiselect-1.1.2/dist/css/bootstrap-multiselect.min.css"
-      rel="stylesheet"
-      integrity="sha384-sRRK8QIx/nQdgIMFawlqpzKW5yaVcx63vbU82I9nuHAdsQN/blJQNrf6GORupDMI"
-      crossorigin="anonymous"
-    />
 
     <!--
       App stylesheets load after the framework so that app rules win ties
@@ -62,26 +56,13 @@
       when a tab is opened or a conversion is about to run.
 
       Everything below is deferred, so none of it blocks the parser. Deferred
-      scripts still run in document order, which is what lets the plugins below
-      rely on jQuery and the components rely on all of it.
+      scripts still run in document order, which is what lets the components
+      rely on everything above them.
     -->
-    <!-- Only bootstrap-multiselect needs jQuery. -->
-    <script
-      defer
-      src="jquery/jquery-3.7.1.min.js"
-      integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs"
-      crossorigin="anonymous"
-    ></script>
     <script
       defer
       src="bootstrap/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js"
       integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      defer
-      src="bootstrap-multiselect/bootstrap-multiselect-1.1.2/dist/js/bootstrap-multiselect.min.js"
-      integrity="sha384-0bKqY/QpXas8sskCT4hKi1EsfrCHXH7kZYNMr05pTeUbEdxf5xdjxEy1fjdU861x"
       crossorigin="anonymous"
     ></script>
     <!-- What the paste field was handed: pure, no dependencies of its own. -->

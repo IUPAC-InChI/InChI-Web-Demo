@@ -540,19 +540,6 @@ input.form-check-input {
 }
 
 /*
- * Used when at least one item is selected in Bootstrap Multiselect.
- * Background image is a copy from Bootstrap with altered color ("stroke").
- * The stroke has to stay literal: a data URI cannot read a custom property.
- */
-button.form-select.multiselect:has(
-    ~ div.multiselect-container > button.active
-  ) {
-  color: var(--inchi-on-brand);
-  background-color: var(--inchi-brand);
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-}
-
-/*
  * One focus system. The audit found two — a 3.08:1 olive ring on controls and
  * brand green on the annotation buttons — plus Bootstrap's blue glow on the
  * green buttons, because --bs-btn-focus-shadow-rgb was never overridden.
@@ -562,7 +549,6 @@ button.form-select.multiselect:has(
     select.form-select,
     textarea.form-control,
     input.form-control,
-    button.form-select.multiselect,
     .btn,
     .nav-link,
     .link-button,
@@ -1063,8 +1049,7 @@ button.form-select.multiselect:has(
   .annotation-button,
   .link-button,
   .option-help,
-  select[data-version],
-  button.form-select.multiselect {
+  select[data-version] {
     min-height: 44px;
   }
 
@@ -1482,4 +1467,33 @@ inchi-about > h2 {
   .theme-switch {
     min-height: 44px;
   }
+}
+
+/*
+ * An option group's heading. A <fieldset> is the right element for "one
+ * question, several answers", but its default border and padding are a second
+ * container inside .bounding-box, which already is one — so the box is reset
+ * and the legend carries the grouping on its own.
+ */
+.option-group {
+  min-width: 0; /* A fieldset's default min-width is min-content. */
+  margin: 0.75rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.option-group-legend {
+  float: left; /* Keeps the legend in flow so the margin below it applies. */
+  width: 100%;
+  margin-bottom: 0.25rem;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--inchi-ink-muted);
+}
+
+.option-group-legend + * {
+  clear: both;
 }
