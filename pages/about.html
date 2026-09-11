@@ -32,19 +32,13 @@
       }
     </script>
 
-    <link
-      href="bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
-      crossorigin="anonymous"
-    />
-
     <!--
-      App stylesheets load after the framework so that app rules win ties
-      without "!important". tokens.css comes first: it defines the design tokens
-      and the --bs-* hooks that brand Bootstrap's own components. The framework
-      goes away entirely once base.css replaces the subset still in use.
+      base.css first: the controls and the handful of utilities this app uses,
+      hand-written against the tokens, where Bootstrap's 192 KB stylesheet
+      used to sit. Then tokens.css, which defines those tokens, then the app's
+      own rules — which therefore win ties without "!important".
     -->
+    <link href="css/base.css" rel="stylesheet" />
     <link href="css/tokens.css" rel="stylesheet" />
     <link href="css/index.css" rel="stylesheet" />
     <link href="css/report-mask.css" rel="stylesheet" />
@@ -82,7 +76,6 @@
           href="https://www.inchi-trust.org/"
           target="_blank"
           rel="noopener"
-          class="flex-none"
         >
           <img
             class="masthead-logo"
@@ -174,8 +167,8 @@
   organizations:
 </p>
 
-<div class="row mt-5 mb-5">
-  <div class="col-lg-4">
+<div class="funder-row">
+  <div class="funder-text">
     The Volkswagen Foundation with the project
     <a
       href="https://portal.volkswagenstiftung.de/search/projectDetails.do?ref=98698"
@@ -187,7 +180,7 @@
       > </a
     >.
   </div>
-  <div class="col-lg-3 offset-lg-1">
+  <div>
     <a href="https://www.volkswagenstiftung.de" target="_blank">
       <img
         class="funder-logo"
@@ -204,15 +197,15 @@
 
 <hr />
 
-<div class="row mt-5 mb-5">
-  <div class="col-lg-4">
+<div class="funder-row">
+  <div class="funder-text">
     <a href="https://www.nfdi4chem.de" target="_blank"><i>NFDI4Chem</i></a>
     funded by the German Research Foundation (project number
     <a href="https://gepris.dfg.de/gepris/projekt/441958208" target="_blank"
       >441958208</a
     >).
   </div>
-  <div class="col-lg-3 offset-lg-1">
+  <div>
     <a href="https://www.dfg.de" target="_blank">
       <img
         class="funder-logo"
@@ -225,7 +218,7 @@
       />
     </a>
   </div>
-  <div class="col-lg-3 offset-lg-1">
+  <div>
     <a href="https://www.nfdi4chem.de" target="_blank">
       <img
         class="funder-logo"
@@ -254,8 +247,8 @@
 
 <hr />
 
-<div class="row mt-5">
-  <div class="col-lg-4">
+<div class="funder-row">
+  <div class="funder-text">
     <i>DALIA</i> funded by the German Federal Ministry of Education and Research
     (funding ID
     <a
@@ -264,7 +257,7 @@
       >16DWWQP07B</a
     >) and Next Generation EU.
   </div>
-  <div class="col-lg-3 offset-lg-1">
+  <div>
     <a href="https://www.bmbf.de" target="_blank">
       <img
         class="funder-logo"
@@ -286,7 +279,7 @@
       alt="Funded by the European Union — NextGenerationEU"
     />
   </div>
-  <div class="col-lg-3 offset-lg-1">
+  <div>
     <img
       class="funder-logo"
       src="img/Dalia_Wortmarke_Kompakt_Blau_RGB.svg"
@@ -301,15 +294,15 @@
 
 <hr />
 
-<div class="row mt-5 mb-5">
-  <div class="col-lg-4">
+<div class="funder-row">
+  <div class="funder-text">
     The
     <a href="https://www.beilstein-institut.de/en/" target="_blank"
       ><i>Beilstein-Institut</i></a
     >
     zur Förderung der Chemischen Wissenschaften
   </div>
-  <div class="col-lg-3 offset-lg-1">
+  <div>
     <a href="https://www.beilstein-institut.de/en/" target="_blank">
       <img
         class="funder-logo"

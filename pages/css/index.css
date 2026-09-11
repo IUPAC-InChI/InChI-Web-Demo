@@ -464,59 +464,11 @@ details[open] > summary::before {
   }
 }
 
-/* ---- Navigation -------------------------------------------------------- */
-/*
- * Tabs in the world's vocabulary: a hairline baseline, and the active tab
- * marked by a 3px stroke rather than a filled pill. The detector flagged
- * `cramped-padding` on the old nav — its children sat flush against the
- * border-bottom with no inset.
- */
-.nav-tabs,
-.nav-pills {
-  border-bottom: var(--inchi-rule-weight-hairline) solid
-    var(--inchi-rule-hairline);
-  gap: 0.25rem;
-  padding-bottom: 0.35rem;
-}
-
-.nav-tabs .nav-link,
-.nav-pills .nav-link {
-  border: 0;
-  border-radius: var(--inchi-radius-sm) var(--inchi-radius-sm) 0 0;
-  padding: 0.4rem 0.7rem;
-  color: var(--inchi-ink-muted);
-  background: none;
-  box-shadow: inset 0 -2px 0 transparent;
-  transition: box-shadow var(--inchi-transition), color var(--inchi-transition);
-}
-
-.nav-tabs .nav-link:hover,
-.nav-pills .nav-link:hover {
-  color: var(--inchi-ink);
-  box-shadow: inset 0 -2px 0 var(--inchi-rule-hairline);
-}
-
-.nav-tabs .nav-link.active,
-.nav-pills .nav-link.active,
-.nav-pills .show > .nav-link {
-  color: var(--inchi-ink);
-  background: none;
-  font-weight: 600;
-  box-shadow: inset 0 calc(-1 * var(--inchi-rule-weight-stroke)) 0
-    var(--inchi-rule-stroke);
-}
-
-/*
- * Bootstrap's own .nav-link colour would otherwise win against the tokens.
- * The old rule painted every inactive tab brand green, which is why a wrapped
- * tab row read as three green links and one white box.
- */
-button.nav-link:not(.active) {
-  color: var(--inchi-ink-muted);
-}
-
 /* ---- Forms ------------------------------------------------------------- */
-/* Bootstrap 5.2.3 hardcodes the checked colour, so it needs a real override. */
+/*
+ * base.css draws the checkbox and its checked state; this is the app's own
+ * refinement on top, kept separate so the control layer stays generic.
+ */
 input.form-check-input:is([type="checkbox"], [type="radio"]):checked {
   background-color: var(--inchi-brand);
   border-color: var(--inchi-brand);
@@ -541,8 +493,10 @@ input.form-check-input {
 
 /*
  * One focus system. The audit found two — a 3.08:1 olive ring on controls and
- * brand green on the annotation buttons — plus Bootstrap's blue glow on the
- * green buttons, because --bs-btn-focus-shadow-rgb was never overridden.
+ * brand green on the annotation buttons — plus the framework's blue glow on
+ * the green buttons, from a variable that was never overridden. base.css now
+ * gives everything the same outline; this list adds the border promotion,
+ * which only makes sense on something that has a border.
  */
 :is(
     input.form-check-input,
@@ -550,7 +504,6 @@ input.form-check-input {
     textarea.form-control,
     input.form-control,
     .btn,
-    .nav-link,
     .link-button,
     .annotation-button,
     .theme-switch,
@@ -777,7 +730,7 @@ input.form-check-input {
    */
   .tool-input > .ratio.ketcher,
   .tool-output > .ratio.ketcher {
-    --bs-aspect-ratio: 0;
+    --inchi-aspect-ratio: 0;
     height: clamp(24rem, 62vh, 45rem);
   }
 
@@ -837,7 +790,7 @@ input.form-check-input {
  * and pushed the results two screens down.
  */
 .ketcher {
-  --bs-aspect-ratio: 62%;
+  --inchi-aspect-ratio: 62%;
   min-height: min(530px, 62vh);
   border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
   border-radius: var(--inchi-radius-sm);
@@ -1060,7 +1013,6 @@ input.form-check-input {
  * those devices getting 30px buttons in a stack of seventeen checkboxes.
  */
 @media (pointer: coarse), (any-pointer: coarse) {
-  .nav-link,
   .btn,
   .btn-group .btn-sm,
   .annotation-button,
@@ -1617,4 +1569,40 @@ inchi-about > h2 {
     align-items: center;
     min-height: 44px;
   }
+}
+
+/*
+ * The funder acknowledgements: prose on the left, the funder's logo beside it,
+ * wrapping under on a narrow screen.
+ *
+ * This was a Bootstrap grid row of .col-lg-4 and .col-lg-3.offset-lg-1 — five
+ * grid classes to lay out two things side by side. Some rows carry a second
+ * logo, which flex handles without a third column class.
+ */
+.funder-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem 2rem;
+  align-items: center;
+  margin-block: 3rem;
+}
+
+.funder-row > * {
+  min-width: 0;
+}
+
+/* The prose takes the slack. */
+.funder-text {
+  flex: 1 1 20rem;
+}
+
+/*
+ * The logo cells are capped. .funder-logo is width:100%, which the Bootstrap
+ * column used to bound; as a bare flex item it stretched to whatever the row
+ * could give it and one logo came out 1296px wide. 12rem is about the
+ * intrinsic width these files are drawn at, so they also come out consistent
+ * with each other, which the old grid never quite managed.
+ */
+.funder-row > :not(.funder-text) {
+  flex: 0 1 12rem;
 }
