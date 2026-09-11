@@ -1595,3 +1595,26 @@ inchi-about > h2 {
 .record-list-failures {
   color: var(--inchi-error);
 }
+
+/*
+ * About left the tab strip and became its own page, so the masthead carries
+ * the only route to it — and the route back.
+ */
+.masthead-link {
+  color: var(--inchi-brand);
+  font-size: 0.875rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.masthead-link:hover {
+  text-decoration: underline;
+}
+
+@media (pointer: coarse), (any-pointer: coarse) {
+  .masthead-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}

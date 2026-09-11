@@ -1,3 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- viewport-fit=cover so env(safe-area-inset-*) works on notched phones. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>About the InChI Web App</title>
+    <meta
+      name="description"
+      content="How the InChI Web App works, the open source projects it depends on, and who funds it."
+    />
+    <meta name="color-scheme" content="light dark" />
+
+    <!--
+      The stored theme choice, applied before first paint. This has to be
+      inline and blocking: read it from theme.js instead and the page paints
+      once in the system theme and then flips, which is worse than no toggle
+      at all. Absent a stored choice, nothing is set and the media queries in
+      css/tokens.css follow the system preference.
+    -->
+    <script>
+      try {
+        var storedTheme = localStorage.getItem("inchi-theme");
+        if (storedTheme === "light" || storedTheme === "dark") {
+          document.documentElement.dataset.theme = storedTheme;
+        }
+      } catch (error) {
+        /* Private mode or blocked storage: the system preference stands. */
+      }
+    </script>
+
+    <link
+      href="bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+      crossorigin="anonymous"
+    />
+
+    <!--
+      App stylesheets load after the framework so that app rules win ties
+      without "!important". tokens.css comes first: it defines the design tokens
+      and the --bs-* hooks that brand Bootstrap's own components. The framework
+      goes away entirely once base.css replaces the subset still in use.
+    -->
+    <link href="css/tokens.css" rel="stylesheet" />
+    <link href="css/index.css" rel="stylesheet" />
+    <link href="css/report-mask.css" rel="stylesheet" />
+    <link href="css/report-feedback.css" rel="stylesheet" />
+
+    <!--
+      This page is prose. It carries the theme control and nothing else — not
+      index.js, which would throw on availableInchiVersions during warm-up and
+      install the tool surface's key listener on a page with no tool on it.
+    -->
+    <!-- The theme control, shared with the tool surface. -->
+    <script defer src="theme.js"></script>
+    <script>
+      var _paq = (window._paq = window._paq || []);
+      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+      _paq.push(["trackPageView"]);
+      _paq.push(["enableLinkTracking"]);
+      (function () {
+        var u = "https://matomo.beilstein.org/";
+        _paq.push(["setTrackerUrl", u + "matomo.php"]);
+        _paq.push(["setSiteId", "10"]);
+        var d = document,
+          g = d.createElement("script"),
+          s = d.getElementsByTagName("script")[0];
+        g.async = true;
+        g.src = u + "matomo.js";
+        s.parentNode.insertBefore(g, s);
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="masthead">
+        <a
+          href="https://www.inchi-trust.org/"
+          target="_blank"
+          rel="noopener"
+          class="flex-none"
+        >
+          <img
+            class="masthead-logo"
+            src="img/InChI-logo2.png"
+            width="180"
+            height="56"
+            alt="InChI Trust"
+          />
+        </a>
+        <div class="masthead-text">
+          <h1>InChI Web App</h1>
+          <p class="masthead-tagline">
+            Chemical identifiers generated in your browser, never on a server.
+          </p>
+        </div>
+
+        <a class="masthead-link" href="index.html">Back to the tool</a>
+
+        <!--
+          role="switch" rather than a checkbox: this is a two-state control
+          whose accessible name stays put while its state changes, so the name
+          lives on aria-label and the visible label reports the current mode.
+        -->
+        <button
+          type="button"
+          class="theme-switch"
+          role="switch"
+          aria-checked="false"
+          aria-label="Dark mode"
+          data-theme-switch
+        >
+          <span class="theme-switch-mode apparatus" data-theme-switch-label
+            >Light</span
+          >
+          <span class="theme-switch-track" aria-hidden="true">
+            <span class="theme-switch-knob"></span>
+          </span>
+        </button>
+      </header>
+      <main class="container-md">
 <hr />
 
 <p>
@@ -198,3 +323,7 @@
     </a>
   </div>
 </div>
+      </main>
+    </div>
+  </body>
+</html>
