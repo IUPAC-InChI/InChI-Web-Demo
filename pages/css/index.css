@@ -827,11 +827,16 @@ input.form-check-input {
   margin-top: 0;
 }
 
-.tool-output > inchi-result-field:first-of-type > .identifier-plate {
+/*
+ * Crossing the [data-output] wrapper: the molecule and reaction answers are
+ * each a block that hides as a unit, so the leading plate is no longer a
+ * direct child of .tool-output.
+ */
+.tool-output [data-output] > inchi-result-field:first-of-type > .identifier-plate {
   margin-top: 0;
 }
 
-.tool-output > .conversion-status:not([hidden]) ~ inchi-result-field:first-of-type > .identifier-plate {
+.tool-output > .conversion-status:not([hidden]) ~ [data-output] > inchi-result-field:first-of-type > .identifier-plate {
   margin-top: 1rem;
 }
 

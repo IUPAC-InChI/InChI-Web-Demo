@@ -111,14 +111,10 @@ class ReportMaskElement extends InsertHTMLElement {
 
   async connectedCallback() {
     /*
-     * Attributes are read here rather than in the constructor: a custom element
-     * constructor must not touch attributes, because it also runs for elements
-     * that are upgraded before their attributes are parsed.
+     * No tabId and no scopeIds(): there was one of these per tool pane, so the
+     * fragment's ids had to be suffixed to stay unique. There is one surface.
      */
-    this.tabId = this.getAttribute("tabId");
-
     await super.connectedCallback();
-    scopeIds(this, this.tabId);
 
     this.dialog = this.querySelector("dialog");
     this.openBtn = this.querySelector(".mask-open");
@@ -183,8 +179,6 @@ class ReportMaskElement extends InsertHTMLElement {
   }
 
   async postData(data = {}) {
-    const paneId = `${this.tabId}-pane`;
-
     const textOrNull = (id) => {
       const el = document.getElementById(id);
       return el && el.textContent && el.textContent.trim()
@@ -192,42 +186,35 @@ class ReportMaskElement extends InsertHTMLElement {
         : null;
     };
 
+    /*
+     * One editor, so no branch. This used to choose between the Ketcher on
+     * tab 1 and the paste box on tab 2; the paste field fills the editor now,
+     * so the structure is always Ketcher's and both serializations come from
+     * the same place.
+     */
     let molfile_v2 = null;
     let molfile_v3 = null;
-    if (this.tabId === "inchi-tab1") {
-      // from ketcher for InChI Tab
-      const ketcher = getKetcher(`${this.tabId}-ketcher`);
-      if (ketcher) {
-        molfile_v2 = await getMolfileFromKetcher(ketcher, "v2000");
-        molfile_v3 = await getMolfileFromKetcher(ketcher, "v3000");
-      }
-    } else if (this.tabId === "inchi-tab2") {
-      let tab2Data = document.getElementById("inchi-tab2-molfile").value;
-      // from molfile for Molfile Tab
-      if (tab2Data.includes("V3000")) {
-        molfile_v2 = null;
-        molfile_v3 = document.getElementById("inchi-tab2-molfile").value;
-      } else {
-        molfile_v2 = document.getElementById("inchi-tab2-molfile").value;
-        molfile_v3 = null;
-      }
+    const ketcher = getKetcher("workbench-ketcher");
+    if (ketcher) {
+      molfile_v2 = await getMolfileFromKetcher(ketcher, "v2000");
+      molfile_v3 = await getMolfileFromKetcher(ketcher, "v3000");
     }
 
-    const inchi = textOrNull(`${this.tabId}-inchi`);
-    const inchikey = textOrNull(`${this.tabId}-inchikey`);
-    const auxinfo = textOrNull(`${this.tabId}-auxinfo`);
+    const inchi = textOrNull("workbench-inchi");
+    const inchikey = textOrNull("workbench-inchikey");
+    const auxinfo = textOrNull("workbench-auxinfo");
     // Remove InChI options from the log
-    const log = textOrNull(`${this.tabId}-logs`);
+    const log = textOrNull("workbench-logs");
     const cleanedLog =
       log && log.startsWith("InChI options: ")
         ? log.replace(/^InChI options: [^\n]*\n?/, "")
         : log;
-    const inchi_version = getVersion(paneId);
+    const inchi_version = getVersion();
 
     // Collect InChI options as a string
     let options = "";
     try {
-      options = getInchiOptions(optionsPanelOf(paneId))
+      options = getInchiOptions(optionsPanel())
         .map((o) => "-" + o)
         .join(" ");
     } catch (err) {
@@ -399,29 +386,34 @@ class FeedbackDialogElement extends InsertHTMLElement {
   }
 }
 
-class InChIToolsElement extends InsertHTMLElement {
+class InChIWorkbenchElement extends InsertHTMLElement {
   constructor() {
-    super("components/inchi-tools.html");
+    super("components/workbench.html");
   }
 
   async connectedCallback() {
     await super.connectedCallback();
 
-    await addInchiOptionsForm("inchi-tab1-pane", () => updateInchiTab1());
-    await addInchiOptionsForm("inchi-tab2-pane", () => updateInchiTab2());
-    await addInchiOptionsForm("inchi-tab4-pane", () => updateInchiTab4());
-  }
-}
+    /*
+     * The options panel is built per InChI version, so it cannot be part of
+     * the fragment.
+     *
+     * addInchiOptionsForm, NOT updateInchiOptions: the latter ends with
+     * `await updateFunction()`, which would run a conversion before the
+     * Ketcher iframe has loaded — getKetcher returns undefined and the page
+     * paints a red "the structure editor is not ready yet". The first
+     * conversion is driven by onKetcherLoaded's `change` subscription, which
+     * is what the two tools elements this replaces relied on.
+     */
+    await addInchiOptionsForm(() => updateWorkbench());
 
-class RInChIToolsElement extends InsertHTMLElement {
-  constructor() {
-    super("components/rinchi-tools.html");
-  }
-
-  async connectedCallback() {
-    await super.connectedCallback();
+    /*
+     * Provenance for the reaction half. There is one RInChI build and no
+     * selector for it, so it is stated once here rather than stamped on six
+     * plates or rewritten on every conversion.
+     */
     this.querySelectorAll(".rinchi-version").forEach((span) => {
-      span.textContent = `Results computed with RInChI version ${RINCHI_VERSION}`;
+      span.textContent = `Computed with RInChI version ${RINCHI_VERSION}`;
     });
   }
 }
@@ -449,9 +441,8 @@ class InChIVersionSelectionElement extends HTMLElement {
       return;
     }
 
-    // Unique per tab, so that the <label> binds to this tab's <select>.
-    const suffix = this.closest(".tab-pane")?.id ?? "";
-    const dropdownId = `version-dropdown-${suffix}`;
+    // One selector on one surface: a fixed id, no per-tab suffix.
+    const dropdownId = "version-dropdown";
 
     /*
      * A real heading, not a <label class="h4">. The audit found the whole tool
@@ -459,7 +450,7 @@ class InChIVersionSelectionElement extends HTMLElement {
      * so there was no way to move between editor, options and results.
      */
     this.innerHTML = `<div class="bounding-box">
-      <h2 class="inchi-section-heading" id="version-heading-${suffix}">
+      <h2 class="inchi-section-heading" id="version-heading">
         InChI version
       </h2>
       <label class="visually-hidden" for="${dropdownId}">InChI version</label>
@@ -849,7 +840,7 @@ class InChIOptionsElement extends HTMLElement {
     super();
   }
 
-  async postCreate(tabDivId, updateFunction, inchiVersion) {
+  async postCreate(updateFunction, inchiVersion) {
     const htmlFragments = await Promise.all(
       this.componentPaths.map(async (path) => {
         try {
@@ -942,11 +933,11 @@ class InChIOptionsElement extends HTMLElement {
     /*
      * Reassign the name of the "stereoRadio" radio button group.
      */
-    this.querySelectorAll(
-      'input.form-check-input[type="radio"][name="stereoRadio"]'
-    ).forEach((input) => {
-      input.name = "stereoRadio-" + tabDivId;
-    });
+    /*
+     * The radio group's name was suffixed per pane, so that four copies of the
+     * same template did not form one group across the page. One panel now, so
+     * the template's own name stands and this rewrite is gone with it.
+     */
 
     /*
      * Register an on-change event on the "Include Stereo" checkbox to switch the
@@ -956,8 +947,7 @@ class InChIOptionsElement extends HTMLElement {
       'input.form-check-input[data-id="includeStereo"]',
       // Optional: an options template is free to leave the checkbox out.
     )?.addEventListener("change", function () {
-      document
-        .getElementById(tabDivId)
+      optionsPanel()
         .querySelectorAll("input.form-check-input[data-inchi-stereo-option]")
         .forEach((input) => {
           input.disabled = !this.checked;
@@ -971,15 +961,13 @@ class InChIOptionsElement extends HTMLElement {
     this.querySelector(
       'input.form-check-input[data-id="treatPolymers"]'
     )?.addEventListener("change", function () {
-      document
-        .getElementById(tabDivId)
+      const panel = optionsPanel();
+      panel
         .querySelectorAll("input.form-check-input[data-inchi-polymer-option]")
         .forEach((input) => {
           input.disabled = !this.checked;
         });
-      document
-        .getElementById(tabDivId)
-        .querySelector('input.form-check-input[data-id="NPZz"]').checked =
+      panel.querySelector('input.form-check-input[data-id="NPZz"]').checked =
         this.checked;
     });
 
@@ -989,10 +977,9 @@ class InChIOptionsElement extends HTMLElement {
     this.querySelector("[data-reset-inchi-options]")?.addEventListener(
       "click",
       function () {
-        resetInchiOptions(optionsPanelOf(tabDivId));
-        /* Was the last line of resetInchiOptions; it takes an element now and
-         * the counter lives on the pane. */
-        updateChangedOptionCount(tabDivId);
+        resetInchiOptions(optionsPanel());
+        /* Was the last line of resetInchiOptions, which takes an element now. */
+        updateChangedOptionCount();
         updateFunction();
       }
     );
@@ -1003,7 +990,8 @@ class InChIOptionsElement extends HTMLElement {
      * updateFunction.
      */
     this.querySelectorAll("input.form-check-input").forEach((input) => {
-      input.id = input.dataset.id + "-" + tabDivId;
+      /* Unique without a suffix: one options panel, one input per data-id. */
+      input.id = input.dataset.id;
       const label = input.nextElementSibling;
       if (label instanceof HTMLLabelElement) {
         label.htmlFor = input.id;
@@ -1419,10 +1407,9 @@ class NGLViewerElement extends HTMLElement {
 }
 
 customElements.define("inchi-about", AboutElement);
-customElements.define("inchi-inchi-tools", InChIToolsElement);
+customElements.define("inchi-workbench", InChIWorkbenchElement);
 customElements.define("report-mask", ReportMaskElement);
 customElements.define("feedback-dialog", FeedbackDialogElement);
-customElements.define("inchi-rinchi-tools", RInChIToolsElement);
 customElements.define("inchi-version-selection", InChIVersionSelectionElement);
 customElements.define("inchi-result-field", InChIResultFieldElement);
 customElements.define("inchi-options-106", InChIOptions106Element);
