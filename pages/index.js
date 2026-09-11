@@ -740,46 +740,56 @@ async function addInchiOptionsForm(tabDivId, updateFunction) {
   updateChangedOptionCount(tabDivId);
 }
 
-function resetInchiOptions(targetDivId) {
-  const targetDiv = document.getElementById(targetDivId);
-
-  targetDiv
+/*
+ * Restore this version's defaults, which is not the same as clearing the
+ * panel: an option marked data-default-checked is checked *on*.
+ *
+ * Takes the element to search. These used to take a tab id, from when there
+ * were eight option panels; there is one after the surface is collapsed.
+ */
+function resetInchiOptions(root) {
+  root
     .querySelectorAll("input.form-check-input[data-default-checked]")
     .forEach((input) => {
       input.checked = true;
     });
 
-  targetDiv
+  root
     .querySelectorAll("input.form-check-input:not([data-default-checked])")
     .forEach((input) => {
       input.checked = false;
     });
 
-  targetDiv
+  root
     .querySelectorAll("input.form-check-input[data-default-disabled]")
     .forEach((input) => {
       input.disabled = true;
     });
 
-  targetDiv
+  root
     .querySelectorAll("input.form-check-input:not([data-default-disabled])")
     .forEach((input) => {
       input.disabled = false;
     });
 
-  // Bootstrap Multiselect widget for tautomer options
-  $(targetDiv)
+  // Tautomer <select>; Task 3 deletes this branch with the widget.
+  $(root)
     .find("select[data-tautomer-multiselect]")
     .multiselect("deselectAll", false);
-
-  updateChangedOptionCount(targetDivId);
 }
 
-function getInchiOptions(tabId) {
+/*
+ * Read the option checkboxes back as command-line flags.
+ *
+ * `:enabled` is not a lie: a disabled sub-option keeps its checked state, and
+ * reading it would send the library flags the visitor cannot see.
+ *
+ * Takes the element to search, like the rest of these.
+ */
+function getInchiOptions(root) {
   const options = [];
-  const tabDiv = document.getElementById(tabId);
 
-  tabDiv
+  root
     .querySelectorAll(
       "input.form-check-input:enabled[data-inchi-option-on]:checked"
     )
@@ -787,7 +797,7 @@ function getInchiOptions(tabId) {
       options.push(input.dataset.inchiOptionOn);
     });
 
-  tabDiv
+  root
     .querySelectorAll(
       "input.form-check-input:enabled[data-inchi-option-off]:not(:checked)"
     )
@@ -795,8 +805,8 @@ function getInchiOptions(tabId) {
       options.push(input.dataset.inchiOptionOff);
     });
 
-  // Bootstrap Multiselect widget for tautomer options
-  tabDiv
+  // Tautomer <select>; Task 3 deletes this branch with the widget.
+  root
     .querySelectorAll(
       "select[data-tautomer-multiselect] option[data-inchi-option-on]:checked"
     )
@@ -807,8 +817,8 @@ function getInchiOptions(tabId) {
   return options;
 }
 
-function collectInchiOptions(tabId) {
-  return getInchiOptions(tabId)
+function collectInchiOptions(root) {
+  return getInchiOptions(root)
     .map((o) => "-" + o)
     .join(" ");
 }
@@ -818,18 +828,32 @@ function getVersion(tabId) {
     .value;
 }
 
-function getInchiOptionsState(tabDivId) {
-  const inchiOptionsDiv = document
+/*
+ * The options panel of a pane. A function rather than a stored reference: the
+ * panel is rebuilt on every version change, so a captured one goes stale.
+ *
+ * Four panes still have one; after the surface is collapsed there is a single
+ * panel and this loses its argument.
+ */
+function optionsPanelOf(tabDivId) {
+  return document
     .getElementById(tabDivId)
     .querySelector("div[data-inchi-options]");
+}
+
+/*
+ * Snapshot the panel, so a version switch can put the visitor's settings back
+ * into the panel the new version builds.
+ */
+function getInchiOptionsState(root) {
   const optionsState = {};
 
-  inchiOptionsDiv.querySelectorAll("input[data-id]").forEach((input) => {
+  root.querySelectorAll("input[data-id]").forEach((input) => {
     optionsState[input.dataset.id] = [input.checked, input.disabled];
   });
 
-  // Bootstrap Multiselect widget for tautomer options
-  inchiOptionsDiv
+  // Tautomer <select>; Task 3 deletes this branch with the widget.
+  root
     .querySelectorAll("select[data-tautomer-multiselect] option[data-id]")
     .forEach((optionElement) => {
       optionsState[optionElement.dataset.id] = [
@@ -841,24 +865,23 @@ function getInchiOptionsState(tabDivId) {
   return optionsState;
 }
 
-function applyInchiOptionsState(tabDivId, optionsState) {
-  const inchiOptionsDiv = document
-    .getElementById(tabDivId)
-    .querySelector("div[data-inchi-options]");
-
+/*
+ * Put a snapshot back. Applied by `data-id`, so an option the newly selected
+ * version does not have is simply absent and the new panel's own default
+ * stands.
+ */
+function applyInchiOptionsState(root, optionsState) {
   Object.entries(optionsState).forEach(([k, v]) => {
-    const input = inchiOptionsDiv.querySelector(`input[data-id="${k}"]`);
+    const input = root.querySelector(`input[data-id="${k}"]`);
     if (input) {
       input.checked = v[0];
       input.disabled = v[1];
       return;
     }
 
-    // Bootstrap Multiselect widget for tautomer options
+    // Tautomer <select>; Task 3 deletes this branch with the widget.
     if (v[0]) {
-      $(inchiOptionsDiv)
-        .find("select[data-tautomer-multiselect]")
-        .multiselect("select", k);
+      $(root).find("select[data-tautomer-multiselect]").multiselect("select", k);
     }
   });
 }
@@ -875,7 +898,7 @@ async function updateInchiTab1() {
   markResultsStale("inchi-tab1-pane", true);
 
   // collect user input
-  const options = collectInchiOptions("inchi-tab1-pane");
+  const options = collectInchiOptions(optionsPanelOf("inchi-tab1-pane"));
   const inchiVersion = getVersion("inchi-tab1-pane");
   setConversionStatus(
     "inchi-tab1-pane",
@@ -969,7 +992,7 @@ async function updateInchiTab2() {
 
   // collect user input
   const molfile = document.getElementById("inchi-tab2-molfile").value;
-  const options = collectInchiOptions("inchi-tab2-pane");
+  const options = collectInchiOptions(optionsPanelOf("inchi-tab2-pane"));
   const inchiVersion = getVersion("inchi-tab2-pane");
 
   // An empty box is not a failure: clear the plates and stay quiet.
@@ -1066,7 +1089,7 @@ async function updateInchiTab4() {
   // clear output fields
   writeResult("", "inchi-tab4-inchis");
 
-  const options = collectInchiOptions("inchi-tab4-pane");
+  const options = collectInchiOptions(optionsPanelOf("inchi-tab4-pane"));
   const inchiVersion = getVersion("inchi-tab4-pane");
   const sdFile = document.getElementById("inchi-tab4-sdfFileInput").files[0];
   if (!sdFile) {
@@ -1203,9 +1226,14 @@ async function updateInchiOptions(tabDivId, updateFunction) {
   );
   markResultsStale(tabDivId, true);
 
+  /*
+   * Snapshotted after addInchiOptionsForm has already rebuilt the panel, so
+   * this restore is a no-op — a pre-existing bug, not introduced here. Left
+   * exactly as it was; fixing it is a separate change with its own test.
+   */
   await addInchiOptionsForm(tabDivId, () => updateFunction());
-  const optionsState = getInchiOptionsState(tabDivId);
-  applyInchiOptionsState(tabDivId, optionsState);
+  const optionsState = getInchiOptionsState(optionsPanelOf(tabDivId));
+  applyInchiOptionsState(optionsPanelOf(tabDivId), optionsState);
   updateChangedOptionCount(tabDivId);
 
   await updateFunction();
