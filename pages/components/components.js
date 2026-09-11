@@ -227,7 +227,7 @@ class ReportMaskElement extends InsertHTMLElement {
     // Collect InChI options as a string
     let options = "";
     try {
-      options = getInchiOptions(paneId)
+      options = getInchiOptions(optionsPanelOf(paneId))
         .map((o) => "-" + o)
         .join(" ");
     } catch (err) {
@@ -989,7 +989,10 @@ class InChIOptionsElement extends HTMLElement {
     this.querySelector("[data-reset-inchi-options]")?.addEventListener(
       "click",
       function () {
-        resetInchiOptions(tabDivId);
+        resetInchiOptions(optionsPanelOf(tabDivId));
+        /* Was the last line of resetInchiOptions; it takes an element now and
+         * the counter lives on the pane. */
+        updateChangedOptionCount(tabDivId);
         updateFunction();
       }
     );
