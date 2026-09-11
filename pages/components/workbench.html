@@ -244,6 +244,55 @@
         title="Web-RInChIKey"
         placeholder="The web key, derived from the RInChI above."
       ></inchi-result-field>
+      <!--
+        The reverse direction, which had a tab of its own. It is an action on
+        this result, not a separate tool: the RInChI it converts is the one
+        above it, and the RAuxInfo is already in hand.
+      -->
+      <div class="bounding-box mt-3">
+        <h2 class="inchi-section-heading">Reaction file</h2>
+        <div class="row-cols-auto mt-1" role="group" aria-label="File format">
+          <div class="form-check">
+            <input
+              id="reaction-format-rxn"
+              class="form-check-input"
+              type="radio"
+              name="reactionFileFormat"
+              value="RXN"
+              checked
+            />
+            <label class="form-check-label" for="reaction-format-rxn">RXN</label>
+          </div>
+          <div class="form-check">
+            <input
+              id="reaction-format-rd"
+              class="form-check-input"
+              type="radio"
+              name="reactionFileFormat"
+              value="RD"
+            />
+            <label class="form-check-label" for="reaction-format-rd">RD</label>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary mt-2"
+          data-generate-reaction-file
+          onclick="downloadReactionFile()"
+        >
+          Generate file text
+        </button>
+        <inchi-result-field
+          id="workbench-reaction-file"
+          title="Reaction file"
+          placeholder="The RXN or RD file text for the RInChI above."
+        ></inchi-result-field>
+        <inchi-result-field
+          id="workbench-reaction-file-logs"
+          title="Log"
+          placeholder="Messages from the RInChI library, when it has any."
+        ></inchi-result-field>
+      </div>
       <details class="secondary-plates">
         <summary>Auxiliary information and library log</summary>
         <inchi-result-field
