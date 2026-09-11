@@ -894,6 +894,173 @@ async function updateWorkbench() {
 }
 
 /*
+ * A paste ran a full WebAssembly conversion and a 3D reload on every
+ * keystroke. 250ms is below the threshold where a pause feels like lag and
+ * above the rate anyone types molfile lines.
+ */
+const loadPastedInputDebounced = debounce(() => loadPastedInput(), 250);
+
+/*
+ * The last thing pasted, verbatim, and what it was taken to be.
+ *
+ * Attached to a problem report so a bug that lives in the pasted *file* — a
+ * malformed counts line, a V3000 quirk Ketcher normalises away — is still
+ * reproducible from the report. The old molfile tab sent the bytes it
+ * converted; this surface converts what the editor holds (spec D2, one source
+ * of truth), so the bytes would otherwise be lost. Never used for conversion.
+ */
+let lastPastedInput = { text: "", kind: "" };
+
+/*
+ * Take whatever is in the paste field into the editor.
+ *
+ * Everything here ends in the same place — a structure in Ketcher — so the
+ * conversion that follows does not know or care how the structure arrived.
+ * The three formats that are not structures (a bare InChI, a lone RAuxInfo,
+ * unrecognised text) are refused by name in the status line, which is the
+ * part the old tabs could not do: pasting a molfile into the AuxInfo tab
+ * silently did nothing.
+ */
+async function loadPastedInput() {
+  const text = document.getElementById("workbench-paste").value;
+  const format = detectInputFormat(text);
+  lastPastedInput = { text, kind: format.kind };
+  const ketcher = getKetcher("workbench-ketcher");
+
+  if (!ketcher) {
+    setConversionStatus(
+      "error",
+      "The structure editor is not ready yet. Please reload the page (CTRL + F5) if this persists."
+    );
+    return;
+  }
+
+  if (format.kind === "empty") {
+    /*
+     * Clearing the field does not clear the editor: the structure may have
+     * been edited since it was pasted, and throwing that away because the
+     * visitor tidied the box would be destructive.
+     */
+    setConversionStatus(null);
+    return;
+  }
+
+  if (!format.convertible) {
+    setConversionStatus("error", `This looks like ${format.label}. ${format.reason}`);
+    return;
+  }
+
+  setConversionStatus("busy", `Reading ${format.label}…`);
+
+  try {
+    switch (format.kind) {
+      case "molfile":
+      case "rxnfile":
+        /*
+         * Ketcher identifies these itself, and its parser is the one whose
+         * verdict matters — re-deriving the format here would give us two
+         * parsers that can disagree.
+         */
+        await ketcher.setMolecule(text);
+        break;
+
+      case "rdfile":
+        /*
+         * Ketcher has no RD branch: its identifyStructFormat tests $RXN,
+         * "\n$$$$", V2000/V3000, "M  END", CML, CDX, InChI and SMILES. An RD
+         * file embeds an $RXN, so handing it over whole gets it classified as
+         * a reaction and its $RDFILE/$DATM/$RFMT header fed to the RXN parser.
+         * The embedded reaction is the part Ketcher can read.
+         *
+         * Old RInChI tab 2 passed RD text straight to the RInChI library,
+         * which does support it — so this is a real narrowing, and the
+         * header's data fields are dropped rather than carried.
+         */
+        await ketcher.setMolecule(text.slice(text.indexOf("$RXN")));
+        break;
+
+      case "sdf":
+        /* One pasted record. A whole SD file goes through the picker (Task 7),
+         * which is the path that can show more than one answer. */
+        await ketcher.setMolecule(firstSdfRecord(text));
+        break;
+
+      case "auxinfo": {
+        const { molfile, log, message } = await molfileFromAuxinfo(
+          text.trim(),
+          0,
+          0,
+          getVersion()
+        );
+        if (!molfile) {
+          const detail = [log, message].filter((part) => part).join(" ");
+          setConversionStatus(
+            "error",
+            `This AuxInfo could not be turned into a structure.${
+              detail ? ` The library reported: ${detail}` : ""
+            }`
+          );
+          return;
+        }
+        await ketcher.setMolecule(molfile);
+        break;
+      }
+
+      case "rinchi": {
+        /*
+         * Both strings, in whichever order they were pasted. The RAuxInfo is
+         * what carries the coordinates; without it the reaction is drawn as a
+         * pile of atoms at the origin, which is what old RInChI tab 3's
+         * second box existed to prevent.
+         */
+        const paired = splitRinchiPaste(text);
+        const rxnfile = await fileTextFromRinchi(
+          paired.rinchi,
+          paired.rauxinfo,
+          "RXN"
+        );
+        if (rxnfile.error !== "" || !rxnfile.fileText) {
+          setConversionStatus(
+            "error",
+            `This RInChI could not be turned into a reaction. The library reported: ${
+              rxnfile.error || "no detail"
+            }`
+          );
+          return;
+        }
+        await ketcher.setMolecule(rxnfile.fileText);
+        break;
+      }
+    }
+  } catch (error) {
+    console.error("Loading pasted input failed", error);
+    setConversionStatus(
+      "error",
+      `This ${format.label} could not be drawn. Detail: ${error.message ?? error}`
+    );
+    return;
+  }
+
+  /*
+   * No updateWorkbench() call here, deliberately. ketcher.setMolecule()
+   * dispatches the editor's own `change` event, and onKetcherLoaded
+   * (index.js:1672) has subscribed updateWorkbench to it — calling it here as
+   * well runs two conversions concurrently over the same plates and loads the
+   * 3D viewer twice.
+   */
+}
+
+/*
+ * The first record of pasted SD file text. getSDFDelimiter handles all three
+ * line-ending conventions; a single record often has no terminator at all,
+ * in which case the whole text is the record.
+ */
+function firstSdfRecord(sdfText) {
+  const delimiter = getSDFDelimiter(sdfText);
+  return delimiter ? sdfText.split(delimiter)[0] : sdfText;
+}
+
+/*
  * Both output blocks stay in the DOM with their content intact, so drawing a
  * reaction arrow and then deleting it does not re-run a conversion to get
  * the InChI back.
