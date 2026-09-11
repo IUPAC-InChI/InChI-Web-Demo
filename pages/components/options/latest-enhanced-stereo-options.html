@@ -30,18 +30,25 @@
       <label class="form-check-label">
         Enhanced Stereochemistry
         <button
-      type="button"
-      class="option-help"
-      aria-label="What this option does"
-      data-bs-toggle="tooltip"
-      data-bs-custom-class="custom-tooltip"
-      data-bs-html="true"
-      data-bs-trigger="hover focus click"
-      data-bs-title="The functionality for enhanced stereochemistry is a work in progress. You can expect to encounter warnings. <p><b>Note: </b> Enhanced stereochemistry is only supported in the v3000 mol file format."
-    >
-      ?
-    </button>
+          type="button"
+          class="option-help"
+          popovertarget="help-EnhancedStereochemistry"
+          aria-label="What “Enhanced Stereochemistry” does"
+        >
+          ?
+        </button>
       </label>
+      <!-- Outside the label: see the note in base-options.html. -->
+      <div id="help-EnhancedStereochemistry" popover class="option-help-panel">
+        <p>
+          The functionality for enhanced stereochemistry is a work in progress.
+          You can expect to encounter warnings.
+        </p>
+        <p>
+          <b>Note:</b> enhanced stereochemistry is only supported in the V3000
+          molfile format.
+        </p>
+      </div>
     </div>
     <div class="form-check ms-4 ms-xl-0">
       <input

@@ -898,10 +898,45 @@ input.form-check-input {
   color: var(--inchi-brand);
 }
 
-/* Room for the multi-paragraph option explanations, but never wider than the screen. */
-.custom-tooltip .tooltip-inner {
-  max-width: min(500px, 90vw);
-  text-align: left;
+/*
+ * The help panel. A plate, by the system's own reckoning — it lifts, so it
+ * gets the 12px radius and the plate shadow, not the control's 8px.
+ *
+ * No open/closed selector of its own: the `popover` attribute makes the
+ * platform own that, along with Escape, click-outside dismissal and the top
+ * layer. The UA centres it in the viewport, which is deliberate here — CSS
+ * anchor positioning is not portable yet, and these panels are paragraphs of
+ * prose rather than one-line tips.
+ */
+.option-help-panel {
+  max-width: min(32rem, calc(100vw - 2rem));
+  padding: 0.75rem 1rem;
+  border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
+  border-radius: var(--inchi-radius-md);
+  background: var(--inchi-field);
+  color: var(--inchi-ink);
+  box-shadow: var(--inchi-shadow-plate);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.option-help-panel p {
+  margin: 0;
+}
+
+.option-help-panel p + p,
+.option-help-panel ul {
+  margin-top: 0.5rem;
+}
+
+/* One of these panels lists tips; the marker needs room the reset took away. */
+.option-help-panel ul {
+  margin-bottom: 0;
+  padding-left: 1.25rem;
+}
+
+.option-help-panel li + li {
+  margin-top: 0.35rem;
 }
 
 /*

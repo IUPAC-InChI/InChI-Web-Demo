@@ -1013,15 +1013,6 @@ class InChIOptionsElement extends HTMLElement {
 
       input.addEventListener("change", updateFunction);
     });
-
-    /*
-     * Initialize Bootstrap tooltips
-     */
-    [...this.querySelectorAll('[data-bs-toggle="tooltip"]')].map(
-      (tooltipTriggerEl) => {
-        new bootstrap.Tooltip(tooltipTriggerEl);
-      }
-    );
   }
 }
 class InChIOptions106Element extends InChIOptionsElement {
