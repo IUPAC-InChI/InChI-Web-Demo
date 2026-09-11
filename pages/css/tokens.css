@@ -1,8 +1,8 @@
 /*
  * Design tokens for the Soft Modern world.
  *
- * This file loads after Bootstrap and before the app stylesheets, so app rules
- * win ties against the framework without needing "!important".
+ * This file loads after base.css — the control layer — and before the app's
+ * own rules, so those win ties without needing "!important".
  *
  * The governing idea: things are bounded by the surface they sit on, not by a
  * line drawn around them. A plate is a white card lifted off a tinted ground
@@ -21,10 +21,8 @@
  *     to the rule that needs it instead of inventing a token for it.
  *   - Every colour token is defined here for light, then redefined once for
  *     dark. Never give a colour its only definition inside a media block.
- *   - Brand colour belongs to --inchi-brand only. Bootstrap components pick it
- *     up through the --bs-* hooks at the bottom of this file; where Bootstrap
- *     5.2.3 hardcodes a colour instead of exposing a variable, index.css
- *     overrides the selector explicitly and says so.
+ *   - Brand colour belongs to --inchi-brand only. The controls read it through
+ *     css/base.css, which draws them; nothing here knows about a framework.
  *
  * Light and dark are both first-class: this tool is opened at a daylight desk,
  * in a dim room between a dark editor and a dark terminal, and on a bench
@@ -156,23 +154,6 @@
   /* Apparatus: the small tracked labels that name a layer or a panel. */
   --inchi-apparatus-size: 0.6875rem;
   --inchi-apparatus-tracking: 0.09em;
-
-  /* ---- Bootstrap hooks ------------------------------------------------- */
-  /* Brand the framework instead of overriding its selectors. */
-  --bs-link-color: var(--inchi-brand);
-  --bs-link-hover-color: var(--inchi-brand-hover);
-  --bs-body-bg: var(--inchi-ground);
-  --bs-body-color: var(--inchi-ink);
-  --bs-border-color: var(--inchi-rule-hairline);
-  --bs-border-radius: var(--inchi-radius-sm);
-  --bs-border-radius-sm: 6px;
-  --bs-border-radius-lg: var(--inchi-radius-md);
-  /*
-   * Bootstrap's own focus glow is blue (49,132,253), so every green button
-   * flashed blue on focus. It reads the raw channel triplet, not a colour.
-   */
-  --bs-btn-focus-shadow-rgb: 11, 116, 64;
-  --bs-focus-ring-color: var(--inchi-focus-ring);
 }
 
 /*
@@ -227,8 +208,6 @@
       0 14px 30px -16px rgb(0 0 0 / 0.8);
     --inchi-backdrop: rgb(4 6 5 / 0.68);
     --inchi-shadow-dialog: 0 12px 32px -8px rgb(0 0 0 / 0.6);
-
-    --bs-btn-focus-shadow-rgb: 53, 192, 122;
   }
 }
 
@@ -278,48 +257,6 @@
     0 14px 30px -16px rgb(0 0 0 / 0.8);
   --inchi-backdrop: rgb(4 6 5 / 0.68);
   --inchi-shadow-dialog: 0 12px 32px -8px rgb(0 0 0 / 0.6);
-
-  --bs-btn-focus-shadow-rgb: 53, 192, 122;
-}
-
-/*
- * Bootstrap declares component variables on the component root, so these have
- * to be set there too rather than on :root.
- */
-.nav-pills {
-  --bs-nav-pills-link-active-bg: var(--inchi-brand);
-  --bs-nav-pills-border-radius: var(--inchi-radius-sm);
-}
-
-.btn {
-  --bs-btn-border-radius: var(--inchi-radius-sm);
-}
-
-.btn-primary {
-  --bs-btn-bg: var(--inchi-brand);
-  --bs-btn-border-color: var(--inchi-brand);
-  --bs-btn-color: var(--inchi-on-brand);
-  --bs-btn-hover-bg: var(--inchi-brand-hover);
-  --bs-btn-hover-border-color: var(--inchi-brand-hover);
-  --bs-btn-hover-color: var(--inchi-on-brand);
-  --bs-btn-active-bg: var(--inchi-brand-hover);
-  --bs-btn-active-border-color: var(--inchi-brand-hover);
-  --bs-btn-disabled-bg: var(--inchi-field-sunken);
-  --bs-btn-disabled-border-color: var(--inchi-rule-hairline);
-  --bs-btn-disabled-color: var(--inchi-ink-faint);
-}
-
-.btn-outline-secondary {
-  --bs-btn-color: var(--inchi-ink-muted);
-  --bs-btn-border-color: var(--inchi-rule-hairline);
-  --bs-btn-hover-bg: var(--inchi-field-sunken);
-  --bs-btn-hover-border-color: var(--inchi-rule);
-  --bs-btn-hover-color: var(--inchi-ink);
-  --bs-btn-active-bg: var(--inchi-field-sunken);
-  --bs-btn-active-border-color: var(--inchi-rule-stroke);
-  --bs-btn-active-color: var(--inchi-ink);
-  --bs-btn-disabled-color: var(--inchi-ink-faint);
-  --bs-btn-disabled-border-color: var(--inchi-rule-hairline);
 }
 
 ::selection {

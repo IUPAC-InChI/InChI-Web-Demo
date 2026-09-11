@@ -32,18 +32,13 @@
       }
     </script>
 
-    <link
-      href="bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
-      crossorigin="anonymous"
-    />
-
     <!--
-      App stylesheets load after the framework so that app rules win ties
-      without "!important". tokens.css comes first: it defines the design tokens
-      and the --bs-* hooks that brand Bootstrap's own components.
+      base.css first: the controls and the handful of utilities this app uses,
+      hand-written against the tokens, where Bootstrap's 192 KB stylesheet
+      used to sit. Then tokens.css, which defines those tokens, then the app's
+      own rules — which therefore win ties without "!important".
     -->
+    <link href="css/base.css" rel="stylesheet" />
     <link href="css/tokens.css" rel="stylesheet" />
     <link href="css/index.css" rel="stylesheet" />
     <link href="css/report-mask.css" rel="stylesheet" />
@@ -59,12 +54,6 @@
       scripts still run in document order, which is what lets the components
       rely on everything above them.
     -->
-    <script
-      defer
-      src="bootstrap/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-      crossorigin="anonymous"
-    ></script>
     <!-- The theme control, shared with about.html. -->
     <script defer src="theme.js"></script>
     <!-- What the paste field was handed: pure, no dependencies of its own. -->
@@ -140,7 +129,6 @@
           href="https://www.inchi-trust.org/"
           target="_blank"
           rel="noopener"
-          class="flex-none"
         >
           <img
             class="masthead-logo"
