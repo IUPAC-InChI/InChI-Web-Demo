@@ -63,23 +63,13 @@ class InsertHTMLElement extends HTMLElement {
 
   async connectedCallback() {
     /*
-     * `defer-until-shown` holds the fetch until this element's tab is first
-     * opened. The About surface carries seven funder logos — 507 KB raw,
-     * 357 KB over the wire — and they were all fetched on first paint even
-     * though every <img> has loading="lazy": a lazy image inside a
-     * display:none tab pane has no computed position, so the browser cannot
-     * defer it and fetches it immediately.
+     * `defer-until-shown` used to live here, holding this fetch until the
+     * element's tab was first opened. It existed for one surface: About
+     * carries seven funder logos — 507 KB raw, 357 KB over the wire — and a
+     * lazy <img> inside a display:none tab pane has no computed position, so
+     * the browser cannot defer it and fetches it on first paint anyway.
+     * About is its own page now, where loading="lazy" works as intended.
      */
-    if (this.hasAttribute("defer-until-shown") && !this.classList.contains("active")) {
-      const tabId = this.getAttribute("aria-labelledby");
-      const trigger = tabId ? document.getElementById(tabId) : null;
-      if (trigger) {
-        await new Promise((resolve) => {
-          trigger.addEventListener("shown.bs.tab", resolve, { once: true });
-        });
-      }
-    }
-
     try {
       this.innerHTML = await loadFragment(this.htmlPath);
     } catch (error) {
@@ -95,12 +85,6 @@ class InsertHTMLElement extends HTMLElement {
         `again.</p>`;
       throw error;
     }
-  }
-}
-
-class AboutElement extends InsertHTMLElement {
-  constructor() {
-    super("components/about.html");
   }
 }
 
@@ -1424,7 +1408,6 @@ class NGLViewerElement extends HTMLElement {
   }
 }
 
-customElements.define("inchi-about", AboutElement);
 customElements.define("inchi-workbench", InChIWorkbenchElement);
 customElements.define("report-mask", ReportMaskElement);
 customElements.define("feedback-dialog", FeedbackDialogElement);

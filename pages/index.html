@@ -65,6 +65,8 @@
       integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
       crossorigin="anonymous"
     ></script>
+    <!-- The theme control, shared with about.html. -->
+    <script defer src="theme.js"></script>
     <!-- What the paste field was handed: pure, no dependencies of its own. -->
     <script defer src="input-format.js"></script>
     <!-- The InChI string's layer grammar: needed before the components render. -->
@@ -154,6 +156,8 @@
             Chemical identifiers generated in your browser, never on a server.
           </p>
         </div>
+
+        <a class="masthead-link" href="about.html">About</a>
 
         <!--
           role="switch" rather than a checkbox: this is a two-state control
