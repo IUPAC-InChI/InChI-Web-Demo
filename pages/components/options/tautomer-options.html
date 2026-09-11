@@ -1,38 +1,96 @@
-<div class="form-check">
-  <!--
-    Bootstrap Multiselect clips this select rather than hiding it, so it stays
-    in the accessibility tree and needs a name of its own. It matches the
-    "nonSelectedText" of the button that replaces it visually.
-  -->
-  <select
-    data-tautomer-multiselect
-    multiple="multiple"
-    aria-label="Tautomer options"
-  >
-    <option data-role="divider"></option>
-    <option data-id="KET" data-inchi-option-on="KET" value="KET">
-      KET - Keto-enol Tautomerism
-    </option>
-    <option data-id="15T" data-inchi-option-on="15T" value="15T">
-      15T - 1,5-tautomerism
-    </option>
-    <option data-id="PT_06_00" data-inchi-option-on="PT_06_00" value="PT_06_00">
-      PT_06_00 - 1,3 heteroatom H-shift
-    </option>
-    <option data-id="PT_13_00" data-inchi-option-on="PT_13_00" value="PT_13_00">
-      PT_13_00 - keten-inol exchange
-    </option>
-    <option data-id="PT_16_00" data-inchi-option-on="PT_16_00" value="PT_16_00">
-      PT_16_00 - nitroso/oxime
-    </option>
-    <option data-id="PT_18_00" data-inchi-option-on="PT_18_00" value="PT_18_00">
-      PT_18_00 - cyanic/iso-cyanic acids
-    </option>
-    <option data-id="PT_22_00" data-inchi-option-on="PT_22_00" value="PT_22_00">
-      PT_22_00 - imine/imine
-    </option>
-    <option data-id="PT_39_00" data-inchi-option-on="PT_39_00" value="PT_39_00">
-      PT_39_00 - nitrone/azoxy or Behrend rearrangement
-    </option>
-  </select>
-</div>
+<!--
+  Tautomer options.
+
+  These were a <select multiple> driven by Bootstrap Multiselect — the app's
+  only jQuery consumer, for one control. A checkbox list is what every other
+  option group here already is, so the collector, the state snapshot and the
+  3270 surface all read it with no special case.
+
+  Grouped in a <fieldset> because "which tautomer perceptions" is one question
+  with eight answers, and the eight are meaningless without the heading.
+-->
+<fieldset class="option-group">
+  <legend class="option-group-legend">Tautomer options</legend>
+  <div class="form-check">
+    <input
+      data-id="KET"
+      class="form-check-input"
+      type="checkbox"
+      data-inchi-option-on="KET"
+      data-inchi-tautomer-option
+    />
+    <label class="form-check-label">KET — Keto-enol tautomerism</label>
+  </div>
+  <div class="form-check">
+    <input
+      data-id="15T"
+      class="form-check-input"
+      type="checkbox"
+      data-inchi-option-on="15T"
+      data-inchi-tautomer-option
+    />
+    <label class="form-check-label">15T — 1,5-tautomerism</label>
+  </div>
+  <div class="form-check">
+    <input
+      data-id="PT_06_00"
+      class="form-check-input"
+      type="checkbox"
+      data-inchi-option-on="PT_06_00"
+      data-inchi-tautomer-option
+    />
+    <label class="form-check-label">PT_06_00 — 1,3 heteroatom H-shift</label>
+  </div>
+  <div class="form-check">
+    <input
+      data-id="PT_13_00"
+      class="form-check-input"
+      type="checkbox"
+      data-inchi-option-on="PT_13_00"
+      data-inchi-tautomer-option
+    />
+    <label class="form-check-label">PT_13_00 — Keten-inol exchange</label>
+  </div>
+  <div class="form-check">
+    <input
+      data-id="PT_16_00"
+      class="form-check-input"
+      type="checkbox"
+      data-inchi-option-on="PT_16_00"
+      data-inchi-tautomer-option
+    />
+    <label class="form-check-label">PT_16_00 — Nitroso/oxime</label>
+  </div>
+  <div class="form-check">
+    <input
+      data-id="PT_18_00"
+      class="form-check-input"
+      type="checkbox"
+      data-inchi-option-on="PT_18_00"
+      data-inchi-tautomer-option
+    />
+    <label class="form-check-label">PT_18_00 — Cyanic/iso-cyanic acids</label>
+  </div>
+  <div class="form-check">
+    <input
+      data-id="PT_22_00"
+      class="form-check-input"
+      type="checkbox"
+      data-inchi-option-on="PT_22_00"
+      data-inchi-tautomer-option
+    />
+    <label class="form-check-label">PT_22_00 — Imine/imine</label>
+  </div>
+  <div class="form-check">
+    <input
+      data-id="PT_39_00"
+      class="form-check-input"
+      type="checkbox"
+      data-inchi-option-on="PT_39_00"
+      data-inchi-tautomer-option
+    />
+    <label class="form-check-label">
+      PT_39_00 — Nitrone/azoxy or Behrend rearrangement
+    </label>
+  </div>
+</fieldset>

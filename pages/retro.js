@@ -227,9 +227,18 @@ function readOptionTemplate(doc) {
 
   doc.querySelectorAll("input.form-check-input[data-id]").forEach((input) => {
     const label = input.parentElement.querySelector(".form-check-label");
-    const caption = label
+    const raw = label
       ? label.textContent.replace(/\s*\?\s*$/, "").replace(/\s+/g, " ").trim()
       : input.dataset.id;
+    /*
+     * Some labels lead with the flag they set — "KET — Keto-enol tautomerism".
+     * The flag column beside the caption already carries the id, so drop the
+     * repetition rather than printing it twice on an 80-column panel.
+     */
+    const caption = raw.replace(
+      new RegExp(`^${input.dataset.id}\\s*[-\u2013\u2014]\\s*`),
+      ""
+    );
 
     items.push({
       id: input.dataset.id,
@@ -242,37 +251,14 @@ function readOptionTemplate(doc) {
       disabled: input.hasAttribute("data-default-disabled"),
       stereo: input.hasAttribute("data-inchi-stereo-option"),
       polymer: input.hasAttribute("data-inchi-polymer-option"),
-      indent: input.parentElement.classList.contains("ms-4"),
+      /*
+       * The templates mark their own sub-options. This used to read Bootstrap's
+       * `.ms-4` spacing utility off the parent — a layout class carrying
+       * meaning, which broke the moment the utility classes went.
+       */
+      indent: input.hasAttribute("data-inchi-sub-option"),
     });
   });
-
-  /*
-   * The tautomer template is a <select multiple> driven by a jQuery widget in
-   * the shipped app. On a 3270 panel a multi-select is a block of selection
-   * cells, which is both simpler and closer to the original.
-   */
-  doc
-    .querySelectorAll("select[data-tautomer-multiselect] option[data-id]")
-    .forEach((option) => {
-      items.push({
-        id: option.dataset.id,
-        type: "checkbox",
-        radioName: "",
-        on: option.dataset.inchiOptionOn ?? "",
-        off: "",
-        /* The flag column already carries the id; the caption need not repeat it. */
-        caption: option.textContent
-          .replace(/\s+/g, " ")
-          .trim()
-          .replace(/^\S+\s+-\s+/, ""),
-        checked: false,
-        disabled: false,
-        stereo: false,
-        polymer: false,
-        indent: false,
-        group: TAUTOMER_GROUP,
-      });
-    });
 
   return items;
 }

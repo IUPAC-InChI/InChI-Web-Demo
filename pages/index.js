@@ -771,11 +771,6 @@ function resetInchiOptions(root) {
     .forEach((input) => {
       input.disabled = false;
     });
-
-  // Tautomer <select>; Task 3 deletes this branch with the widget.
-  $(root)
-    .find("select[data-tautomer-multiselect]")
-    .multiselect("deselectAll", false);
 }
 
 /*
@@ -803,15 +798,6 @@ function getInchiOptions(root) {
     )
     .forEach((input) => {
       options.push(input.dataset.inchiOptionOff);
-    });
-
-  // Tautomer <select>; Task 3 deletes this branch with the widget.
-  root
-    .querySelectorAll(
-      "select[data-tautomer-multiselect] option[data-inchi-option-on]:checked"
-    )
-    .forEach((optionElement) => {
-      options.push(optionElement.dataset.inchiOptionOn);
     });
 
   return options;
@@ -852,16 +838,6 @@ function getInchiOptionsState(root) {
     optionsState[input.dataset.id] = [input.checked, input.disabled];
   });
 
-  // Tautomer <select>; Task 3 deletes this branch with the widget.
-  root
-    .querySelectorAll("select[data-tautomer-multiselect] option[data-id]")
-    .forEach((optionElement) => {
-      optionsState[optionElement.dataset.id] = [
-        optionElement.selected,
-        optionElement.disabled,
-      ];
-    });
-
   return optionsState;
 }
 
@@ -873,16 +849,11 @@ function getInchiOptionsState(root) {
 function applyInchiOptionsState(root, optionsState) {
   Object.entries(optionsState).forEach(([k, v]) => {
     const input = root.querySelector(`input[data-id="${k}"]`);
-    if (input) {
-      input.checked = v[0];
-      input.disabled = v[1];
-      return;
+    if (!input) {
+      return; // An option this version does not have; its own default stands.
     }
-
-    // Tautomer <select>; Task 3 deletes this branch with the widget.
-    if (v[0]) {
-      $(root).find("select[data-tautomer-multiselect]").multiselect("select", k);
-    }
+    input.checked = v[0];
+    input.disabled = v[1];
   });
 }
 
