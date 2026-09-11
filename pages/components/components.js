@@ -223,11 +223,29 @@ class ReportMaskElement extends InsertHTMLElement {
 
     const { name, description } = data;
 
+    /*
+     * The pasted bytes, appended to the description rather than sent as two
+     * new fields.
+     *
+     * A pasted structure now reaches InChI through Ketcher's
+     * re-serialization, so the report's molfile is the editor's, not the
+     * visitor's file — and a bug living in that file would be unreportable.
+     * The payload shape is the report endpoint's, not ours, so this goes in
+     * the one field that is already free text. Move it to real
+     * `pasted_input` / `pasted_input_kind` fields once the endpoint is known
+     * to accept them.
+     */
+    const pasted =
+      typeof lastPastedInput === "object" && lastPastedInput.text.trim()
+        ? `\n\n--- Pasted input (${lastPastedInput.kind}), before the editor ` +
+          `re-serialized it ---\n${lastPastedInput.text}`
+        : "";
+
     const payload = {
       input_source: "WebDemo",
       inchi_version: inchi_version,
       user: name || null,
-      description: description,
+      description: (description ?? "") + pasted,
       molfile_v2: molfile_v2,
       molfile_v3: molfile_v3,
       inchi: inchi,

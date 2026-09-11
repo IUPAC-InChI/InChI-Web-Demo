@@ -20,7 +20,38 @@
         onload="onKetcherLoaded('workbench-ketcher', () => updateWorkbench())"
       ></iframe>
     </div>
-    <!-- Task 6 inserts the paste field here; Task 7 the SD-file picker. -->
+    <!--
+      The second door into the editor. There were four tabs behind this —
+      molfile, AuxInfo, RXN/RDfile, RInChI — each asking the visitor to
+      classify their own input before the app would take it. detectInputFormat
+      does that instead, and whatever comes back is loaded into the editor, so
+      a pasted structure and a drawn one take the same path from here on.
+    -->
+    <details class="bounding-box mt-2" data-paste-panel>
+      <summary>
+        <h2 class="inchi-section-heading">Paste a structure</h2>
+      </summary>
+      <label class="visually-hidden" for="workbench-paste">
+        Molfile, SD file text, AuxInfo, reaction file or RInChI
+      </label>
+      <textarea
+        id="workbench-paste"
+        class="form-control paste-field resize-none mt-1"
+        autocomplete="off"
+        spellcheck="false"
+        rows="6"
+        aria-describedby="workbench-paste-hint"
+        placeholder="Paste or drop a molfile, SD file text, an AuxInfo string, an RXN or RD file, or a RInChI (with its RAuxInfo on a second line) here"
+        ondragover="onTextareaDragover(event)"
+        ondrop="onTextareaDrop(event, () => loadPastedInput())"
+        oninput="loadPastedInputDebounced()"
+      ></textarea>
+      <small id="workbench-paste-hint" class="text-muted">
+        Whatever you paste is drawn in the editor above, and converted from
+        there. An AuxInfo has to contain atom coordinates — InChI cannot
+        generate them, so no structure can be shown without them.
+      </small>
+    </details>
   </div>
 
   <div class="tool-controls tool-controls-bottom">

@@ -782,17 +782,6 @@ input.form-check-input {
   }
 
   /*
-   * A paste box is not an editor. It holds text you dropped in and read back
-   * once; at the editor's height it was 720px of empty field opposite a
-   * four-row identifier. Roughly the height the aspect ratio used to give it
-   * before the column got wide.
-   */
-  .tool-input > .ratio.inputtextarea {
-    --bs-aspect-ratio: 0;
-    height: clamp(18rem, 42vh, 30rem);
-  }
-
-  /*
    * The answer follows you down the rail.
    *
    * The two columns are lopsided by nature and always the same way round: the
@@ -855,29 +844,17 @@ input.form-check-input {
   overflow: hidden;
 }
 
-.inputtextarea {
-  --bs-aspect-ratio: 62%;
-  min-height: min(530px, 34vh);
-}
-
 /*
- * Paste fields whose placeholder shows the expected format. That example wraps
- * over several lines on a phone and fits in two on the wide layout, so the box
- * is generous first and tightens once the text fits.
- *
- * Keyed to 1200px, not 992px: the .tool-workbench grid is still one column
- * until 1200px. See INCHI_STACK_BREAKPOINT in index.js.
+ * The paste field. Identifier mono, because what goes in here is notation and
+ * character alignment is the data. Sized by rows rather than by an aspect
+ * ratio: it sits under the editor in a rail whose width is not its business.
  */
-.paste-area {
-  height: 12rem;
+.paste-field {
+  width: 100%;
   font-family: var(--inchi-font-identifier);
   font-size: 0.8125rem;
-}
-
-@media (min-width: 1200px) {
-  .paste-area {
-    height: 7rem;
-  }
+  line-height: 1.45;
+  resize: vertical;
 }
 
 /* Structure viewer: a share of the phone screen, its full size from tablet up. */
