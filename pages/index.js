@@ -48,7 +48,19 @@ function warmUp() {
    * there is nothing to gain from competing with it for bandwidth.
    */
   const idle = window.requestIdleCallback ?? ((fn) => setTimeout(fn, 1500));
-  window.addEventListener("load", () => idle(warmDefaultInchiVersion));
+  window.addEventListener("load", () =>
+    idle(() => {
+      warmDefaultInchiVersion();
+      /*
+       * The 3D viewer is on the surface from the first paint, so it is warmed
+       * here. The RInChI module is NOT: pages/rinchi is 1.6 MB, four times the
+       * vendor weight this whole change removes, and most visits never draw a
+       * reaction. updateWorkbench starts that fetch on the first reaction
+       * instead, which is still ahead of the await inside the conversion.
+       */
+      warm(document.querySelector("inchi-ngl-viewer")?.ensureStage());
+    })
+  );
 
   async function warmDefaultInchiVersion() {
     try {
@@ -63,16 +75,6 @@ function warmUp() {
       warm(availableInchiVersions[defaultVersion].module);
     }
   }
-
-  document.addEventListener("shown.bs.tab", (event) => {
-    const target = event.target.dataset.bsTarget;
-    if (target === "#pills-rinchi") {
-      warm(rinchiModule());
-    }
-    if (target === "#inchi-tab2-pane" || target === "#inchi-tab3-pane") {
-      warm(document.querySelector(`${target} inchi-ngl-viewer`)?.ensureStage());
-    }
-  });
 }
 warmUp();
 
@@ -86,22 +88,13 @@ warmUp();
  * layer — because the useful answer is almost never "a different string", it
  * is "the /t layer moved".
  *
- * Keyed by pane, so the four tabs pin independently.
+ * One surface, so one pinned result rather than a map keyed by pane.
  */
-const pinnedResults = new Map();
+let pinnedResult = null;
 
-function inchiElementIdFor(paneId) {
-  return paneId.replace(/-pane$/, "-inchi");
-}
-
-function inchikeyElementIdFor(paneId) {
-  return paneId.replace(/-pane$/, "-inchikey");
-}
-
-function currentResultFor(paneId) {
+function currentResultFor() {
   const text =
-    document.getElementById(inchiElementIdFor(paneId))?.textContent.trim() ??
-    "";
+    document.getElementById("workbench-inchi")?.textContent.trim() ?? "";
   if (!text.startsWith("InChI=")) {
     return null;
   }
@@ -110,64 +103,59 @@ function currentResultFor(paneId) {
    * in the middle of a sentence ("3 of 7 layers differ between and Dev"), so
    * it degrades to something readable rather than to nothing.
    */
-  const version = getVersion(paneId) || "an unnamed version";
+  const version = getVersion() || "an unnamed version";
   /*
    * The key is pinned with the InChI it came from. It is the thing most people
    * actually paste into a database or a paper, so a comparison that comes back
    * with only the InChI leaves out the half the user is going to use.
    */
   const inchikey =
-    document
-      .getElementById(inchikeyElementIdFor(paneId))
-      ?.textContent.trim() ?? "";
+    document.getElementById("workbench-inchikey")?.textContent.trim() ?? "";
   return { version, inchi: text, inchikey };
 }
 
-function pinCurrentResult(paneId) {
-  const current = currentResultFor(paneId);
+function pinCurrentResult() {
+  const current = currentResultFor();
   if (current === null) {
     setConversionStatus(
-      paneId,
       "error",
       "Nothing to pin yet - convert a structure first."
     );
     return;
   }
-  pinnedResults.set(paneId, current);
-  renderComparison(paneId);
+  pinnedResult = current;
+  renderComparison();
 }
 
-function clearComparison(paneId) {
-  pinnedResults.delete(paneId);
-  renderComparison(paneId);
+function clearComparison() {
+  pinnedResult = null;
+  renderComparison();
 }
 
 /*
  * Enable each comparison control only when it has something to act on: you
  * cannot pin an empty result, and there is nothing to clear until you have.
  */
-function updateComparisonControls(paneId) {
-  const pane = document.getElementById(paneId);
-  const pinButton = pane?.querySelector("[data-pin]");
-  const clearButton = pane?.querySelector("[data-clear-comparison]");
+function updateComparisonControls() {
+  const pinButton = document.querySelector("[data-pin]");
+  const clearButton = document.querySelector("[data-clear-comparison]");
   if (pinButton) {
-    pinButton.disabled = currentResultFor(paneId) === null;
+    pinButton.disabled = currentResultFor() === null;
   }
   if (clearButton) {
-    clearButton.disabled = !pinnedResults.has(paneId);
+    clearButton.disabled = pinnedResult === null;
   }
 }
 
-function renderComparison(paneId) {
-  const pane = document.getElementById(paneId);
-  const host = pane?.querySelector("[data-comparison]");
-  updateComparisonControls(paneId);
+function renderComparison() {
+  const host = document.querySelector("[data-comparison]");
+  updateComparisonControls();
   if (!host) {
     return;
   }
 
-  const pinned = pinnedResults.get(paneId);
-  const current = currentResultFor(paneId);
+  const pinned = pinnedResult;
+  const current = currentResultFor();
 
   if (!pinned) {
     host.hidden = true;
@@ -375,9 +363,8 @@ function renderComparison(paneId) {
  * equally unsignalled, so the only way to know a conversion had worked was
  * that text appeared.
  */
-function setConversionStatus(paneId, kind, text) {
-  const pane = document.getElementById(paneId);
-  const status = pane?.querySelector("[data-status]");
+function setConversionStatus(kind, text) {
+  const status = document.querySelector("[data-status]");
   if (!status) {
     return;
   }
@@ -389,7 +376,7 @@ function setConversionStatus(paneId, kind, text) {
    * reliably announced — which would have made this whole status line
    * invisible to exactly the users who most needed it.
    */
-  const announcer = pane.querySelector("[data-status-announcer]");
+  const announcer = document.querySelector("[data-status-announcer]");
   if (announcer) {
     announcer.textContent = kind ? text : "";
   }
@@ -406,20 +393,20 @@ function setConversionStatus(paneId, kind, text) {
   status.hidden = false;
 }
 
-/* The pane a result field belongs to, so callers can keep passing element ids. */
-function paneOf(elementId) {
-  return document.getElementById(elementId)?.closest(".tab-pane")?.id ?? "";
-}
-
 /*
  * Stamp every result plate in a pane with the version that produced it.
  * "Provenance is part of the answer": a string copied out of here without its
  * version is not reproducible, and the selector 600px away is not provenance.
  */
-function stampVersion(paneId, version) {
+function stampVersion(version) {
+  /*
+   * Scoped to the molecule block, not the document. The InChI version has no
+   * business on the six RInChI plates — setVersionStamp shows the stamp
+   * whenever the plate has text, so a stray one would surface the next time a
+   * reaction was drawn.
+   */
   document
-    .getElementById(paneId)
-    ?.querySelectorAll("inchi-result-field")
+    .querySelectorAll('[data-output="inchi"] inchi-result-field')
     .forEach((field) => field.setVersionStamp?.(version));
 }
 
@@ -432,10 +419,10 @@ function stampVersion(paneId, version) {
  * moment it was needed. The old answer now stays readable, dimmed and marked,
  * until the new one lands.
  */
-function markResultsStale(paneId, isStale) {
+function markResultsStale(isStale) {
+  /* Scoped like stampVersion, and for the same reason. */
   document
-    .getElementById(paneId)
-    ?.querySelectorAll("inchi-result-field")
+    .querySelectorAll('[data-output="inchi"] inchi-result-field')
     .forEach((field) => field.setStale?.(isStale));
 }
 
@@ -443,13 +430,13 @@ function markResultsStale(paneId, isStale) {
  * Count the options that differ from this version's defaults, so "Reset" is
  * not a button that discards seventeen settings with no preview.
  */
-function updateChangedOptionCount(tabDivId) {
-  const pane = document.getElementById(tabDivId);
-  const counter = pane?.querySelector("[data-changed-count]");
+function updateChangedOptionCount() {
+  const panel = optionsPanel();
+  const counter = panel?.querySelector("[data-changed-count]");
   if (!counter) {
     return;
   }
-  const inputs = pane.querySelectorAll("input.form-check-input");
+  const inputs = panel.querySelectorAll("input.form-check-input");
   let changed = 0;
   inputs.forEach((input) => {
     if (input.checked !== input.hasAttribute("data-default-checked")) {
@@ -715,17 +702,15 @@ async function assertVersionBehavior() {
 }
 assertVersionBehavior();
 
-async function addInchiOptionsForm(tabDivId, updateFunction) {
+async function addInchiOptionsForm(updateFunction) {
   await window.inchiVersionsReady;
-  const inchiVersion = getVersion(tabDivId);
+  const inchiVersion = getVersion();
   const inchiOptions = document.createElement(
     availableInchiVersions[inchiVersion].optionsTemplateId
   );
-  await inchiOptions.postCreate(tabDivId, updateFunction, inchiVersion);
+  await inchiOptions.postCreate(updateFunction, inchiVersion);
 
-  const targetDiv = document
-    .getElementById(tabDivId)
-    .querySelector("div[data-inchi-options]");
+  const targetDiv = optionsPanel();
   targetDiv.innerHTML = ""; // Remove previous options
   targetDiv.appendChild(inchiOptions); // Add current options
 
@@ -733,11 +718,15 @@ async function addInchiOptionsForm(tabDivId, updateFunction) {
    * One delegated listener rather than one per checkbox: the panel is rebuilt
    * on every version switch, and seventeen listeners would have to be rebuilt
    * with it.
+   *
+   * Bound once: targetDiv outlives every rebuild, so re-adding it on each
+   * version switch stacked duplicate listeners on the same node.
    */
-  targetDiv.addEventListener("change", () =>
-    updateChangedOptionCount(tabDivId)
-  );
-  updateChangedOptionCount(tabDivId);
+  if (!targetDiv.dataset.changeListenerBound) {
+    targetDiv.addEventListener("change", () => updateChangedOptionCount());
+    targetDiv.dataset.changeListenerBound = "true";
+  }
+  updateChangedOptionCount();
 }
 
 /*
@@ -809,22 +798,16 @@ function collectInchiOptions(root) {
     .join(" ");
 }
 
-function getVersion(tabId) {
-  return document.getElementById(tabId).querySelector("select[data-version]")
-    .value;
+function getVersion() {
+  return document.querySelector("select[data-version]").value;
 }
 
 /*
- * The options panel of a pane. A function rather than a stored reference: the
- * panel is rebuilt on every version change, so a captured one goes stale.
- *
- * Four panes still have one; after the surface is collapsed there is a single
- * panel and this loses its argument.
+ * The one options panel. A function rather than a stored reference: the panel
+ * is rebuilt on every version change, so a captured one goes stale.
  */
-function optionsPanelOf(tabDivId) {
-  return document
-    .getElementById(tabDivId)
-    .querySelector("div[data-inchi-options]");
+function optionsPanel() {
+  return document.querySelector("div[data-inchi-options]");
 }
 
 /*
@@ -860,228 +843,184 @@ function applyInchiOptionsState(root, optionsState) {
 /*
  * Update actions (when user changes inputs/options/(R)InChI version)
  */
-async function updateInchiTab1() {
-  /*
-   * The previous result is marked superseded rather than deleted: on a version
-   * switch this is the answer the user is comparing against, and blanking it
-   * before a cold WebAssembly load left them staring at four empty plates.
-   */
-  markResultsStale("inchi-tab1-pane", true);
-
-  // collect user input
-  const options = collectInchiOptions(optionsPanelOf("inchi-tab1-pane"));
-  const inchiVersion = getVersion("inchi-tab1-pane");
-  setConversionStatus(
-    "inchi-tab1-pane",
-    "busy",
-    `Converting with InChI ${inchiVersion}…`
-  );
-
-  let molfile;
-  const ketcher = getKetcher("inchi-tab1-ketcher");
-  const clearTab1 = () =>
-    writeResult(
-      "",
-      "inchi-tab1-inchi",
-      "inchi-tab1-inchikey",
-      "inchi-tab1-auxinfo",
-      "inchi-tab1-logs"
-    );
+/*
+ * The one conversion path.
+ *
+ * Called by every input: drawing in the editor, pasting into the field,
+ * changing an option, changing the version. What the editor holds decides
+ * which identifier is produced — a molecule yields an InChI, a reaction
+ * yields a RInChI — so there is no mode for the visitor to set and no way
+ * for the app to be showing the wrong one.
+ */
+async function updateWorkbench() {
+  const ketcher = getKetcher("workbench-ketcher");
   if (!ketcher) {
     setConversionStatus(
-      "inchi-tab1-pane",
       "error",
       "The structure editor is not ready yet. Please reload the page (CTRL + F5) if this persists."
     );
-    writeResult(
-      "The structure editor is not ready yet. Please reload the page (CTRL + F5) if this persists.",
-      "inchi-tab1-logs"
-    );
     return;
-  } else if (ketcher.containsReaction()) {
-    clearTab1();
-    setConversionStatus(
-      "inchi-tab1-pane",
-      "error",
-      "InChI describes single structures, not reactions. Switch to the RInChI tab to convert this reaction."
-    );
-    writeResult(
-      "InChI describes single structures, not reactions. Switch to the RInChI tab to convert this reaction.",
-      "inchi-tab1-logs"
-    );
-    return;
-  } else if (ketcher.editor.struct().isBlank()) {
-    // Nothing drawn: clear the plates and say nothing rather than report a failure.
-    clearTab1();
-    stampVersion("inchi-tab1-pane", "");
-    setConversionStatus("inchi-tab1-pane", null);
-    renderComparison("inchi-tab1-pane");
-    return;
-  } else {
-    /*
-     * Serialization goes through getMolfileFromKetcher (added on main for
-     * Ketcher 3.17, which serializes through Ketcher's own formatterFactory
-     * rather than Indigo). The format still comes from VERSION_BEHAVIOR
-     * rather than a version-name comparison, and that helper defaults to
-     * v2000, which is what every version but Enhanced Stereochemistry wants.
-     */
-    const molfileFormat = versionBehavior(inchiVersion).molfileFormat ?? "v2000";
-    molfile = await getMolfileFromKetcher(ketcher, molfileFormat);
-
-    // The helper returns null when Ketcher could not serialize the structure.
-    if (molfile === null) {
-      clearTab1();
-      setConversionStatus(
-        "inchi-tab1-pane",
-        "error",
-        "The structure editor could not hand over this structure. Please reload the page (CTRL + F5) if this persists."
-      );
-      return;
-    }
   }
 
-  await convertMolfileToInchiAndWriteResults(
-    molfile,
-    options,
-    inchiVersion,
-    "inchi-tab1-inchi",
-    "inchi-tab1-inchikey",
-    "inchi-tab1-auxinfo",
-    "inchi-tab1-logs"
-  );
+  if (ketcher.editor.struct().isBlank()) {
+    /*
+     * Nothing drawn is not a failure: clear the plates and say nothing. The
+     * placeholders in the result fields already name what will appear.
+     */
+    clearWorkbenchResults();
+    stampVersion("");
+    setConversionStatus(null);
+    renderComparison();
+    return;
+  }
+
+  /*
+   * Superseded, not deleted. On a version switch this is the answer the
+   * visitor is comparing against, and blanking it before a cold ~1 MB
+   * WebAssembly load left them staring at empty plates.
+   */
+  markResultsStale(true);
+
+  if (ketcher.containsReaction()) {
+    showOutput("rinchi");
+    /* First reaction of the visit: start the 1.6 MB RInChI fetch before the
+     * conversion awaits it. Idempotent — loadScriptOnce caches the promise. */
+    rinchiModule();
+    await convertReactionFromKetcher(ketcher);
+  } else {
+    showOutput("inchi");
+    await convertMoleculeFromKetcher(ketcher);
+  }
 }
 
 /*
- * Typing in the molfile box ran a full WebAssembly conversion and an NGL
- * structure reload on every keystroke. 250ms is below the threshold where a
- * pause feels like lag and above the rate anyone types molfile lines.
+ * Both output blocks stay in the DOM with their content intact, so drawing a
+ * reaction arrow and then deleting it does not re-run a conversion to get
+ * the InChI back.
  */
-const updateInchiTab2Debounced = debounce(() => updateInchiTab2(), 250);
+function showOutput(kind) {
+  document.querySelectorAll("[data-output]").forEach((block) => {
+    block.hidden = block.dataset.output !== kind;
+  });
+}
 
-async function updateInchiTab2() {
-  markResultsStale("inchi-tab2-pane", true);
+function clearWorkbenchResults() {
+  writeResult(
+    "",
+    "workbench-inchi",
+    "workbench-inchikey",
+    "workbench-auxinfo",
+    "workbench-logs",
+    "workbench-rinchi",
+    "workbench-longrinchikey",
+    "workbench-shortrinchikey",
+    "workbench-webrinchikey",
+    "workbench-rauxinfo",
+    "workbench-rinchi-logs"
+  );
+}
 
-  // collect user input
-  const molfile = document.getElementById("inchi-tab2-molfile").value;
-  const options = collectInchiOptions(optionsPanelOf("inchi-tab2-pane"));
-  const inchiVersion = getVersion("inchi-tab2-pane");
+async function convertMoleculeFromKetcher(ketcher) {
+  const options = collectInchiOptions(optionsPanel());
+  const inchiVersion = getVersion();
+  setConversionStatus("busy", `Converting with InChI ${inchiVersion}…`);
 
-  // An empty box is not a failure: clear the plates and stay quiet.
-  if (molfile.trim() === "") {
-    writeResult(
-      "",
-      "inchi-tab2-inchi",
-      "inchi-tab2-inchikey",
-      "inchi-tab2-auxinfo",
-      "inchi-tab2-logs"
+  /*
+   * Serialization goes through getMolfileFromKetcher, which uses Ketcher's
+   * own formatterFactory rather than Indigo. The format comes from
+   * VERSION_BEHAVIOR, not a version-name comparison; v2000 is what every
+   * version but Enhanced Stereochemistry wants.
+   */
+  const molfileFormat = versionBehavior(inchiVersion).molfileFormat ?? "v2000";
+  const molfile = await getMolfileFromKetcher(ketcher, molfileFormat);
+  if (molfile === null) {
+    setConversionStatus(
+      "error",
+      "The structure editor could not hand over this structure. Please reload the page (CTRL + F5) if this persists."
     );
-    stampVersion("inchi-tab2-pane", "");
-    setConversionStatus("inchi-tab2-pane", null);
-    renderComparison("inchi-tab2-pane");
     return;
   }
 
-  setConversionStatus(
-    "inchi-tab2-pane",
-    "busy",
-    `Converting with InChI ${inchiVersion}…`
-  );
-
-  // run conversion
   const [inchi, auxinfo] = await convertMolfileToInchiAndWriteResults(
     molfile,
     options,
     inchiVersion,
-    "inchi-tab2-inchi",
-    "inchi-tab2-inchikey",
-    "inchi-tab2-auxinfo",
-    "inchi-tab2-logs"
+    "workbench-inchi",
+    "workbench-inchikey",
+    "workbench-auxinfo",
+    "workbench-logs"
   );
 
-  const viewer = document.getElementById("inchi-tab2-ngl-viewer");
-  viewer.loadStructure(molfile, inchi, auxinfo);
+  document
+    .getElementById("workbench-ngl-viewer")
+    .loadStructure(molfile, inchi, auxinfo);
 }
 
-async function updateInchiTab3() {
-  const auxinfo = document
-    .getElementById("inchi-tab3-inputTextarea")
-    .value.trim();
-  const inchiVersion = getVersion("inchi-tab3-pane");
-  const logTextElementId = "inchi-tab3-logs";
+async function convertReactionFromKetcher(ketcher) {
+  setConversionStatus("busy", "Converting the reaction to a RInChI…");
 
-  // clear outputs
-  writeResult("", logTextElementId);
+  /*
+   * Cleared first, unlike the InChI path. convertRxnfileToRinchiAndWriteResults
+   * writes only the log when rinchiFromRxnfile throws (index.js:1439-1446), so
+   * a previous reaction's RInChI would survive the failure — and the status
+   * check below would then read it and report success.
+   */
+  writeResult(
+    "",
+    "workbench-rinchi",
+    "workbench-longrinchikey",
+    "workbench-shortrinchikey",
+    "workbench-webrinchikey",
+    "workbench-rauxinfo",
+    "workbench-rinchi-logs"
+  );
 
-  // input validation
-  if (!auxinfo) {
-    return;
-  }
-  if (!auxinfo.startsWith("AuxInfo=")) {
-    writeResult(
-      'This does not look like an AuxInfo string: it should start with "AuxInfo=".',
-      logTextElementId
-    );
-    return;
-  }
-
-  // run conversion
-  let molfile, log, message, inchi;
-  try {
-    ({ molfile, log, message } = await molfileFromAuxinfo(
-      auxinfo,
-      0,
-      0,
-      inchiVersion
-    ));
-    ({ inchi } = await inchiFromMolfile(molfile, "", inchiVersion));
-  } catch (e) {
-    writeResult(
-      `This AuxInfo could not be converted to a structure.\nDetail: ${e}`,
-      logTextElementId
-    );
-    console.error(e);
-    return;
+  /*
+   * The arrow is the default, the checkbox is the override. Syncing it to the
+   * arrow whenever the arrow says "equilibrium" means a drawn equilibrium
+   * shows as checked, while a pasted reaction — whose RXN carries no such
+   * notation — can still be declared one by hand.
+   */
+  const forceEquilibrium = document.getElementById("workbench-forceequilibrium");
+  if (hasEquilibriumReactionArrow(ketcher)) {
+    forceEquilibrium.checked = true;
   }
 
-  const viewer = document.getElementById("inchi-tab3-ngl-viewer");
-  viewer.loadStructure(molfile, inchi, auxinfo);
+  const rxnfile = await ketcher.getRxn();
+  await convertRxnfileToRinchiAndWriteResults(
+    rxnfile,
+    forceEquilibrium.checked,
+    "workbench-rinchi",
+    "workbench-longrinchikey",
+    "workbench-shortrinchikey",
+    "workbench-webrinchikey",
+    "workbench-rauxinfo",
+    "workbench-rinchi-logs"
+  );
+  /*
+   * RInChI has no version selector of its own — there is one RInChI build —
+   * so the status line reports the outcome rather than a version, and the
+   * build is named once beside the results. RINCHI_VERSION is defined in
+   * rinchi.js:3; this is the line that used to live in the RInChI pill's
+   * header (components.js:422-425) and had no successor.
+   */
+  document.querySelector(
+    '[data-output="rinchi"] .rinchi-version'
+  ).textContent = `Computed with RInChI ${RINCHI_VERSION}`;
 
-  const log_entries = [];
-  if (log !== "") {
-    log_entries.push(log);
-  }
-  if (message !== "") {
-    log_entries.push(message);
-  }
-  writeResult(log_entries.join("\n"), logTextElementId);
+  const rinchi = document.getElementById("workbench-rinchi").textContent.trim();
+  setConversionStatus(
+    rinchi.startsWith("RInChI=") ? "ok" : "error",
+    rinchi.startsWith("RInChI=")
+      ? "Converted the reaction to a RInChI."
+      : "No RInChI generated for this reaction; see the log."
+  );
+  markResultsStale(false);
 }
 
-async function updateInchiTab4() {
-  // clear output fields
-  writeResult("", "inchi-tab4-inchis");
-
-  const options = collectInchiOptions(optionsPanelOf("inchi-tab4-pane"));
-  const inchiVersion = getVersion("inchi-tab4-pane");
-  const sdFile = document.getElementById("inchi-tab4-sdfFileInput").files[0];
-  if (!sdFile) {
-    writeResult("Choose an SD file to convert.", "inchi-tab4-inchis");
-    return;
-  }
-  // Case-insensitive: Windows tools routinely write ".SDF".
-  if (!sdFile.name.toLowerCase().endsWith(".sdf")) {
-    writeResult(
-      `"${sdFile.name}" is not an SD file. Please choose a file with the .sdf extension.`,
-      "inchi-tab4-inchis"
-    );
-    return;
-  }
-  if (sdFile.size === 0) {
-    writeResult(`"${sdFile.name}" is empty.`, "inchi-tab4-inchis");
-    return;
-  }
-
-  const output = document.getElementById("inchi-tab4-inchis");
-  await writeInchisFromSdFileToOutput(sdFile, options, inchiVersion, output);
+async function onChangeInchiVersion() {
+  await updateInchiOptions(() => updateWorkbench());
+  await updateKetcherOptions(getKetcher("workbench-ketcher"), getVersion());
 }
 
 async function writeInchisFromSdFileToOutput(
@@ -1163,49 +1102,25 @@ function getSDFDelimiter(sdfText) {
   return null; // No valid delimiter found
 }
 
-async function onChangeInChIVersionTab1() {
-  await updateInchiOptions("inchi-tab1-pane", () => updateInchiTab1());
-  await updateKetcherOptions(
-    getKetcher("inchi-tab1-ketcher"),
-    getVersion("inchi-tab1-pane")
-  );
-}
-async function onChangeInChIVersionTab2() {
-  await updateInchiOptions("inchi-tab2-pane", () => updateInchiTab2());
-}
-
-async function onChangeInChIVersionTab3() {
-  // This tab renders into the NGL viewer, so there is no Ketcher to reconfigure.
-  await updateInchiTab3();
-}
-
-async function onChangeInChIVersionTab4() {
-  await updateInchiOptions("inchi-tab4-pane", () => updateInchiTab4());
-}
-
-async function updateInchiOptions(tabDivId, updateFunction) {
+async function updateInchiOptions(updateFunction) {
   /*
    * Say which version is loading, before the wait rather than after it. Every
    * non-default version is a cold ~1 MB WebAssembly fetch and compile, because
    * warmUp() only prefetches the default one — several seconds during which
    * the old UI showed nothing at all.
    */
-  setConversionStatus(
-    tabDivId,
-    "busy",
-    `Loading InChI ${getVersion(tabDivId)}…`
-  );
-  markResultsStale(tabDivId, true);
+  setConversionStatus("busy", `Loading InChI ${getVersion()}…`);
+  markResultsStale(true);
 
   /*
    * Snapshotted after addInchiOptionsForm has already rebuilt the panel, so
    * this restore is a no-op — a pre-existing bug, not introduced here. Left
    * exactly as it was; fixing it is a separate change with its own test.
    */
-  await addInchiOptionsForm(tabDivId, () => updateFunction());
-  const optionsState = getInchiOptionsState(optionsPanelOf(tabDivId));
-  applyInchiOptionsState(optionsPanelOf(tabDivId), optionsState);
-  updateChangedOptionCount(tabDivId);
+  await addInchiOptionsForm(() => updateFunction());
+  const optionsState = getInchiOptionsState(optionsPanel());
+  applyInchiOptionsState(optionsPanel(), optionsState);
+  updateChangedOptionCount();
 
   await updateFunction();
 }
@@ -1236,7 +1151,6 @@ async function convertMolfileToInchiAndWriteResults(
   auxinfoTextElementId,
   logTextElementId
 ) {
-  const paneId = paneOf(inchiTextElementId);
   const log_entries = [];
   /*
    * Never a bare label: an empty options set says so in words. This line read
@@ -1250,7 +1164,6 @@ async function convertMolfileToInchiAndWriteResults(
     inchiResult = await inchiFromMolfile(molfile, options, inchiVersion);
   } catch (e) {
     setConversionStatus(
-      paneId,
       "error",
       `The InChI library could not process this structure. It reported: ${e}`
     );
@@ -1266,9 +1179,9 @@ async function convertMolfileToInchiAndWriteResults(
   const { inchi, auxinfo, log, return_code } = inchiResult;
   writeResult(inchi, inchiTextElementId);
   writeResult(auxinfo, auxinfoTextElementId);
-  stampVersion(paneId, inchiVersion);
-  markResultsStale(paneId, false);
-  renderComparison(paneId);
+  stampVersion(inchiVersion);
+  markResultsStale(false);
+  renderComparison();
 
   if (log !== "") {
     log_entries.push(log);
@@ -1285,7 +1198,6 @@ async function convertMolfileToInchiAndWriteResults(
         ? log.split("\n")[0]
         : "The InChI library returned no diagnostic for this input.";
     setConversionStatus(
-      paneId,
       "error",
       `No InChI generated by ${inchiVersion} (code ${return_code}). ${detail}`
     );
@@ -1293,7 +1205,6 @@ async function convertMolfileToInchiAndWriteResults(
     const optionSummary =
       options === "" ? "default options" : `options ${options}`;
     setConversionStatus(
-      paneId,
       "ok",
       `Converted with InChI ${inchiVersion}, ${optionSummary}.` +
         (log !== "" ? " The library reported warnings; see the log." : "")
@@ -1332,54 +1243,6 @@ function writeResult(text, ...ids) {
   }
 }
 
-async function updateRinchiTab1() {
-  // clear output fields
-  writeResult(
-    "",
-    "rinchi-tab1-rinchi",
-    "rinchi-tab1-longrinchikey",
-    "rinchi-tab1-shortrinchikey",
-    "rinchi-tab1-webrinchikey",
-    "rinchi-tab1-rauxinfo",
-    "rinchi-tab1-logs"
-  );
-
-  // collect user input
-  let rxnfile;
-  const ketcher = getKetcher("rinchi-tab1-ketcher");
-  if (!ketcher) {
-    writeResult(
-      "The reaction editor is not ready yet. Please reload the page (CTRL + F5) if this persists.",
-      "rinchi-tab1-logs"
-    );
-    return;
-  } else if (ketcher.editor.struct().isBlank()) {
-    // no structure
-    return;
-  } else if (!ketcher.containsReaction()) {
-    writeResult(
-      "This drawing is not a reaction yet. Add a reaction arrow to convert it to a RInChI.",
-      "rinchi-tab1-logs"
-    );
-    return;
-  } else {
-    rxnfile = await ketcher.getRxn();
-  }
-  const equilibrium = hasEquilibriumReactionArrow(ketcher);
-
-  // run conversion
-  await convertRxnfileToRinchiAndWriteResults(
-    rxnfile,
-    equilibrium,
-    "rinchi-tab1-rinchi",
-    "rinchi-tab1-longrinchikey",
-    "rinchi-tab1-shortrinchikey",
-    "rinchi-tab1-webrinchikey",
-    "rinchi-tab1-rauxinfo",
-    "rinchi-tab1-logs"
-  );
-}
-
 function hasEquilibriumReactionArrow(ketcher) {
   const rxnArrowsMap = ketcher.editor.struct().rxnArrows;
   if (rxnArrowsMap.size > 0) {
@@ -1390,39 +1253,6 @@ function hasEquilibriumReactionArrow(ketcher) {
     return rxnArrowsMap.values().next().value.mode.startsWith("equilibrium");
   }
   return false;
-}
-
-async function updateRinchiTab2() {
-  // clear output fields
-  writeResult(
-    "",
-    "rinchi-tab2-rinchi",
-    "rinchi-tab2-longrinchikey",
-    "rinchi-tab2-shortrinchikey",
-    "rinchi-tab2-webrinchikey",
-    "rinchi-tab2-rauxinfo",
-    "rinchi-tab2-logs"
-  );
-
-  // collect user input
-  const rxnfile = document.getElementById(
-    "rinchi-tab2-rxnrdfileTextarea"
-  ).value;
-  const equilibrium = document.getElementById(
-    "rinchi-tab2-forceequilibrium"
-  ).checked;
-
-  // run conversion
-  await convertRxnfileToRinchiAndWriteResults(
-    rxnfile,
-    equilibrium,
-    "rinchi-tab2-rinchi",
-    "rinchi-tab2-longrinchikey",
-    "rinchi-tab2-shortrinchikey",
-    "rinchi-tab2-webrinchikey",
-    "rinchi-tab2-rauxinfo",
-    "rinchi-tab2-logs"
-  );
 }
 
 async function convertRxnfileToRinchiAndWriteResults(
@@ -1518,64 +1348,6 @@ async function convertRinchiToRinchikeyAndWriteResult(
         "rinchilib_rinchikey_from_rinchi returned: " +
         rinchikeyResult.error
     );
-  }
-}
-
-async function updateRinchiTab3() {
-  const rinchi = document
-    .getElementById("rinchi-tab3-rinchiTextarea")
-    .value.trim();
-  const rauxinfo = document
-    .getElementById("rinchi-tab3-rauxinfoTextarea")
-    .value.trim();
-  const logTextElementId = "rinchi-tab3-logs";
-  const ketcher = getKetcher("rinchi-tab3-ketcher");
-  if (!ketcher) {
-    writeResult(
-      "The reaction editor is not ready yet. Please reload the page (CTRL + F5) if this persists.",
-      logTextElementId
-    );
-    return;
-  }
-
-  ketcher.editor.clear();
-  writeResult("", logTextElementId);
-
-  const fileText = await convertRinchiToTextfile(
-    rinchi,
-    rauxinfo,
-    "RXN",
-    logTextElementId
-  );
-  if (fileText) {
-    await ketcher.setMolecule(fileText);
-    //await ketcher.layout();
-  }
-}
-
-async function updateRinchiTab4() {
-  const rinchi = document
-    .getElementById("rinchi-tab4-rinchiTextarea")
-    .value.trim();
-  const rauxinfo = document
-    .getElementById("rinchi-tab4-rauxinfoTextarea")
-    .value.trim();
-  const format = document.querySelector(
-    'input.form-check-input[type="radio"][name="rinchioutputformatRadio"]:checked'
-  ).value;
-  const logTextElementId = "rinchi-tab4-logs";
-  const outputTextElementId = "rinchi-tab4-rxnfile";
-
-  writeResult("", logTextElementId, outputTextElementId);
-
-  const fileText = await convertRinchiToTextfile(
-    rinchi,
-    rauxinfo,
-    format,
-    logTextElementId
-  );
-  if (fileText) {
-    writeResult(fileText, outputTextElementId);
   }
 }
 

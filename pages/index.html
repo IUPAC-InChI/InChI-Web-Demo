@@ -114,9 +114,12 @@
       rather than one opaque run, pins it, switches version, and sees which
       layer moved.
 
-      FIRST VIEWPORT: Masthead on the page grid. Editor left, version and
-      options right as margin apparatus. Beneath, the identifier as a keyed
-      notation plate stamped with the version that produced it.
+      FIRST VIEWPORT: Masthead on the page grid. One surface, no tabs: the
+      editor and what fills it on the left, version and options beneath them
+      as margin apparatus, and the identifier on the right as a keyed notation
+      plate stamped with the version that produced it. What the editor holds
+      decides which identifier appears — a molecule yields an InChI, a
+      reaction a RInChI — so there is no mode for the visitor to set.
 
       DEVIATION (cited): the status line sits ABOVE the plate, not beneath it
       as this block first specified. It answers "did that work?", which is read
@@ -175,94 +178,7 @@
       </header>
       <noscript>You need to enable JavaScript!</noscript>
 
-      <ul class="nav nav-pills mt-1" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link active"
-            id="pills-inchi-tab"
-            data-bs-toggle="pill"
-            data-bs-target="#pills-inchi"
-            type="button"
-            role="tab"
-            aria-controls="pills-inchi"
-            aria-selected="true"
-          >
-            InChI
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            id="pills-rinchi-tab"
-            data-bs-toggle="pill"
-            data-bs-target="#pills-rinchi"
-            type="button"
-            role="tab"
-            aria-controls="pills-rinchi"
-            aria-selected="false"
-          >
-            RInChI
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            id="pills-about-tab"
-            data-bs-toggle="pill"
-            data-bs-target="#pills-about"
-            type="button"
-            role="tab"
-            aria-controls="pills-about"
-            aria-selected="false"
-          >
-            About
-          </button>
-        </li>
-      </ul>
-
-      <!-- Contents of pills -->
-      <div class="tab-content">
-        <!-- InChI pill -->
-        <inchi-inchi-tools
-          class="tab-pane fade show active"
-          id="pills-inchi"
-          role="tabpanel"
-          aria-labelledby="pills-inchi-tab"
-          tabindex="0"
-        ></inchi-inchi-tools>
-
-        <!-- RInChI pill -->
-        <inchi-rinchi-tools
-          class="tab-pane fade"
-          id="pills-rinchi"
-          role="tabpanel"
-          aria-labelledby="pills-rinchi-tab"
-          tabindex="0"
-        ></inchi-rinchi-tools>
-
-        <!-- About pill -->
-        <!--
-          defer-until-shown: the funder logos on this surface are 357 KB over
-          the wire, and they were being fetched on first paint even though every
-          image there is marked loading="lazy" — a lazy image inside a
-          display:none tab pane has no computed position, so the browser
-          fetches it immediately.
-        -->
-        <!--
-          The tool panes take the whole screen; this one does not. About is a
-          Read surface, so it keeps the measure the page used to have — hence
-          Bootstrap's own container-md, rather than a second set of widths
-          invented here.
-        -->
-        <inchi-about
-          class="tab-pane fade container-md"
-          id="pills-about"
-          role="tabpanel"
-          aria-labelledby="pills-about-tab"
-          tabindex="0"
-          defer-until-shown
-        ></inchi-about>
-      </div>
+      <inchi-workbench></inchi-workbench>
     </div>
   </body>
 </html>

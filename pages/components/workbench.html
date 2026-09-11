@@ -1,0 +1,202 @@
+<!--
+  One surface. What you feed the conversion, what configures it, what it
+  produced — in that DOM order, which .tool-workbench rearranges by width.
+
+  This replaces eight tool panes that were the same sentence split by the
+  notation the visitor happened to be holding. The editor is the single
+  source of truth for what is converted; the paste field and the file picker
+  (Tasks 6 and 7) fill it. The output column reads containsReaction() and
+  shows the InChI block or the RInChI block — the drawing decides, so there
+  is no mode switch to get wrong.
+-->
+<div class="tool-workbench">
+  <div class="tool-input">
+    <div class="ratio ketcher">
+      <iframe
+        id="workbench-ketcher"
+        title="Structure and reaction editor"
+        class="w-100"
+        src="ketcher/index.html"
+        onload="onKetcherLoaded('workbench-ketcher', () => updateWorkbench())"
+      ></iframe>
+    </div>
+    <!-- Task 6 inserts the paste field here; Task 7 the SD-file picker. -->
+  </div>
+
+  <div class="tool-controls tool-controls-bottom">
+    <inchi-version-selection
+      onVersionChange="onChangeInchiVersion()"
+    ></inchi-version-selection>
+    <div data-inchi-options></div>
+  </div>
+
+  <div class="tool-output">
+    <!--
+      Always says what happened, and says it above the answer: "did that
+      work?" is read before the answer itself, and on a failure there is no
+      plate to read under. The announcement goes to a region that is never
+      hidden and never moves, because a hidden node is out of the
+      accessibility tree.
+    -->
+    <div
+      class="visually-hidden"
+      data-status-announcer
+      role="status"
+      aria-live="polite"
+    ></div>
+    <div class="conversion-status" data-status hidden></div>
+
+    <!--
+      The molecule answer. Hidden as a block when the editor holds a
+      reaction; the fields inside keep their content either way, so
+      switching back does not re-run a conversion.
+    -->
+    <div data-output="inchi">
+      <inchi-result-field
+        id="workbench-inchi"
+        title="InChI"
+        placeholder="The InChI appears here as you draw, split into its layers."
+        notation="inchi"
+        live
+      ></inchi-result-field>
+      <inchi-result-field
+        id="workbench-inchikey"
+        title="InChIKey"
+        placeholder="The hashed key, derived from the InChI above."
+        notation="inchikey"
+      ></inchi-result-field>
+
+      <!--
+        Comparing versions is the job. Pinning keeps a result so the next
+        conversion can be diffed against it layer by layer, instead of the
+        previous answer being destroyed the moment you switch version.
+      -->
+      <div class="comparison-controls">
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          data-pin
+          disabled
+          onclick="pinCurrentResult()"
+        >
+          Pin this result to compare
+        </button>
+        <button
+          type="button"
+          class="link-button comparison-clear"
+          data-clear-comparison
+          disabled
+          onclick="clearComparison()"
+        >
+          Clear comparison
+        </button>
+      </div>
+      <div data-comparison hidden></div>
+
+      <!--
+        The 3D view sits with the answer: its atom annotations — canonical
+        index, equivalence class, hydrogen group — are read off the InChI, so
+        it explains the identifier beside it.
+      -->
+      <div class="bounding-box mt-3">
+        <inchi-ngl-viewer id="workbench-ngl-viewer"></inchi-ngl-viewer>
+      </div>
+
+      <!--
+        Evidence, not the answer. These must not get a container equal to the
+        identifier's, and must not be open by default.
+      -->
+      <details class="secondary-plates">
+        <summary>Auxiliary information and library log</summary>
+        <inchi-result-field
+          id="workbench-auxinfo"
+          title="AuxInfo"
+          placeholder="Auxiliary information: atom numbering and coordinates."
+        ></inchi-result-field>
+        <inchi-result-field
+          id="workbench-logs"
+          title="Log"
+          placeholder="Messages from the InChI library, when it has any."
+        ></inchi-result-field>
+      </details>
+    </div>
+
+    <!--
+      The reaction answer. RInChI has no layer grammar — inchi-layers.js
+      parses InChI only — so these render as single runs of text, which is
+      recorded open in DESIGN.md rather than faked here.
+    -->
+    <div data-output="rinchi" hidden>
+      <!--
+        Equilibrium, declared rather than drawn.
+
+        Ketcher's arrow settles this for a drawing (hasEquilibriumReactionArrow
+        reads the arrow's mode), but RXN format has no equilibrium notation at
+        all — so a *pasted* reaction can never be an equilibrium without
+        redrawing its arrow by hand. Old RInChI tab 2 had this checkbox for
+        exactly that case. It is initialised from the arrow on every
+        conversion and overrides it when the visitor sets it.
+      -->
+      <div class="bounding-box">
+        <div class="form-check">
+          <input
+            id="workbench-forceequilibrium"
+            class="form-check-input"
+            type="checkbox"
+            onchange="updateWorkbench()"
+          />
+          <label class="form-check-label" for="workbench-forceequilibrium">
+            Treat this reaction as an equilibrium
+          </label>
+        </div>
+        <!--
+          Provenance is part of the answer, and there is one RInChI build, so
+          it is stated once here rather than stamped on six plates.
+        -->
+        <p class="rinchi-version apparatus mb-0"></p>
+      </div>
+      <inchi-result-field
+        id="workbench-rinchi"
+        title="RInChI"
+        placeholder="Draw a reaction arrow and the RInChI appears here."
+        live
+      ></inchi-result-field>
+      <inchi-result-field
+        id="workbench-longrinchikey"
+        title="Long-RInChIKey"
+        placeholder="The long key, derived from the RInChI above."
+      ></inchi-result-field>
+      <inchi-result-field
+        id="workbench-shortrinchikey"
+        title="Short-RInChIKey"
+        placeholder="The short key, derived from the RInChI above."
+      ></inchi-result-field>
+      <inchi-result-field
+        id="workbench-webrinchikey"
+        title="Web-RInChIKey"
+        placeholder="The web key, derived from the RInChI above."
+      ></inchi-result-field>
+      <details class="secondary-plates">
+        <summary>Auxiliary information and library log</summary>
+        <inchi-result-field
+          id="workbench-rauxinfo"
+          title="RAuxInfo"
+          placeholder="Auxiliary information for the reaction's structures."
+        ></inchi-result-field>
+        <inchi-result-field
+          id="workbench-rinchi-logs"
+          title="Log"
+          placeholder="Messages from the RInChI library, when it has any."
+        ></inchi-result-field>
+      </details>
+    </div>
+
+    <!--
+      No tabId. ReportMaskElement used to branch on which tool pane it sat in
+      to decide where the molfile came from; there is one editor now.
+    -->
+    <report-mask></report-mask>
+  </div>
+</div>
+
+<feedback-dialog id="feedbackDialog"></feedback-dialog>
