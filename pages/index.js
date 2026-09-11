@@ -1050,7 +1050,7 @@ async function loadPastedInput() {
   /*
    * No updateWorkbench() call here, deliberately. ketcher.setMolecule()
    * dispatches the editor's own `change` event, and onKetcherLoaded
-   * (index.js:1672) has subscribed updateWorkbench to it — calling it here as
+   * has subscribed updateWorkbench to it — calling it here as
    * well runs two conversions concurrently over the same plates and loads the
    * 3D viewer twice.
    */
@@ -1134,7 +1134,7 @@ async function convertReactionFromKetcher(ketcher) {
 
   /*
    * Cleared first, unlike the InChI path. convertRxnfileToRinchiAndWriteResults
-   * writes only the log when rinchiFromRxnfile throws (index.js:1439-1446), so
+   * writes only the log when rinchiFromRxnfile throws, so
    * a previous reaction's RInChI would survive the failure — and the status
    * check below would then read it and report success.
    */
@@ -1171,16 +1171,11 @@ async function convertReactionFromKetcher(ketcher) {
     "workbench-rinchi-logs"
   );
   /*
-   * RInChI has no version selector of its own — there is one RInChI build —
-   * so the status line reports the outcome rather than a version, and the
-   * build is named once beside the results. RINCHI_VERSION is defined in
-   * rinchi.js:3; this is the line that used to live in the RInChI pill's
-   * header (components.js:422-425) and had no successor.
+   * RInChI has no version selector of its own — there is one build — so the
+   * status line reports the outcome rather than a version. The build itself is
+   * named beside the results, written once when the workbench connects rather
+   * than on every conversion.
    */
-  document.querySelector(
-    '[data-output="rinchi"] .rinchi-version'
-  ).textContent = `Computed with RInChI ${RINCHI_VERSION}`;
-
   const rinchi = document.getElementById("workbench-rinchi").textContent.trim();
   setConversionStatus(
     rinchi.startsWith("RInChI=") ? "ok" : "error",
@@ -1737,6 +1732,68 @@ async function convertRinchiToRinchikeyAndWriteResult(
         rinchikeyResult.error
     );
   }
+}
+
+/*
+ * The reverse direction: this surface's RInChI back to RXN or RD file text.
+ * The RInChI comes from the plate rather than from a second paste field —
+ * there is only one reaction on the surface, and asking the visitor to paste
+ * back the string the app just produced was the tab's own worst feature.
+ */
+async function downloadReactionFile() {
+  /*
+   * The pasted RInChI wins over the generated one when there is one.
+   *
+   * Old RInChI tab 4 converted whatever you pasted, with no round trip
+   * through an editor. Here the reaction has been drawn by Ketcher and read
+   * back, so the RInChI on the plate may not be byte-identical to the one
+   * pasted — and it is the pasted string the visitor wants a file for.
+   */
+  const pasted = splitRinchiPaste(
+    document.getElementById("workbench-paste").value
+  );
+  const rinchi =
+    pasted.rinchi ||
+    document.getElementById("workbench-rinchi").textContent.trim();
+  const rauxinfo =
+    pasted.rauxinfo ||
+    document.getElementById("workbench-rauxinfo").textContent.trim();
+  const format = document.querySelector(
+    'input[name="reactionFileFormat"]:checked'
+  ).value;
+
+  writeResult("", "workbench-reaction-file");
+
+  if (!rinchi.startsWith("RInChI=")) {
+    setConversionStatus(
+      "error",
+      "There is no RInChI to convert yet. Draw or paste a reaction first."
+    );
+    return;
+  }
+
+  /*
+   * Its own log element, not the RInChI's: convertRinchiToTextfile *replaces*
+   * the content of whatever it is handed, and the RInChI log is the record of
+   * the conversion that produced the string being converted here.
+   */
+  const fileText = await convertRinchiToTextfile(
+    rinchi,
+    rauxinfo,
+    format,
+    "workbench-reaction-file-logs"
+  );
+  if (!fileText) {
+    /* Without this the status line still reads "ok" from the RInChI run and
+     * the empty plate is the only sign anything went wrong. */
+    setConversionStatus(
+      "error",
+      `This RInChI could not be converted to ${format} file text; see the log.`
+    );
+    return;
+  }
+  writeResult(fileText, "workbench-reaction-file");
+  setConversionStatus("ok", `Generated ${format} file text for this RInChI.`);
 }
 
 async function convertRinchiToTextfile(
