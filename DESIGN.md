@@ -209,7 +209,7 @@ dark-theme counterparts are in `.impeccable/design.json`.
 ### Primary
 - **Institutional Green** (`brand`): the InChI Trust green. Carries links, the primary button, the checked state of a checkbox or radio, the version stamp on every plate, and the whole focus system. In dark it lifts to a paler tint of the same hue, because the light value is 1.6:1 on a dark field and unusable. It is a brand commitment, not a style choice — a palette may be built around it, it may not be replaced.
 - **Green Tint** (`brand-quiet`): a fill that carries ink on top; not used for text.
-- **Focus Ring** (`focus-ring`): the translucent halo behind the focus outline, and the value behind Bootstrap's `--bs-btn-focus-shadow-rgb`.
+- **Focus Ring** (`focus-ring`): the translucent halo behind the focus outline.
 
 ### Secondary
 - **Struck Red** (`error`): the one outcome hue. Appears on the status line's left stroke and its mark, and as text ink on failure. `error-quiet` tints the failed status line's field.
@@ -235,7 +235,7 @@ better.
 - **Field** (`field`): the surface of a plate, an input, the status line.
 - **Sunken Field** (`field-sunken`): a control panel and the layer-key column; where something sits *into* the page rather than on it.
 - **Ink** (`ink`): body text and every drawn mark. 15.8:1 on the ground.
-- **Muted Ink** (`ink-muted`): real secondary text — apparatus labels, inactive tabs, hints. 7.4:1.
+- **Muted Ink** (`ink-muted`): real secondary text — apparatus labels, hints, the select caret. 7.4:1.
 - **Faint Ink** (`ink-faint`): placeholders, empty-state copy, separators, disabled labels. 4.6:1 on the sunken panel, its worst case.
 - **Hairline / Rule / Stroke** (`rule-hairline`, `rule`, `rule-stroke`): three line *jobs*, and only two are held to 3:1. The hairline separates rows inside a surface whose own edge already bounds it, so it is deliberately near-invisible and is not a 1.4.11 boundary. The rule bounds a control — every input, select and chip border — so it clears 3:1 against both the field it sits on and the ground behind it. The stroke marks rather than bounds, and keeps a 3px weight where the other two are hairlines.
 - **Selection** (`selection-bg`, `selection-text`): ink on a brand tint. This page's whole job is text you select and copy, so selection is a legibility requirement.
@@ -279,7 +279,7 @@ to be readable.
 
 ### Hierarchy
 
-The audit found nine sizes spanning 2.0:1 — Bootstrap's defaults, a flat hierarchy pretending to
+The audit found nine sizes spanning 2.0:1 — a framework's defaults, a flat hierarchy pretending to
 be a rich one. The replacement scale spans 3.6:1 (2.5rem down to 0.6875rem) and every step has a
 job.
 
@@ -314,38 +314,42 @@ uppercasing are allowed.
 The page is a `.page-shell`: full-bleed up to a 2400px cap, a 0.75rem gutter that opens to 1.5rem
 at the workbench breakpoint, and a 2rem tail. The cap is in `px`, not `rem`, because it limits
 screen real estate rather than text and must not move when someone raises their browser font
-size. It used to be a Bootstrap `container-md`, which
-caps at 1320px however wide the display is — on a 2560px monitor that left a third of the screen
-as margin beside a tool whose two halves both want room. **The About pane opts back out**: it
-carries `container-md` on itself, and its running text is capped again at `64ch` inside that —
-prose has a measure and the tool surface does not.
-The masthead sits on the page grid — logo, then `<h1>` and tagline on one baseline — with a `rule`
-hairline under it. Below it, pill tabs (InChI / RInChI / About), then per-tool tab rows.
+size. It used to be a `container-md`, which caps at 1320px however wide the display is — on a
+2560px monitor that left a third of the screen as margin beside a tool whose two halves both want
+room. **The About page opts back out**: it carries `container-md` on itself, and its running text
+is capped again at `64ch` inside that — prose has a measure and the tool surface does not.
+The masthead sits on the page grid — logo, then `<h1>` and tagline on one baseline, an About link
+and the theme switch at the end — with a `rule` hairline under it. Below it, the workbench. There
+are no tabs.
 
-Every tool pane is one `.tool-workbench` grid holding the same three children in the same DOM
-order — `.tool-input` (what you feed the conversion), `.tool-controls` (version and options),
-`.tool-output` (what it produced) — and CSS grid areas arrange them three ways by width. Bootstrap
-rows and `col-*` classes are gone from the panes: the three children change *arrangement*, not
-just width, and expressing the widest case with columns would mean writing the output markup
-twice. One DOM order also means reading order, tab order and visual order agree in all three
-states without a single `order` declaration.
+The tool is one `.tool-workbench` grid holding the same three children in the same DOM order —
+`.tool-input` (what you feed the conversion), `.tool-controls` (version and options),
+`.tool-output` (what it produced) — and CSS grid areas arrange them three ways by width. Grid
+areas rather than rows and columns: the three children change *arrangement*, not just width, and
+expressing the widest case with columns would mean writing the output markup twice. One DOM order
+also means reading order, tab order and visual order agree in all three states without a single
+`order` declaration.
 
 - **Below 1200px** — one column: input, controls, output.
 - **1200-1399px** — input and controls share a row (`2fr 1fr`), output full width beneath.
 - **1400px and up** — the workbench: input above controls in a left rail, output alongside in an equal column, and the output sticky at `top: 1rem`.
 
-Within the output column the order is: status line, answer plate, derived answer plate,
-comparison controls, comparison plate, then a collapsed `<details>` holding AuxInfo and the
-library log. The 3D viewer sits with the output on the tabs where it explains or *is* the answer
-(molfile, AuxInfo); a tab that converts the other way puts its result — a rebuilt structure or
-reaction — at the head of the output column and demotes the library log beneath it.
+The input rail holds the editor, a paste field that takes any supported notation, and an SD-file
+picker. Within the output column the order is: status line, the SD record list when a file is
+loaded, answer plate, derived answer plate, comparison controls, comparison plate, the 3D viewer,
+then a collapsed `<details>` holding AuxInfo and the library log.
+
+**What the editor holds decides which answer appears.** A molecule yields InChI and InChIKey; a
+reaction yields RInChI and its three keys. The two output blocks are siblings that hide as units
+and keep their content while hidden, so adding or deleting a reaction arrow switches the answer
+without reconverting and without a mode for the visitor to set.
 
 Spacing rhythm is a small reused set rather than a formal scale: 0.5rem/1rem inside a layer cell,
 0.75rem/1rem in a plate head, 0.5rem/0.75rem in a status line or key block, 0.75rem of panel
 padding, and 1rem both between comparison items and above a plate. The cell and head paddings are
 a step more generous than a drawn-rule world would allow — a lifted card needs its content to sit
-*inside* the card, not against its edge — but the row count is unchanged. Bootstrap's `mt-1`/`mt-2`
-utilities carry the rest.
+*inside* the card, not against its edge — but the row count is unchanged. A handful of `mt-*` /
+`mb-*` utilities in `css/base.css` carry the rest.
 
 Responsive behaviour that is load-bearing:
 
@@ -428,8 +432,8 @@ rises when touched is a third elevation nobody declared. `box-shadow: inset` is 
 ## Shapes
 
 Two radii and nothing between them: `--inchi-radius-sm` is `8px` (buttons, inputs, panels, chips,
-tabs, the status line, the logo mount) and `--inchi-radius-md` is `12px` (a plate, a dialog).
-Bootstrap's `--bs-border-radius`, `-sm` and `-lg` hooks are wired to them so the framework's own
+the status line, the logo mount) and `--inchi-radius-md` is `12px` (a plate, a dialog).
+A checkbox keeps a `0.25em` corner, which is the one documented exception. `css/base.css` uses
 components inherit the decision rather than being overridden selector by selector. Small round
 marks — the option-help badge, the outcome dialog's glyph, the theme knob — are full circles, and
 the theme switch's track is a pill.
@@ -474,9 +478,9 @@ carries a self-check that fails if a glyph the interface uses is not authored th
 
 ### Buttons
 - **Shape:** 8px corners, no shadow, no transform — a button is on the plate, not above it.
-- **Primary:** brand green field with `on-brand` ink; hover and active both go to `brand-hover`. Disabled drops to the sunken field with a hairline border and faint ink. Branded through Bootstrap's `--bs-btn-*` hooks on `.btn-primary` rather than by overriding selectors.
+- **Primary:** brand green field with `on-brand` ink; hover and active both go to `brand-hover`. Disabled drops to the sunken field with a hairline border and faint ink. Drawn in `css/base.css`.
 - **Outline / secondary:** transparent field, `ink-muted` ink, `rule` border — a control boundary, so never the hairline. Hover fills with the sunken field and promotes the border to `rule`; active promotes it to `rule-stroke`. This is the default for result-plate actions (copy, download) and for "Pin this result".
-- **Focus:** one system for everything — a 1px `brand` outline at 2px offset, the element's own border promoted to `rule-stroke`, and `box-shadow: none`. Bootstrap's blue focus glow is neutralised at the token level via `--bs-btn-focus-shadow-rgb`, because a green button flashing blue on focus is two systems arguing.
+- **Focus:** one system for everything — a 1px `focus` outline at 2px offset, the element's own border promoted to `rule-stroke`, and `box-shadow: none`. `base.css` gives every focusable thing the outline; the named list in `index.css` adds the border promotion, which only means anything on something that has a border. Both read `--inchi-focus`: two focus declarations on different tokens would be the two-system problem the list was written to end.
 - **Link button** (`.link-button`): a real `<button>` that reads as body text in brand green, underlining on hover. Used where an action must be keyboard-operable but must not look like a control.
 - **Touch:** 44px minimum height on any coarse pointer.
 
@@ -492,19 +496,36 @@ There are no cards. There are two container kinds.
 - **Panel** (`.bounding-box`): 1px hairline border, `field-sunken` background, 0.75rem padding. Groups controls — version selector, options, viewer. Often a `<details>`, whose `<summary>` gets the authored triangle because `display: flex` kills the native `::marker` in Blink and WebKit.
 
 ### Inputs / Fields
-- **Style:** `field` background, `ink` text, `rule` border — the token that clears 3:1, because this is exactly the boundary 1.4.11 is about — and 8px corners. Placeholders in faint ink. Checkboxes keep Bootstrap's own small radius; checked state is brand green, overridden explicitly because Bootstrap 5.2.3 hardcodes it.
+- **Style:** `field` background, `ink` text, `rule` border — the token that clears 3:1, because this is exactly the boundary 1.4.11 is about — and 8px corners. Placeholders in faint ink. Checkboxes keep a `0.25em` corner rather than the control's 8px, and their checked state is brand green with a drawn tick.
 - **Focus:** the shared brand outline at 2px offset.
-- **Select caret:** Bootstrap bakes `#343a40` into the caret's data URI, which is 1.5:1 on the dark field — a 1.4.11 failure on the version selector, the most important control here. A data URI cannot read a custom property, so the caret stroke is written literally once per theme.
-- **Paste areas:** identifier mono at 0.8125rem, 12rem tall stacked and 7rem on the wide layout, `resize: none` where the container sizes them.
-- **Option help** (`.option-help`): a 1.15rem round bordered badge, 44px on touch. The option explanations used to hang on a non-focusable `<i>` with the text in `data-bs-title` — no accessible name, no keyboard path. They are real buttons.
+- **Select caret:** split across two files on purpose. `base.css` removes the native arrow and positions the replacement; `index.css` carries the image, because a data URI cannot read a custom property and the stroke has to be written literally once per theme — and every colour in this project lives in `index.css` or `tokens.css`, never in the control layer.
+- **Paste area:** one field, identifier mono at 0.8125rem, six rows tall and resizable vertically. It takes any supported notation and loads the result into the editor; it is a door into the editor, not a second source of truth.
+- **Option help** (`.option-help`): a 1.15rem round bordered badge, 44px on touch, opening a native `popover` panel. The explanations used to hang on a non-focusable `<i>` with the text in a `title`-style attribute — no accessible name, no keyboard path. They are real buttons driving a platform popover, with no script at all. The panel sits **outside** its `<label>`: nested inside one, clicking the prose toggles the option it explains.
 
 ### Navigation
-Tabs in the world's vocabulary: a hairline baseline under the row with 0.35rem of inset, tabs at
-0.4rem/0.7rem in `ink-muted`, and the active tab marked by a **3px inset stroke** under it plus
-weight 600 — not a filled pill. Hover previews the mark at hairline colour. Transitions on
-box-shadow and colour at `--inchi-transition`. The plain `.nav-link` colour is re-asserted for
-inactive buttons because Bootstrap's own rule would otherwise paint every inactive tab brand
-green, which is why a wrapped tab row once read as three green links and one white box.
+**There is none, and that is the design.** The tool was eight tabs inside three pills — the same
+sentence (put a structure in, read an identifier out) split by the notation the visitor happened
+to be holding, which made them classify their own input before the app would take it. One surface
+replaced all of it: one editor, one paste field, one file picker, and an output column that reads
+what the editor holds.
+
+The two routes that remain are links in the masthead, not a tab strip: **About** leads to
+`about.html` and back. A tab row is the thing this surface refuses; do not reintroduce one to
+hold a second tool. If something genuinely does not belong on the workbench, it is another page.
+
+### The Record List
+An SD file is the one input with many answers, so it is the one thing that changes the output
+column rather than filling the editor. A plate headed with the record count, hairline-divided
+rows of `n` and InChIKey, the selected row carrying the **3px inset stroke** in its gutter — the
+same mark a divergent layer gets, because it is the same job: this is the one being read.
+Selecting is a redraw, not a reconversion.
+
+Rows go stale when the version or the flags move away from the ones they were converted under.
+They say so — every row but the selected one drops to 0.45 opacity, the head names the drift and
+offers "Convert again" — rather than silently re-converting thousands of records or silently
+lying about the ones already there. A failed record is named on the row and counted in the head;
+the status line is not used for it, because that line describes the record in the editor and the
+file-level count would be overwritten by the next per-record conversion.
 
 ### The Keyed Notation Stack (signature)
 The centre of the system. An InChI is rendered as a two-column CSS grid — `minmax(6.5rem,
@@ -552,7 +573,8 @@ animates its elevation.
 - **Do** reach for a semantic token (`--inchi-field`, `--inchi-brand`) rather than a hex value. If no token fits, the value is probably one-off — keep it local to the rule that needs it instead of inventing a token for it.
 - **Do** express hierarchy with surface and elevation first, then the line jobs: a hairline separates rows inside a card, `rule` bounds a control at 3:1, the 3px stroke marks the active or divergent thing.
 - **Do** define a new colour for light on bare `:root` and redefine it in **both** dark blocks (`@media (prefers-color-scheme: dark) :root:not([data-theme="light"])` and `:root[data-theme="dark"]`).
-- **Do** brand Bootstrap through its `--bs-*` hooks; override a Bootstrap selector only where 5.2.3 hardcodes a value, and say so in a comment when you must.
+- **Do** put a new control's appearance in `css/base.css` and its behaviour in the platform. The framework was removed because four features — tab switching, tooltips, a multiselect and a stylesheet — cost 404 KB and a jQuery dependency; `popover`, a checkbox list and 473 lines of CSS replaced all of it. Reach for a native element before writing script.
+- **Do** keep colour out of `css/base.css`. It draws the controls against the tokens; the values live in `tokens.css` and the overrides in `index.css`. The select caret is split across two files for exactly this reason.
 - **Do** stamp every result with the version that produced it, and keep the stale result readable while a new one loads.
 - **Do** give every plate an empty state that names what will appear there.
 - **Do** pair every icon with a real accessible name on the control; icons are always `aria-hidden="true"` and `focusable="false"`.
@@ -583,16 +605,20 @@ animates its elevation.
 These are the build's own gaps, not rules to inherit.
 
 - **The masthead is partial.** It is bounded by a single rule and carries no elevation of its own, so it reads as a heading above the page rather than as part of the same lifted system. Not yet resolved either way.
-- **Native devices of this world that go unused:** no hover or focus elevation anywhere (deliberate, but it means the plates never respond), no tonal surface between `field` and `ground`, and the answer plate begins below a 900px fold on the wide layout.
-- **RInChI has no layer grammar.** The RInChI and its three key variants inherit the world (tokens, plates, nav, focus) but render as single runs of text. `pages/inchi-layers.js` parses InChI only.
+- **Native devices of this world that go unused:** no hover or focus elevation anywhere (deliberate, but it means the plates never respond), and no tonal surface between `field` and `ground`.
+- **RInChI has no layer grammar.** The RInChI and its three key variants inherit the world (tokens, plates, focus) but render as single runs of text. `pages/inchi-layers.js` parses InChI only. On one surface the asymmetry is now visible directly: a keyed InChI stack and a flat RInChI run sit in the same place, one drawing apart.
+- **The pin and comparison controls are InChI-only.** They live in the molecule block, because the layer diff has nothing to say about a RInChI. Pin a molecule, draw a reaction, and the pinned result is still held but out of sight until a molecule returns.
+- **A pasted file is not what InChI sees.** The editor is the single source of truth, so a pasted molfile reaches the library through Ketcher's re-serialization. The bytes are carried into a problem report so the original is still reproducible, but the app can no longer convert them directly.
 - **Comparison handles two results, not three.** Pinning diffs one pinned result against the current one; three-way or a persistent column layout is not built.
 - **No URL state.** A result is not addressable, so a comparison cannot be linked to a colleague or cited from a paper.
 - **Two dialog stylesheets were never migrated to these tokens.** `pages/css/report-mask.css` and `pages/css/report-feedback.css` reference seven custom properties that do not exist anywhere in the project — `--inchi-text-muted`, `--inchi-border-strong`, `--inchi-surface-muted`, `--inchi-success-fg`, `--inchi-success-surface`, `--inchi-error-fg`, `--inchi-error-surface` — so those colours silently fall back to inherited values. The correct tokens are `ink-muted`, `rule`, `field-sunken`, `brand`/`brand-quiet` and `error`/`error-quiet`. **This is a defect, not a system rule.**
-- A comment in `pages/css/index.css` refers to "`--inchi-stack-breakpoint` in index.js"; the actual name is the JS constant `INCHI_STACK_BREAKPOINT`. There is no such CSS custom property.
+- **The pasted bytes ride in the report's description field.** Two dedicated fields (`pasted_input`, `pasted_input_kind`) would be better; that needs the report endpoint's agreement first.
+- **No favicon.** Neither page declares one, so every load spends a request on a 404 for `/favicon.ico`.
 
 ## Verification in-repo
 
 - `node pages/inchi-layers.js` — self-check on the layer parser, the diff, the InChIKey split, HTML escaping and the icon set.
-- `cd test && npx jest` — 3 suites (`inchi`, `rinchi`, `inchi-layers`), ~80 parameterised cases. Requires the WASM build to have run.
+- `cd test && npx jest` — 4 suites (`inchi`, `rinchi`, `inchi-layers`, `input-format`), 119 cases. Requires the WASM build to have run.
 - `python3 test/check_contrast.py` — every text pair at 4.5:1 and every boundary pair at 3:1, in both themes, with the hairline exemption reported separately.
 - `node <impeccable>/scripts/detect.mjs --json pages/index.html pages/components` — returns `[]`.
+- `grep -rin "bootstrap\|jquery" pages --include=*.html --include=*.js --include=*.css --include=*.sh` — only prose in comments recording that the framework was removed. No `<link>`, `<script>`, `class=` or `--bs-` hit is acceptable.
