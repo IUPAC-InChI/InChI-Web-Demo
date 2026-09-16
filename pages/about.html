@@ -134,8 +134,18 @@
   <a href="https://webassembly.org" target="_blank" rel="noopener"
     >WebAssembly</a
   >. Structures you draw or paste are converted in your browser and are not sent
-  to a server. The exception is the report form, which sends a structure you
-  explicitly choose to report. Running everything locally comes at the cost that
+  to a server. Two things do leave your browser, both only when you ask for
+  them: the report form sends a structure you explicitly choose to report, and
+  a PubChem lookup sends the identifier you typed &mdash; SID 24866042 or CID
+  2244 &mdash; to
+  <a
+    href="https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest"
+    target="_blank"
+    rel="noopener"
+    >PubChem&rsquo;s PUG REST service</a
+  >, which returns the record. No structure of yours is sent in that request,
+  but PubChem does see your IP address and which record you asked for. Running
+  everything locally comes at the cost that
   the initial loading might take a while, since the structure editor and the
   InChI libraries
   have to be downloaded first (they would otherwise live on a server). If the

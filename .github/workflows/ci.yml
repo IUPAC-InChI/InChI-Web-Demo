@@ -73,8 +73,12 @@ jobs:
           apt-get update -y && apt-get install -y jq
           $GITHUB_WORKSPACE/pages/build_wasm_modules.sh $GITHUB_WORKSPACE
 
-      - name: Test WASM modules
-        if: steps.cache-wasm-modules.outputs.cache-hit != 'true'
+      # Not gated on the WASM cache. It used to be, which meant the suite only
+      # ran when inchi_versions.json changed — so the pure-JS tests (format
+      # sniffing, layer parsing) never ran in CI at all, however often the code
+      # they cover was edited. The modules are on disk either way by this
+      # point, from the cache or from the build above.
+      - name: Test
         run: |
           cd $GITHUB_WORKSPACE/test
           yarn install
