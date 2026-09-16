@@ -1018,6 +1018,29 @@ async function onEditorChanged() {
     }
   }
 
+  /*
+   * An emptied canvas empties the paste field with it.
+   *
+   * Keyed on the canvas going blank rather than on Ketcher's "Clear canvas"
+   * button, which lives in the iframe's React markup and would tie this to
+   * markup the app does not own. The cost of reading the state instead of the
+   * button is that erasing the last atom by hand counts too — which is the
+   * same intent expressed more slowly, and leaves the same empty canvas.
+   *
+   * Without this, clearing the canvas left a field full of molfile beside an
+   * empty editor, and the next edit would convert the drawing while the text
+   * sat there looking like the input.
+   */
+  const ketcher = getKetcher("workbench-ketcher");
+  const field = document.getElementById("workbench-paste");
+  if (ketcher?.editor.struct().isBlank() && field && field.value !== "") {
+    field.value = "";
+    pastedInput = { text: "", kind: "", label: "" };
+    conversionSource = "editor";
+    syncPasteControls();
+    syncSourceNotes();
+  }
+
   await updateWorkbench();
 }
 
@@ -1036,6 +1059,7 @@ async function onEditorChanged() {
 function syncSourceNotes() {
   const editorNote = document.querySelector("[data-editor-role]");
   const pasteNote = document.querySelector("[data-paste-state]");
+  syncPasteControls();
 
   if (editorNote) {
     if (conversionSource === "paste") {
@@ -1135,6 +1159,58 @@ async function fetchPubchemRecord(namespace, id) {
 let pubchemRequest = 0;
 
 /*
+ * Empty both sides of the workbench.
+ *
+ * The bin clears the field *and* the canvas, because the two are one input as
+ * far as the visitor is concerned: a preview of the text sits in the editor,
+ * and emptying the box while its drawing stayed behind left the surface half
+ * reset with no way to tell which half. Ketcher's own undo still brings the
+ * drawing back; the text does not come back, which is what a bin means.
+ *
+ * The canvas is emptied behind the load guard. setMolecule dispatches the
+ * editor's `change` event, and an unguarded clear would arrive at
+ * onEditorChanged as a user edit and run a second conversion of nothing.
+ */
+async function clearPasteField() {
+  const field = document.getElementById("workbench-paste");
+  if (!field) {
+    return;
+  }
+  field.value = "";
+  syncPasteControls();
+  field.focus();
+
+  const ketcher = getKetcher("workbench-ketcher");
+  if (ketcher) {
+    loadingIntoEditor = true;
+    try {
+      await ketcher.setMolecule("");
+      editorBaseline = null;
+    } catch (error) {
+      /* A canvas that would not clear costs the drawing, not the clear. */
+      console.error("Clearing the editor failed", error);
+    } finally {
+      loadingIntoEditor = false;
+    }
+  }
+
+  await loadPastedInput();
+}
+
+/*
+ * The clear button is offered only when there is something to clear. Called
+ * on every keystroke as well as from the conversion paths, because the
+ * debounce that gates conversion must not gate the button going live.
+ */
+function syncPasteControls() {
+  const field = document.getElementById("workbench-paste");
+  const clear = document.querySelector("[data-paste-clear]");
+  if (field && clear) {
+    clear.disabled = field.value === "";
+  }
+}
+
+/*
  * Take whatever is in the paste field into the editor.
  *
  * Everything here ends in the same place — a structure in Ketcher — so the
@@ -1151,9 +1227,12 @@ async function loadPastedInput() {
 
   if (format.kind === "empty") {
     /*
-     * Clearing the field hands the source back to the editor but does not
-     * clear it: the structure may have been edited since it was pasted, and
-     * throwing that away because the visitor tidied the box is destructive.
+     * Emptying the field by hand hands the source back to the editor and
+     * leaves the drawing alone — a structure may have been edited since it
+     * was pasted, and discarding that because the visitor tidied the box is
+     * not what tidying the box asked for. The bin button is the deliberate
+     * version of "clear both", and it empties the canvas itself before
+     * arriving here.
      */
     pastedInput = { text: "", kind: "", label: "" };
     conversionSource = "editor";

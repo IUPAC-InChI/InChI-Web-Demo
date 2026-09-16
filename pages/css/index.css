@@ -506,6 +506,7 @@ input.form-check-input {
     .btn,
     .link-button,
     .annotation-button,
+    .paste-clear,
     .theme-switch,
     summary,
     a
@@ -804,6 +805,8 @@ input.form-check-input {
  */
 .paste-field {
   width: 100%;
+  /* Room for the clear button sitting in the corner; see .paste-clear. */
+  padding-right: 2.25rem;
   font-family: var(--inchi-font-identifier);
   font-size: 0.8125rem;
   line-height: 1.45;
@@ -1018,13 +1021,20 @@ input.form-check-input {
   .annotation-button,
   .link-button,
   .option-help,
+  .paste-clear,
   select[data-version] {
     min-height: 44px;
   }
 
   .btn-group .btn-sm,
-  .annotation-button {
+  .annotation-button,
+  .paste-clear {
     min-width: 44px;
+  }
+
+  /* The bigger target needs a bigger gutter, or it lands on the notation. */
+  .paste-field {
+    padding-right: 3.25rem;
   }
 
   .option-help {
@@ -1626,6 +1636,49 @@ inchi-about > h2 {
   letter-spacing: normal;
   font-size: 0.75rem;
   line-height: 1.45;
+}
+
+/*
+ * The clear button, in the paste field's own top-right corner.
+ *
+ * Inside the field rather than under it, because that is where the thing it
+ * empties is. The field reserves the width so notation never runs under the
+ * icon, and the button is inset far enough to clear a scrollbar once the
+ * text is longer than six rows.
+ *
+ * A disabled button stays visible rather than vanishing: a control that
+ * appears and disappears under the pointer is harder to hit than one that is
+ * simply dim, and a corner that is sometimes empty reads as a rendering bug.
+ */
+.paste-shell {
+  position: relative;
+}
+
+.paste-clear {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 2px;
+  background: none;
+  color: var(--inchi-ink-muted);
+  cursor: pointer;
+}
+
+.paste-clear:hover:not([disabled]) {
+  color: var(--inchi-brand);
+  background: var(--inchi-field-sunken);
+}
+
+.paste-clear[disabled] {
+  opacity: 0.4;
+  cursor: default;
 }
 
 /*
