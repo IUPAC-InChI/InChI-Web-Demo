@@ -26,6 +26,17 @@ const INPUT_FORMATS = {
   rdfile: { label: "an RD file", convertible: true, reason: "" },
   rinchi: { label: "a RInChI string", convertible: true, reason: "" },
   /*
+   * Not a structure but a pointer to one, so convertible is false: there is
+   * nothing here for a library to read until PubChem has been asked for the
+   * record. index.js fetches it and re-enters with the SD file text that
+   * comes back, which lands on the sdf path like any other paste.
+   */
+  pubchem: {
+    label: "a PubChem identifier",
+    convertible: false,
+    reason: "",
+  },
+  /*
    * Both refusals name the thing that is missing rather than reporting a
    * category error: "not supported" tells the visitor nothing they can act on.
    */
@@ -48,7 +59,8 @@ const INPUT_FORMATS = {
     convertible: false,
     reason:
       "This is not a format the app recognises. It reads molfiles, SD file " +
-      "text, AuxInfo strings, RXN and RD files, and RInChI strings.",
+      "text, AuxInfo strings, RXN and RD files, RInChI strings, and a " +
+      "PubChem identifier such as SID 24866042 or CID 2244.",
   },
 };
 
@@ -91,6 +103,26 @@ function detectInputFormat(text) {
   if (trimmed.startsWith("InChI=")) return verdict("inchi");
   if (trimmed.startsWith("$RXN")) return verdict("rxnfile");
   if (/^\$(RDFILE|RIREG|DATM)/.test(trimmed)) return verdict("rdfile");
+
+  /*
+   * Anchored to the whole field, unlike the prefixes above. An SD file from
+   * PubChem carries "PUBCHEM_SUBSTANCE_ID" and its value in a data block, and
+   * an unanchored match would read that file as a pointer to itself.
+   *
+   * The prefix is required. PubChem numbers substances (SID) and compounds
+   * (CID) in separate namespaces, so a bare number names a record in both and
+   * the app has no way to tell which one was meant — it would quietly fetch
+   * an unrelated structure. Making the visitor type three letters is cheaper
+   * than a wrong answer that looks right.
+   */
+  const pubchem = /^(S|C)ID\s*[:=]?\s*([1-9]\d*)$/i.exec(trimmed);
+  if (pubchem) {
+    return {
+      ...verdict("pubchem"),
+      namespace: pubchem[1].toLowerCase() === "s" ? "sid" : "cid",
+      id: pubchem[2],
+    };
+  }
 
   // See the order note above: the terminator wins over the counts line.
   if (/^\$\$\$\$\s*$/m.test(text)) return verdict("sdf");

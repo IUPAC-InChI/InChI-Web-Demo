@@ -153,3 +153,46 @@ test.each([[null], [undefined], [42], [{}]])(
     expect(detectInputFormat(input).kind).toBe("empty");
   }
 );
+
+/*
+ * PubChem identifiers. These are not structures — they are a number the app
+ * has to go and fetch a structure for — so they get their own kind and their
+ * own convertible: false. The prefix is mandatory: PubChem numbers substances
+ * and compounds in separate namespaces, so a bare 24866042 could be either
+ * and resolving it to the wrong one is silent and wrong.
+ */
+test.each([
+  ["SID 24866042", "sid", "24866042"],
+  ["SID:24866042", "sid", "24866042"],
+  ["sid24866042", "sid", "24866042"],
+  ["  sid = 24866042  ", "sid", "24866042"],
+  ["CID 2244", "cid", "2244"],
+  ["cid:2244", "cid", "2244"],
+  ["CID2244", "cid", "2244"],
+])("reads %p as a PubChem %s lookup", (text, namespace, id) => {
+  const result = detectInputFormat(text);
+  expect(result.kind).toBe("pubchem");
+  expect(result.namespace).toBe(namespace);
+  expect(result.id).toBe(id);
+});
+
+test("a PubChem identifier is a lookup, not something to convert directly", () => {
+  expect(detectInputFormat("SID 24866042").convertible).toBe(false);
+});
+
+test.each([
+  ["24866042"],
+  ["SID"],
+  ["SID abc"],
+  ["SID 0"],
+  ["SID -5"],
+  ["SIDEBAND 12"],
+])("leaves %p unrecognised rather than guessing a namespace", (text) => {
+  expect(detectInputFormat(text).kind).toBe("unknown");
+});
+
+test("a molfile whose data block mentions an SID is still a molfile", () => {
+  expect(detectInputFormat(`${MOLFILE_V2000}\n> <PUBCHEM_SID>\nSID 1\n`).kind).toBe(
+    "molfile"
+  );
+});
