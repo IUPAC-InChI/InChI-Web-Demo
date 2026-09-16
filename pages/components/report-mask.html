@@ -1,41 +1,67 @@
-<button id="openBtn" class="btn-primary mt-2">Report</button>
+<!--
+  Outline, not filled. This was the only filled button on the page and
+  therefore its loudest element — for a tertiary action, on a surface whose
+  job is generating identifiers. The primary action here has no button at all,
+  because drawing converts on its own.
+-->
+<button type="button" class="btn btn-sm btn-outline-secondary mask-open mt-3">
+  Report a problem
+</button>
 
-<div
-  id="maskOverlay"
-  class="mask-overlay"
-  role="presentation"
-  aria-hidden="true"
->
-  <div
-    id="maskDialog"
-    class="mask-dialog"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="maskTitle"
-  >
+<!--
+  A native <dialog> supplies the modal behaviour this form needs: focus is
+  trapped while it is open, Escape closes it, the page behind it is inert and
+  focus returns to the "Report a problem" button on close.
+  Ids are suffixed per tab by scopeIds() because this component is rendered once
+  per tab; "for" and "aria-labelledby" resolve to the first matching id in the
+  document, so unscoped ids would wire the second dialog to the first one.
+-->
+<dialog class="inchi-dialog mask-dialog" aria-labelledby="maskTitle">
+  <div class="inchi-dialog-body">
     <header>
-      <h2 id="maskTitle">Report structure</h2>
-      <button id="closeMaskBtn" class="mask-close" aria-label="Close dialog">
-        ✕
+      <h2 id="maskTitle">Report a problem</h2>
+      <button type="button" class="mask-close" aria-label="Close dialog">
+        <svg class="app-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
       </button>
     </header>
 
-    <form id="maskForm">
-      <label for="nameInput" class="visually-hidden">Name</label>
+    <form>
+      <p class="mask-intro">
+        This is the one thing on this site that leaves your browser.
+        Everything else — every conversion on every tab — runs locally and is
+        never uploaded.
+      </p>
+      <p class="mask-intro">
+        Your structure, the generated InChI and InChIKey, the options you
+        selected and the log are sent with your description, to the report
+        endpoint at <code>cheminfo.beilstein.org</code>, run by the
+        Beilstein-Institut for the InChI Trust.
+      </p>
+
+      <label class="mask-label" for="nameInput"
+        >Your name or email <span class="mask-optional">(optional)</span></label
+      >
       <input
         type="text"
         id="nameInput"
-        placeholder="User name or mail address"
+        class="mask-name"
+        maxlength="200"
+        autocomplete="name"
+        placeholder="So we can follow up with you"
       />
-      <label for="descriptionInput" class="visually-hidden">Description</label>
+
+      <label class="mask-label" for="descriptionInput"
+        >What is wrong with this structure?</label
+      >
       <textarea
-        type="text"
         rows="5"
-        cols="30"
         id="descriptionInput"
-        placeholder="Please describe the problem that occurs with the structure."
+        class="mask-description"
+        maxlength="4000"
+        placeholder="e.g. the stereo descriptor is missing for the double bond"
         required
       ></textarea>
+
       <div class="disclaimer-section">
         <label for="disclaimerCheckbox" class="disclaimer-label">
           <input
@@ -51,11 +77,13 @@
         </label>
       </div>
       <div class="mask-actions">
-        <button type="button" id="cancelBtn" class="btn-secondary">
+        <button type="button" class="btn btn-outline-secondary mask-cancel">
           Cancel
         </button>
-        <button type="submit" class="btn-primary">Submit</button>
+        <button type="submit" class="btn btn-primary mask-submit">
+          Send report
+        </button>
       </div>
     </form>
   </div>
-</div>
+</dialog>

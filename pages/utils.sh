@@ -15,7 +15,22 @@ download_package() {
     readonly archive
     if [ -n "$archive" ]; then
         unzip "$archive" -d "$artifact_dir"
+        # The archive has done its job. Left in place it sits next to the tree
+        # it produced, deploying the same bytes twice.
+        rm -f "$archive"
     fi
+
+    # Source maps are for debugging a dependency's own source, which nobody
+    # does from the deployed copy, and no browser requests one unless devtools
+    # are open. Bootstrap's dist alone ships 5.8 MB of them. Same reasoning as
+    # the strip in build_ketcher.
+    find "$artifact_dir" -type f -name "*.map" -delete
+
+    # A package's own documentation is not part of the app. bootstrap-multiselect
+    # ships 3.9 MB of it, including 1.3 MB of Glyphicons and FontAwesome that
+    # nothing here references — the widget's dist CSS has no url() at all — and
+    # all of it lands on the deployed site.
+    find "$artifact_dir" -type d -name "docs" -prune -exec rm -rf {} +
 }
 
 
@@ -35,6 +50,12 @@ build_ketcher() {
 
     rm -rf "$artifact_dir" && mkdir -p "$artifact_dir"
     cp -R build/* "$artifact_dir"
+
+    # Source maps are 21.2 MB of the deployed site (main.js.map alone is 13.9 MB)
+    # and nothing ever requests them: the browser only fetches a map when
+    # devtools are open, and these are minified third-party bundles nobody
+    # debugs from the deployed copy. Dropping them costs no functionality.
+    find "$artifact_dir" -name "*.map" -type f -delete
 }
 
 
