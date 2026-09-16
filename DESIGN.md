@@ -344,6 +344,16 @@ reaction yields RInChI and its three keys. The two output blocks are siblings th
 and keep their content while hidden, so adding or deleting a reaction arrow switches the answer
 without reconverting and without a mode for the visitor to set.
 
+**Which side is converted is a second, visible state.** Pasted text is converted verbatim — this
+is a reference tool, and an InChI reported here has to be the one the library gives for that exact
+file; routing a paste through a 2D editor downgraded V3000 to V2000 and rescaled coordinates.
+While a paste is in force the editor is a *preview* and says so, in a quiet apparatus line under
+the canvas bounded by the 3px stroke — the same mark that means "this is the active condition" on
+a divergent layer and a selected record. Editing the drawing takes the source back, because that
+edit is a newer intent. The status line names the side every time: "Converted the pasted molfile
+with InChI 1.07.5" against "Converted the drawn structure with…". An editor that had quietly
+stopped being what gets converted would be the exact ambiguity this surface exists to remove.
+
 Spacing rhythm is a small reused set rather than a formal scale: 0.5rem/1rem inside a layer cell,
 0.75rem/1rem in a plate head, 0.5rem/0.75rem in a status line or key block, 0.75rem of panel
 padding, and 1rem both between comparison items and above a plate. The cell and head paddings are
@@ -499,7 +509,7 @@ There are no cards. There are two container kinds.
 - **Style:** `field` background, `ink` text, `rule` border — the token that clears 3:1, because this is exactly the boundary 1.4.11 is about — and 8px corners. Placeholders in faint ink. Checkboxes keep a `0.25em` corner rather than the control's 8px, and their checked state is brand green with a drawn tick.
 - **Focus:** the shared brand outline at 2px offset.
 - **Select caret:** split across two files on purpose. `base.css` removes the native arrow and positions the replacement; `index.css` carries the image, because a data URI cannot read a custom property and the stroke has to be written literally once per theme — and every colour in this project lives in `index.css` or `tokens.css`, never in the control layer.
-- **Paste area:** one field, identifier mono at 0.8125rem, six rows tall and resizable vertically. It takes any supported notation and loads the result into the editor; it is a door into the editor, not a second source of truth.
+- **Paste area:** one field, identifier mono at 0.8125rem, six rows tall and resizable vertically. It takes any supported notation and **is converted verbatim**; the editor draws it as a preview. It is the second of two conversion sources, not a door into the first — see § Layout.
 - **Option help** (`.option-help`): a 1.15rem round bordered badge, 44px on touch, opening a native `popover` panel. The explanations used to hang on a non-focusable `<i>` with the text in a `title`-style attribute — no accessible name, no keyboard path. They are real buttons driving a platform popover, with no script at all. The panel sits **outside** its `<label>`: nested inside one, clicking the prose toggles the option it explains.
 
 ### Navigation
@@ -608,11 +618,10 @@ These are the build's own gaps, not rules to inherit.
 - **Native devices of this world that go unused:** no hover or focus elevation anywhere (deliberate, but it means the plates never respond), and no tonal surface between `field` and `ground`.
 - **RInChI has no layer grammar.** The RInChI and its three key variants inherit the world (tokens, plates, focus) but render as single runs of text. `pages/inchi-layers.js` parses InChI only. On one surface the asymmetry is now visible directly: a keyed InChI stack and a flat RInChI run sit in the same place, one drawing apart.
 - **The pin and comparison controls are InChI-only.** They live in the molecule block, because the layer diff has nothing to say about a RInChI. Pin a molecule, draw a reaction, and the pinned result is still held but out of sight until a molecule returns.
-- **A pasted file is not what InChI sees.** The editor is the single source of truth, so a pasted molfile reaches the library through Ketcher's re-serialization. The bytes are carried into a problem report so the original is still reproducible, but the app can no longer convert them directly.
 - **Comparison handles two results, not three.** Pinning diffs one pinned result against the current one; three-way or a persistent column layout is not built.
 - **No URL state.** A result is not addressable, so a comparison cannot be linked to a colleague or cited from a paper.
 - **Two dialog stylesheets were never migrated to these tokens.** `pages/css/report-mask.css` and `pages/css/report-feedback.css` reference seven custom properties that do not exist anywhere in the project — `--inchi-text-muted`, `--inchi-border-strong`, `--inchi-surface-muted`, `--inchi-success-fg`, `--inchi-success-surface`, `--inchi-error-fg`, `--inchi-error-surface` — so those colours silently fall back to inherited values. The correct tokens are `ink-muted`, `rule`, `field-sunken`, `brand`/`brand-quiet` and `error`/`error-quiet`. **This is a defect, not a system rule.**
-- **The pasted bytes ride in the report's description field.** Two dedicated fields (`pasted_input`, `pasted_input_kind`) would be better; that needs the report endpoint's agreement first.
+- **A pasted AuxInfo, reaction file or RInChI rides in the report's description field.** A pasted molfile now goes in `molfile_v2`/`molfile_v3` as converted, but the other notations have no field of their own in the report payload, which is the endpoint's shape rather than ours.
 - **No favicon.** Neither page declares one, so every load spends a request on a 404 for `/favicon.ico`.
 
 ## Verification in-repo

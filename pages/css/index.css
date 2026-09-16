@@ -1606,3 +1606,24 @@ inchi-about > h2 {
 .funder-row > :not(.funder-text) {
   flex: 0 1 12rem;
 }
+
+/*
+ * The editor's role, when it is not the source.
+ *
+ * A quiet apparatus line rather than a badge on the canvas: it reports a
+ * state the visitor created by pasting, and it must not compete with the
+ * answer for attention. The 3px stroke marks it as the active condition,
+ * which is the same job that mark does on a divergent layer and a selected
+ * record.
+ */
+.editor-role {
+  margin: 0.5rem 0 0;
+  padding: 0.4rem 0.75rem;
+  border-left: var(--inchi-rule-weight-stroke) solid var(--inchi-rule-stroke);
+  background: var(--inchi-field-sunken);
+  color: var(--inchi-ink-muted);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}

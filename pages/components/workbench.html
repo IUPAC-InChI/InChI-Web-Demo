@@ -17,15 +17,25 @@
         title="Structure and reaction editor"
         class="w-100"
         src="ketcher/index.html"
-        onload="onKetcherLoaded('workbench-ketcher', () => updateWorkbench())"
+        onload="onKetcherLoaded('workbench-ketcher', () => onEditorChanged())"
       ></iframe>
     </div>
     <!--
-      The second door into the editor. There were four tabs behind this —
-      molfile, AuxInfo, RXN/RDfile, RInChI — each asking the visitor to
-      classify their own input before the app would take it. detectInputFormat
-      does that instead, and whatever comes back is loaded into the editor, so
-      a pasted structure and a drawn one take the same path from here on.
+      Which side is the source. Hidden while the editor is it — the default,
+      and the case that needs no explaining. Shown when a paste is being
+      converted verbatim and the editor is only drawing it.
+    -->
+    <p class="editor-role apparatus" data-editor-role hidden></p>
+    <!--
+      The other way in. Four tabs stood behind this — molfile, AuxInfo,
+      RXN/RDfile, RInChI — each asking the visitor to classify their own input
+      before the app would take it. detectInputFormat does that instead.
+
+      What is pasted is then converted *verbatim*: this is a reference tool,
+      so an InChI it reports has to be the one the library gives for that
+      exact file. The editor draws the paste as a preview; editing the drawing
+      hands the source back to it, and the status line names which side every
+      answer came from.
     -->
     <details class="bounding-box mt-2" data-paste-panel>
       <summary>
@@ -47,9 +57,10 @@
         oninput="loadPastedInputDebounced()"
       ></textarea>
       <small id="workbench-paste-hint" class="text-muted">
-        Whatever you paste is drawn in the editor above, and converted from
-        there. An AuxInfo has to contain atom coordinates — InChI cannot
-        generate them, so no structure can be shown without them.
+        What you paste is converted exactly as given — the editor above only
+        draws it, so nothing is rewritten on the way to the library. Edit the
+        drawing and it becomes the source instead. An AuxInfo has to contain
+        atom coordinates, or there is nothing to draw.
       </small>
     </details>
 

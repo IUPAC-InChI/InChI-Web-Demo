@@ -171,17 +171,38 @@ class ReportMaskElement extends InsertHTMLElement {
     };
 
     /*
-     * One editor, so no branch. This used to choose between the Ketcher on
-     * tab 1 and the paste box on tab 2; the paste field fills the editor now,
-     * so the structure is always Ketcher's and both serializations come from
-     * the same place.
+     * Whatever was actually converted.
+     *
+     * A pasted molfile is converted verbatim, so the report carries those
+     * bytes rather than the editor's re-serialization of them — otherwise a
+     * bug living in the file is normalised away before anyone else sees it,
+     * which is the whole reason the report exists. Only the editor's own
+     * structure goes through getMolfileFromKetcher.
      */
     let molfile_v2 = null;
     let molfile_v3 = null;
-    const ketcher = getKetcher("workbench-ketcher");
-    if (ketcher) {
-      molfile_v2 = await getMolfileFromKetcher(ketcher, "v2000");
-      molfile_v3 = await getMolfileFromKetcher(ketcher, "v3000");
+    const pastedMolfile =
+      conversionSource !== "paste"
+        ? null
+        : pastedInput.kind === "molfile"
+          ? pastedInput.text
+          : pastedInput.kind === "sdf"
+            ? firstSdfRecord(pastedInput.text)
+            : null;
+
+    if (pastedMolfile !== null) {
+      /* V3000 declares itself on the counts line; the library reads either. */
+      if (/V3000/.test(pastedMolfile)) {
+        molfile_v3 = pastedMolfile;
+      } else {
+        molfile_v2 = pastedMolfile;
+      }
+    } else {
+      const ketcher = getKetcher("workbench-ketcher");
+      if (ketcher) {
+        molfile_v2 = await getMolfileFromKetcher(ketcher, "v2000");
+        molfile_v3 = await getMolfileFromKetcher(ketcher, "v3000");
+      }
     }
 
     const inchi = textOrNull("workbench-inchi");
@@ -208,21 +229,14 @@ class ReportMaskElement extends InsertHTMLElement {
     const { name, description } = data;
 
     /*
-     * The pasted bytes, appended to the description rather than sent as two
-     * new fields.
-     *
-     * A pasted structure now reaches InChI through Ketcher's
-     * re-serialization, so the report's molfile is the editor's, not the
-     * visitor's file — and a bug living in that file would be unreportable.
-     * The payload shape is the report endpoint's, not ours, so this goes in
-     * the one field that is already free text. Move it to real
-     * `pasted_input` / `pasted_input_kind` fields once the endpoint is known
-     * to accept them.
+     * The notations no molfile field can carry — an AuxInfo, a reaction file,
+     * a RInChI — still ride in the description: the payload shape is the
+     * report endpoint's and they have no field of their own. A pasted molfile
+     * needs none of this; it is in molfile_v2/v3 above, exactly as converted.
      */
     const pasted =
-      typeof lastPastedInput === "object" && lastPastedInput.text.trim()
-        ? `\n\n--- Pasted input (${lastPastedInput.kind}), before the editor ` +
-          `re-serialized it ---\n${lastPastedInput.text}`
+      conversionSource === "paste" && pastedMolfile === null
+        ? `\n\n--- Converted input (${pastedInput.kind}), verbatim ---\n${pastedInput.text}`
         : "";
 
     const payload = {
