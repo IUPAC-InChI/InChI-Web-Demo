@@ -1627,3 +1627,19 @@ inchi-about > h2 {
   font-size: 0.75rem;
   line-height: 1.45;
 }
+
+/*
+ * The paste field's own state line, for when its text is no longer the thing
+ * being converted. Same device as the editor's role note and the stale record
+ * list: the 3px stroke marks the condition, the words carry the meaning.
+ */
+.paste-state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: baseline;
+  margin: 0.5rem 0 0;
+  padding: 0.4rem 0.75rem;
+  border-left: var(--inchi-rule-weight-stroke) solid var(--inchi-rule-stroke);
+  background: var(--inchi-field-sunken);
+}

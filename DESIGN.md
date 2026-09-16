@@ -351,8 +351,17 @@ While a paste is in force the editor is a *preview* and says so, in a quiet appa
 the canvas bounded by the 3px stroke — the same mark that means "this is the active condition" on
 a divergent layer and a selected record. Editing the drawing takes the source back, because that
 edit is a newer intent. The status line names the side every time: "Converted the pasted molfile
-with InChI 1.07.5" against "Converted the drawn structure with…". An editor that had quietly
-stopped being what gets converted would be the exact ambiguity this surface exists to remove.
+with InChI 1.07.5" against "Converted the drawn structure with…".
+
+The mirror case needs saying too, and it arrives through Ketcher's own clear-canvas button as
+readily as through an edit: when the source has gone back to the editor while the field still
+holds convertible text, that text is inert, and a field full of molfile beside an empty answer
+explains nothing. The paste panel then carries its own state line — "Not being converted — the
+drawing is", with **Convert this text again** — non-destructively, because a pasted file can be
+long and deleting it on the visitor's behalf is not the app's call. Unconvertible text gets no
+such offer; the status line is already explaining why it was refused. An editor that had quietly
+stopped being what gets converted, or a paste field that had quietly stopped being read, is the
+exact ambiguity this surface exists to remove.
 
 Spacing rhythm is a small reused set rather than a formal scale: 0.5rem/1rem inside a layer cell,
 0.75rem/1rem in a plate head, 0.5rem/0.75rem in a status line or key block, 0.75rem of panel

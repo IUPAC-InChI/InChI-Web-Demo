@@ -56,6 +56,18 @@
         ondrop="onTextareaDrop(event, () => loadPastedInput())"
         oninput="loadPastedInputDebounced()"
       ></textarea>
+      <!--
+        Shown when this text is no longer what gets converted — after an edit
+        to the drawing, or after Ketcher's clear-canvas button. Non-destructive
+        on purpose: the text stays, because a pasted file can be long and
+        deleting it on the visitor's behalf is not ours to do.
+      -->
+      <p class="paste-state" data-paste-state hidden>
+        <span class="apparatus">Not being converted — the drawing is</span>
+        <button type="button" class="link-button" onclick="loadPastedInput()">
+          Convert this text again
+        </button>
+      </p>
       <small id="workbench-paste-hint" class="text-muted">
         What you paste is converted exactly as given — the editor above only
         draws it, so nothing is rewritten on the way to the library. Edit the
