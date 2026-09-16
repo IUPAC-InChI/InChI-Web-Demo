@@ -45,23 +45,49 @@
         Molfile, SD file text, AuxInfo, reaction file, RInChI or PubChem
         identifier
       </label>
-      <textarea
-        id="workbench-paste"
-        class="form-control paste-field resize-none mt-1"
-        autocomplete="off"
-        spellcheck="false"
-        rows="6"
-        aria-describedby="workbench-paste-hint"
-        placeholder="Paste or drop a molfile, SD file text, an AuxInfo string, an RXN or RD file, a RInChI (with its RAuxInfo on a second line), or a PubChem identifier such as SID 24866042 or CID 2244"
-        ondragover="onTextareaDragover(event)"
-        ondrop="onTextareaDrop(event, () => loadPastedInput())"
-        oninput="loadPastedInputDebounced()"
-      ></textarea>
       <!--
-        Shown when this text is no longer what gets converted — after an edit
-        to the drawing, or after Ketcher's clear-canvas button. Non-destructive
-        on purpose: the text stays, because a pasted file can be long and
-        deleting it on the visitor's behalf is not ours to do.
+        The field and its clear button share a stacking context so the button
+        can sit in the field's own top-right corner. The textarea reserves the
+        room on that side, so a long first line runs under the caret rather
+        than under the icon.
+      -->
+      <div class="paste-shell mt-1">
+        <textarea
+          id="workbench-paste"
+          class="form-control paste-field resize-none"
+          autocomplete="off"
+          spellcheck="false"
+          rows="6"
+          aria-describedby="workbench-paste-hint"
+          placeholder="Paste or drop a molfile, SD file text, an AuxInfo string, an RXN or RD file, a RInChI (with its RAuxInfo on a second line), or a PubChem identifier such as SID 24866042 or CID 2244"
+          ondragover="onTextareaDragover(event)"
+          ondrop="onTextareaDrop(event, () => loadPastedInput())"
+          oninput="syncPasteControls(); loadPastedInputDebounced()"
+        ></textarea>
+        <!--
+          Emptying a six-row box of molfile by hand is a select-all away, but
+          only if you know the box has focus. Disabled while the field is
+          empty, so it never offers to do nothing. Clears the canvas too, so
+          the two halves of the input cannot be left disagreeing. Icon-only,
+          so the name is carried by aria-label and repeated in the title.
+        -->
+        <button
+          type="button"
+          class="paste-clear"
+          data-paste-clear
+          onclick="clearPasteField()"
+          aria-label="Clear the paste field and the drawing"
+          title="Clear the paste field and the drawing"
+          disabled
+        >
+          <svg class="app-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2.5 4.5h11M6.5 4.5V2.5h3v2M4 4.5l.8 9h6.4l.8-9M6.5 7v4M9.5 7v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
+        </button>
+      </div>
+      <!--
+        Shown when this text is no longer what gets converted, after an edit to
+        the drawing. The text stays: a pasted file can be long, and an edit is
+        not a request to throw it away. Emptying the canvas *is* such a
+        request, and clears this field with it — see onEditorChanged.
       -->
       <p class="paste-state" data-paste-state hidden>
         <span class="apparatus">Not being converted — the drawing is</span>
