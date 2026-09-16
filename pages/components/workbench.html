@@ -42,7 +42,8 @@
         <h2 class="inchi-section-heading">Paste a structure</h2>
       </summary>
       <label class="visually-hidden" for="workbench-paste">
-        Molfile, SD file text, AuxInfo, reaction file or RInChI
+        Molfile, SD file text, AuxInfo, reaction file, RInChI or PubChem
+        identifier
       </label>
       <textarea
         id="workbench-paste"
@@ -51,7 +52,7 @@
         spellcheck="false"
         rows="6"
         aria-describedby="workbench-paste-hint"
-        placeholder="Paste or drop a molfile, SD file text, an AuxInfo string, an RXN or RD file, or a RInChI (with its RAuxInfo on a second line) here"
+        placeholder="Paste or drop a molfile, SD file text, an AuxInfo string, an RXN or RD file, a RInChI (with its RAuxInfo on a second line), or a PubChem identifier such as SID 24866042 or CID 2244"
         ondragover="onTextareaDragover(event)"
         ondrop="onTextareaDrop(event, () => loadPastedInput())"
         oninput="loadPastedInputDebounced()"
@@ -72,7 +73,10 @@
         What you paste is converted exactly as given — the editor above only
         draws it, so nothing is rewritten on the way to the library. Edit the
         drawing and it becomes the source instead. An AuxInfo has to contain
-        atom coordinates, or there is nothing to draw.
+        atom coordinates, or there is nothing to draw. A PubChem identifier is
+        the one exception to converting what you gave: the record is fetched
+        from PubChem over the network and that is what gets converted, so the
+        prefix is required — SID and CID number different things.
       </small>
     </details>
 

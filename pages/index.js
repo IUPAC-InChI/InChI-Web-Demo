@@ -1056,20 +1056,83 @@ function syncSourceNotes() {
      * would be offering something that cannot work.
      */
     const field = document.getElementById("workbench-paste");
+    const format = field ? detectInputFormat(field.value) : null;
+    /*
+     * A PubChem identifier counts: it is not convertible on its own, but the
+     * button offers to look it up again, which does produce an answer.
+     */
     const idle =
       conversionSource === "editor" &&
-      field &&
-      detectInputFormat(field.value).convertible;
+      format !== null &&
+      (format.convertible || format.kind === "pubchem");
     pasteNote.hidden = !idle;
   }
 }
 
 /* What the status line calls the thing it just converted. */
 function sourceLabel() {
-  return conversionSource === "paste"
-    ? `the pasted ${pastedInput.label.replace(/^an? /, "")}`
-    : "the drawn structure";
+  if (conversionSource !== "paste") {
+    return "the drawn structure";
+  }
+  /*
+   * A record fetched from PubChem was never pasted, and calling it "the
+   * pasted SD file text" would hide where the structure came from. Every
+   * other answer on this surface is derived from bytes the visitor supplied;
+   * this one is not, and the status line has to say so.
+   */
+  return (
+    pastedInput.provenance ??
+    `the pasted ${pastedInput.label.replace(/^an? /, "")}`
+  );
 }
+
+/*
+ * PubChem's PUG REST, which serves a record as SD file text at a URL built
+ * from the namespace and the number. The two namespaces are separate: SID
+ * 2244 and CID 2244 are unrelated records, which is why detectInputFormat
+ * insists on the prefix rather than guessing.
+ */
+async function fetchPubchemRecord(namespace, id) {
+  const collection = namespace === "sid" ? "substance" : "compound";
+  const url =
+    `https://pubchem.ncbi.nlm.nih.gov/rest/pug/${collection}/${namespace}/` +
+    `${encodeURIComponent(id)}/SDF`;
+
+  const response = await fetch(url);
+  const text = await response.text();
+
+  /*
+   * PUG REST explains its own refusals in the body, in more use than the
+   * status line does — a missing record is a 404 whose Detail names the
+   * identifier ("No record data for SID 999999999"), and an out-of-range
+   * number is a 400 saying so. Reporting "404 Not Found" instead would throw
+   * away the only sentence the visitor can act on.
+   */
+  if (!response.ok) {
+    const reported = /^(?:Detail|Message):\s*(.+)$/m.exec(text);
+    throw new Error(
+      reported
+        ? `PubChem said: ${reported[1].trim()}`
+        : `PubChem answered ${response.status} ${response.statusText}.`
+    );
+  }
+  if (!text.trim()) {
+    throw new Error(
+      `PubChem returned an empty record for ${namespace.toUpperCase()} ${id}.`
+    );
+  }
+  return text;
+}
+
+/*
+ * Discards the answer to a lookup the visitor has already typed past.
+ *
+ * The paste field converts as you type, so "SID 2244" can put four requests
+ * in flight and they need not come back in order. Without this, a slow reply
+ * to "SID 2" could land after the reply to "SID 2244" and quietly replace a
+ * correct answer with the wrong substance.
+ */
+let pubchemRequest = 0;
 
 /*
  * Take whatever is in the paste field into the editor.
@@ -1096,6 +1159,50 @@ async function loadPastedInput() {
     conversionSource = "editor";
     syncSourceNotes();
     await updateWorkbench();
+    return;
+  }
+
+  /*
+   * A PubChem identifier is a pointer, not a structure, so it is resolved
+   * here and the record that comes back re-enters as ordinary SD file text.
+   * Everything downstream — the conversion, the preview, the record list —
+   * then treats it exactly like a pasted SD file, because that is what it is.
+   */
+  if (format.kind === "pubchem") {
+    const generation = ++pubchemRequest;
+    const name = `${format.namespace.toUpperCase()} ${format.id}`;
+    setConversionStatus("busy", `Fetching ${name} from PubChem…`);
+
+    let record;
+    try {
+      record = await fetchPubchemRecord(format.namespace, format.id);
+    } catch (error) {
+      if (generation !== pubchemRequest) {
+        return;
+      }
+      pastedInput = { text: "", kind: "", label: "" };
+      conversionSource = "editor";
+      syncSourceNotes();
+      setConversionStatus(
+        "error",
+        `${name} could not be fetched. ${error.message ?? error}`
+      );
+      return;
+    }
+    if (generation !== pubchemRequest) {
+      return;
+    }
+
+    pastedInput = {
+      text: record,
+      kind: "sdf",
+      label: "SD file text",
+      provenance: `the record PubChem returned for ${name}`,
+    };
+    conversionSource = "paste";
+    syncSourceNotes();
+    await updateWorkbench();
+    await previewPastedInput(ketcher, pastedInput.label);
     return;
   }
 
@@ -1135,7 +1242,17 @@ async function loadPastedInput() {
    * computable. The preview is a convenience; the identifier is the product.
    */
   await updateWorkbench();
+  await previewPastedInput(ketcher, format.label);
+}
 
+/*
+ * Draw whatever is currently the pasted input, after it has been converted.
+ *
+ * Split out because a PubChem lookup reaches this point too, by a different
+ * route and under a different name — `label` is what a failure to draw calls
+ * the thing, and for a fetched record that is not the text in the field.
+ */
+async function previewPastedInput(ketcher, label) {
   if (!ketcher) {
     /* No editor to preview in. The identifiers above are already correct. */
     return;
@@ -1164,7 +1281,7 @@ async function loadPastedInput() {
     ]);
   } catch (error) {
     console.error("Drawing the pasted input failed", error);
-    previewFailed = `${format.label} was converted, but the editor could not draw it: ${
+    previewFailed = `${label} was converted, but the editor could not draw it: ${
       error.message ?? error
     }`;
   } finally {
