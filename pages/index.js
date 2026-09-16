@@ -1021,7 +1021,9 @@ function syncSourceNotes() {
     const idle =
       conversionSource === "editor" &&
       format !== null &&
-      (format.convertible || format.kind === "pubchem");
+      (format.convertible ||
+        format.kind === "pubchem" ||
+        format.kind === "smiles");
     pasteNote.hidden = !idle;
   }
 }
@@ -1089,6 +1091,9 @@ async function fetchPubchemRecord(namespace, id) {
  * "SID 2" could land after the reply to "SID 2244" and quietly replace a
  * correct answer with the wrong substance — or, worse, land after the field
  * was cleared and become the answer to nothing on screen.
+ *
+ * One counter covers both slow routes, a PubChem fetch and the editor's
+ * layout of a pasted SMILES, because either one can be overtaken by the other.
  */
 let inputGeneration = 0;
 
@@ -1162,8 +1167,8 @@ async function loadPastedInput() {
    * here because this is where a new intent arrives — a keystroke, a fresh
    * paste, the bin, an emptied field.
    *
-   * It used to be bumped inside the PubChem branch alone, so only a second
-   * lookup could overtake the first. Clearing the field or replacing
+   * It used to be bumped inside the PubChem and SMILES branches alone, so only
+   * a second lookup could overtake the first. Clearing the field or replacing
    * it with a molfile did not, and the reply that was already in flight landed
    * afterwards and wrote its own record into pastedInput: the field showed one
    * structure and the plates gave the InChI of another.
@@ -1233,6 +1238,86 @@ async function loadPastedInput() {
     syncSourceNotes();
     await updateWorkbench();
     await previewPastedInput(ketcher, pastedInput.label);
+    return;
+  }
+
+  /*
+   * A SMILES is a structure, but not one the InChI library can read: it
+   * carries no coordinates and the library takes molfiles. So the editor
+   * resolves it, the way PubChem resolves an identifier, and what gets
+   * converted is the molfile Indigo laid out.
+   *
+   * Which inverts the convert-first-draw-second order every other paste
+   * follows — deliberately. That order exists to keep the answer from waiting
+   * on the editor to render bytes the library could already read. Here there
+   * are no such bytes until the editor has drawn them, so the drawing is the
+   * conversion's input rather than its preview, and the provenance line says
+   * whose structure it is.
+   */
+  if (format.kind === "smiles") {
+    const name = format.extended ? "CXSMILES" : "SMILES";
+    if (!ketcher) {
+      setConversionStatus(
+        "error",
+        `${name} needs the editor to lay the structure out, and the editor ` +
+          `has not loaded.`
+      );
+      return;
+    }
+    setConversionStatus("busy", `Reading the ${name} with the editor…`);
+
+    /*
+     * The generation taken at the top of this call guards the layout the same
+     * way it guards a PubChem fetch: the field is debounced but a layout is
+     * not instant, so a newer intent can arrive mid-flight and the answer must
+     * come from the text that is in the field now.
+     */
+    let molfile;
+    loadingIntoEditor = true;
+    try {
+      await Promise.race([
+        ketcher.setMolecule(format.smiles),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("the editor did not respond")), 15000)
+        ),
+      ]);
+      molfile = await getMolfileFromKetcher(ketcher, "v2000");
+      /* null means Ketcher drew nothing, or could not serialize what it drew. */
+      if (!molfile) throw new Error("the editor produced no structure");
+    } catch (error) {
+      console.error("Laying out the pasted SMILES failed", error);
+      if (generation !== inputGeneration) {
+        return;
+      }
+      /*
+       * Reported as unrecognised text rather than as a bad SMILES. The scan
+       * in detectInputFormat is a syntax test, not a parse: if Indigo will
+       * not read this, the honest reading is that it was never a SMILES.
+       */
+      pastedInput = { text: "", kind: "", label: "" };
+      conversionSource = "editor";
+      syncSourceNotes();
+      setConversionStatus("error", INPUT_FORMATS.unknown.reason);
+      return;
+    } finally {
+      loadingIntoEditor = false;
+    }
+
+    if (generation !== inputGeneration) {
+      return;
+    }
+
+    /* Already drawn, so the baseline is taken here rather than by a preview. */
+    editorBaseline = molfile;
+    pastedInput = {
+      text: molfile,
+      kind: "molfile",
+      label: "a molfile",
+      provenance: `the structure the editor laid out from your ${name}`,
+    };
+    conversionSource = "paste";
+    syncSourceNotes();
+    await updateWorkbench();
     return;
   }
 
