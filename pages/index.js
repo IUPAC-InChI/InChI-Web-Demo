@@ -842,14 +842,40 @@ async function convertPastedInput() {
     case "sdf":
     case "auxinfo": {
       showOutput("inchi");
-      const molfile =
-        pastedInput.kind === "sdf"
-          ? firstSdfRecord(pastedInput.text)
-          : pastedInput.kind === "auxinfo"
-            ? pastedInput.molfile
-            : pastedInput.text;
+
+      let molfile;
+      if (pastedInput.kind === "sdf") {
+        molfile = firstSdfRecord(pastedInput.text);
+      } else if (pastedInput.kind === "auxinfo") {
+        /*
+         * An AuxInfo is not molfile text, so the library rebuilds one from it
+         * — which is also what the preview draws, and it keeps the z
+         * coordinates Ketcher would rescale. Derived here rather than in the
+         * preview step, because the answer must not depend on the editor.
+         */
+        const { molfile: rebuilt, log, message } = await molfileFromAuxinfo(
+          pastedInput.text.trim(),
+          0,
+          0,
+          inchiVersion
+        );
+        if (!rebuilt) {
+          const detail = [log, message].filter((part) => part).join(" ");
+          setConversionStatus(
+            "error",
+            `This AuxInfo could not be turned into a structure.${
+              detail ? ` The library reported: ${detail}` : ""
+            }`
+          );
+          return;
+        }
+        pastedInput.molfile = rebuilt;
+        molfile = rebuilt;
+      } else {
+        molfile = pastedInput.text;
+      }
+
       if (!molfile) {
-        /* The AuxInfo produced no molfile; loadPastedInput has said why. */
         return;
       }
       setConversionStatus("busy", `Converting ${sourceLabel()} with InChI ${inchiVersion}…`);
@@ -900,6 +926,7 @@ async function convertPastedInput() {
        */
       writeResult(pastedInput.rinchi, "workbench-rinchi");
       writeResult(pastedInput.rauxinfo ?? "", "workbench-rauxinfo");
+
       const log = [];
       await Promise.all(
         ["Long", "Short", "Web"].map((keyType) =>
@@ -913,6 +940,24 @@ async function convertPastedInput() {
       );
       writeResult(log.join("\n"), "workbench-rinchi-logs");
       reportRinchiOutcome();
+
+      /*
+       * The reaction file the preview will draw. Built here, after the keys,
+       * because it is a library call like they are — waiting on the library is
+       * fine, waiting on the *editor* is what must never gate an answer. A
+       * failure to rebuild costs the drawing, not the keys.
+       */
+      try {
+        const rebuilt = await fileTextFromRinchi(
+          pastedInput.rinchi,
+          pastedInput.rauxinfo ?? "",
+          "RXN"
+        );
+        pastedInput.rxnfile = rebuilt.fileText || null;
+      } catch (error) {
+        console.error("Rebuilding the reaction for preview failed", error);
+        pastedInput.rxnfile = null;
+      }
       return;
     }
   }
@@ -1041,14 +1086,6 @@ async function loadPastedInput() {
   const format = detectInputFormat(text);
   const ketcher = getKetcher("workbench-ketcher");
 
-  if (!ketcher) {
-    setConversionStatus(
-      "error",
-      "The structure editor is not ready yet. Please reload the page (CTRL + F5) if this persists."
-    );
-    return;
-  }
-
   if (format.kind === "empty") {
     /*
      * Clearing the field hands the source back to the editor but does not
@@ -1078,99 +1115,56 @@ async function loadPastedInput() {
     return;
   }
 
-  /*
-   * The paste becomes the basis for conversion before anything is drawn. What
-   * follows only builds a preview; if it fails, the identifiers are still the
-   * library's verdict on these exact bytes, which is the answer being asked
-   * for.
-   */
   pastedInput = { text, kind: format.kind, label: format.label };
+  if (format.kind === "rinchi") {
+    const paired = splitRinchiPaste(text);
+    pastedInput.rinchi = paired.rinchi;
+    pastedInput.rauxinfo = paired.rauxinfo;
+  }
   conversionSource = "paste";
   syncSourceNotes();
-  setConversionStatus("busy", `Reading ${format.label}…`);
 
   /*
-   * Draw the preview. Guarded, because setMolecule dispatches `change` and an
-   * unguarded one would look like a user edit and hand the source straight
-   * back to the editor. The conversion below is therefore called explicitly.
+   * Convert FIRST, draw SECOND — and this order is the whole point.
+   *
+   * These bytes are converted verbatim by a library that has never heard of
+   * the editor, so the answer must not wait on the editor to render them.
+   * It did, once: the conversion was sequenced after `setMolecule` resolved,
+   * and a structure that drew correctly but whose promise settled late left
+   * the output stuck on "Reading a molfile…" with the answer already
+   * computable. The preview is a convenience; the identifier is the product.
    */
+  await updateWorkbench();
+
+  if (!ketcher) {
+    /* No editor to preview in. The identifiers above are already correct. */
+    return;
+  }
+
+  /*
+   * Now the preview. Guarded, because setMolecule dispatches `change` and an
+   * unguarded one would look like a user edit and hand the source straight
+   * back to the editor. Raced against a timeout, because a preview that never
+   * arrives must not leave the guard raised — that would make every later
+   * edit invisible to the surface.
+   */
+  const drawable = previewTextFor(pastedInput);
+  if (drawable === null) {
+    return;
+  }
+
   let previewFailed = "";
   loadingIntoEditor = true;
   try {
-    switch (format.kind) {
-      case "molfile":
-      case "rxnfile":
-        await ketcher.setMolecule(text);
-        break;
-
-      case "rdfile":
-        /*
-         * Ketcher has no RD branch — its identifyStructFormat tests $RXN,
-         * "\n$$$$", V2000/V3000, "M  END", CML, CDX, InChI and SMILES — so the
-         * preview gets the embedded reaction. The *conversion* still gets the
-         * whole file, header and data fields included, because the RInChI
-         * library reads RD directly.
-         */
-        await ketcher.setMolecule(text.slice(text.indexOf("$RXN")));
-        break;
-
-      case "sdf":
-        /* One pasted record. A whole SD file goes through the picker, which is
-         * the path that can show more than one answer. */
-        await ketcher.setMolecule(firstSdfRecord(text));
-        break;
-
-      case "auxinfo": {
-        /*
-         * The library's own molfile, kept: it carries the z coordinates the
-         * AuxInfo encoded, and it is what the conversion reads too.
-         */
-        const { molfile, log, message } = await molfileFromAuxinfo(
-          text.trim(),
-          0,
-          0,
-          getVersion()
-        );
-        if (!molfile) {
-          const detail = [log, message].filter((part) => part).join(" ");
-          previewFailed = `This AuxInfo could not be turned into a structure.${
-            detail ? ` The library reported: ${detail}` : ""
-          }`;
-          break;
-        }
-        pastedInput.molfile = molfile;
-        await ketcher.setMolecule(molfile);
-        break;
-      }
-
-      case "rinchi": {
-        /*
-         * Both strings, in whichever order they were pasted. The RAuxInfo
-         * carries the coordinates; without it the preview is a pile of atoms
-         * at the origin. The identifiers come from the pasted RInChI itself,
-         * so a reaction Ketcher redraws imperfectly no longer distorts them.
-         */
-        const paired = splitRinchiPaste(text);
-        pastedInput.rinchi = paired.rinchi;
-        pastedInput.rauxinfo = paired.rauxinfo;
-        const rxnfile = await fileTextFromRinchi(
-          paired.rinchi,
-          paired.rauxinfo,
-          "RXN"
-        );
-        if (rxnfile.error !== "" || !rxnfile.fileText) {
-          previewFailed = `This RInChI could not be drawn. The library reported: ${
-            rxnfile.error || "no detail"
-          }`;
-          break;
-        }
-        await ketcher.setMolecule(rxnfile.fileText);
-        break;
-      }
-    }
+    await Promise.race([
+      ketcher.setMolecule(drawable),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("the editor did not respond")), 15000)
+      ),
+    ]);
   } catch (error) {
     console.error("Drawing the pasted input failed", error);
-    previewFailed = `This ${format.label} could not be drawn. Detail: ${
+    previewFailed = `${format.label} was converted, but the editor could not draw it: ${
       error.message ?? error
     }`;
   } finally {
@@ -1183,15 +1177,37 @@ async function loadPastedInput() {
    */
   editorBaseline = await getMolfileFromKetcher(ketcher, "v2000");
 
-  await updateWorkbench();
-
   /*
-   * A failed preview is reported *after* the conversion, so it does not get
-   * overwritten by it. The identifiers below it are still valid — they came
-   * from the pasted text, not from the drawing.
+   * Reported after the conversion, so it cannot overwrite the answer's own
+   * status — and phrased so it is clear the identifiers still stand.
    */
   if (previewFailed) {
-    setConversionStatus("error", `${previewFailed} The identifiers above come from the pasted text.`);
+    setConversionStatus("error", previewFailed);
+  }
+}
+
+/*
+ * The text to draw as a preview, which is not always the text that was
+ * converted: an AuxInfo is drawn from the molfile the library rebuilt out of
+ * it, a RInChI from a reaction file rebuilt out of it, an RD file from the
+ * $RXN it embeds (Ketcher has no RD parser, though the RInChI library does).
+ * null means there is nothing to draw, which is not an error.
+ */
+function previewTextFor(input) {
+  switch (input.kind) {
+    case "molfile":
+    case "rxnfile":
+      return input.text;
+    case "rdfile":
+      return input.text.slice(input.text.indexOf("$RXN"));
+    case "sdf":
+      return firstSdfRecord(input.text);
+    case "auxinfo":
+      return input.molfile ?? null;
+    case "rinchi":
+      return input.rxnfile ?? null;
+    default:
+      return null;
   }
 }
 
