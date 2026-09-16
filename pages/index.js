@@ -1363,6 +1363,12 @@ function clearWorkbenchResults() {
     "workbench-rauxinfo",
     "workbench-rinchi-logs"
   );
+  /*
+   * The 3D view is a result too. It was the one plate that survived a clear,
+   * so an emptied workbench still showed a structure — with its annotation
+   * buttons live — beside eleven blank fields.
+   */
+  document.getElementById("workbench-ngl-viewer")?.clearStructure();
 }
 
 async function convertMoleculeFromKetcher(ketcher) {

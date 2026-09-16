@@ -1306,6 +1306,40 @@ class NGLViewerElement extends HTMLElement {
     });
   }
 
+  /*
+   * Put the annotation buttons back to "nothing to annotate".
+   *
+   * Shared by the failed-load path and by clearStructure, which used to say
+   * this twice and then only in one of them — the viewer kept a drawing, and
+   * its buttons, after the surface it belongs to had been cleared.
+   */
+  resetAnnotationButtons() {
+    this.annotationButtons.forEach((button) => {
+      const buttonElement = this.annotationSelectionElement.querySelector(
+        `[data-annotation="${button.id}"]`
+      );
+      buttonElement.disabled = true;
+      buttonElement.classList.remove("active");
+      buttonElement.setAttribute("aria-pressed", "false");
+    });
+  }
+
+  /*
+   * Take the structure off the stage.
+   *
+   * structureKey is cleared along with it, and that is the load-bearing half:
+   * loadStructure returns early when the key matches, so a viewer that kept
+   * the key of a structure it no longer shows would refuse to draw that same
+   * structure again when it was pasted back.
+   */
+  clearStructure() {
+    this.structure = undefined;
+    this.structureKey = undefined;
+    this.annotationData = undefined;
+    this.stage?.removeAllComponents();
+    this.resetAnnotationButtons();
+  }
+
   async loadStructure(molfile, inchi, auxinfo) {
     if (this.structureKey === getStructureKey(inchi, auxinfo)) {
       return;
@@ -1346,14 +1380,7 @@ class NGLViewerElement extends HTMLElement {
       this.structure = undefined;
       this.structureKey = undefined;
       this.annotationData = undefined;
-      this.annotationButtons.forEach((button) => {
-        const buttonElement = this.annotationSelectionElement.querySelector(
-          `[data-annotation="${button.id}"]`
-        );
-        buttonElement.disabled = true;
-        buttonElement.classList.remove("active");
-        buttonElement.setAttribute("aria-pressed", "false");
-      });
+      this.resetAnnotationButtons();
     }
   }
 
