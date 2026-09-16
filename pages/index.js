@@ -774,6 +774,18 @@ async function updateWorkbench() {
     return;
   }
 
+  /*
+   * A paste is converted verbatim, so this branch does not consult the editor
+   * at all — not even for whether it is blank. A file the editor cannot draw
+   * still has an InChI, and that is the answer being asked for.
+   */
+  if (conversionSource === "paste") {
+    markResultsStale(true);
+    markSdfRecordsStale();
+    await convertPastedInput();
+    return;
+  }
+
   if (ketcher.editor.struct().isBlank()) {
     /*
      * Nothing drawn is not a failure: clear the plates and say nothing. The
@@ -812,6 +824,101 @@ async function updateWorkbench() {
 }
 
 /*
+ * Convert the pasted text itself.
+ *
+ * Each notation goes to the library that reads it, in the form it was given:
+ * a molfile and an SD record as molfile text, an RXN *and an RD file* as
+ * reaction file text (the RInChI library reads both, which is why the RD
+ * header no longer has to be sliced off), an AuxInfo through the molfile the
+ * library builds from it, and a RInChI as itself — its keys are derived from
+ * the pasted string rather than from a reaction redrawn out of it.
+ */
+async function convertPastedInput() {
+  const options = collectInchiOptions(optionsPanel());
+  const inchiVersion = getVersion();
+
+  switch (pastedInput.kind) {
+    case "molfile":
+    case "sdf":
+    case "auxinfo": {
+      showOutput("inchi");
+      const molfile =
+        pastedInput.kind === "sdf"
+          ? firstSdfRecord(pastedInput.text)
+          : pastedInput.kind === "auxinfo"
+            ? pastedInput.molfile
+            : pastedInput.text;
+      if (!molfile) {
+        /* The AuxInfo produced no molfile; loadPastedInput has said why. */
+        return;
+      }
+      setConversionStatus("busy", `Converting ${sourceLabel()} with InChI ${inchiVersion}…`);
+      const [inchi, auxinfo] = await convertMolfileToInchiAndWriteResults(
+        molfile,
+        options,
+        inchiVersion,
+        "workbench-inchi",
+        "workbench-inchikey",
+        "workbench-auxinfo",
+        "workbench-logs"
+      );
+      document
+        .getElementById("workbench-ngl-viewer")
+        .loadStructure(molfile, inchi, auxinfo);
+      return;
+    }
+
+    case "rxnfile":
+    case "rdfile": {
+      showOutput("rinchi");
+      rinchiModule();
+      setConversionStatus("busy", `Converting ${sourceLabel()} to a RInChI…`);
+      clearRinchiResults();
+      await convertRxnfileToRinchiAndWriteResults(
+        pastedInput.text,
+        document.getElementById("workbench-forceequilibrium").checked,
+        "workbench-rinchi",
+        "workbench-longrinchikey",
+        "workbench-shortrinchikey",
+        "workbench-webrinchikey",
+        "workbench-rauxinfo",
+        "workbench-rinchi-logs"
+      );
+      reportRinchiOutcome();
+      return;
+    }
+
+    case "rinchi": {
+      showOutput("rinchi");
+      rinchiModule();
+      setConversionStatus("busy", "Deriving the keys from the pasted RInChI…");
+      clearRinchiResults();
+      /*
+       * The RInChI *is* the input, so it is written through unchanged and only
+       * its keys are derived. Round-tripping it through the editor was the one
+       * way this surface could hand back a different RInChI than it was given.
+       */
+      writeResult(pastedInput.rinchi, "workbench-rinchi");
+      writeResult(pastedInput.rauxinfo ?? "", "workbench-rauxinfo");
+      const log = [];
+      await Promise.all(
+        ["Long", "Short", "Web"].map((keyType) =>
+          convertRinchiToRinchikeyAndWriteResult(
+            pastedInput.rinchi,
+            keyType,
+            `workbench-${keyType.toLowerCase()}rinchikey`,
+            log
+          )
+        )
+      );
+      writeResult(log.join("\n"), "workbench-rinchi-logs");
+      reportRinchiOutcome();
+      return;
+    }
+  }
+}
+
+/*
  * A paste ran a full WebAssembly conversion and a 3D reload on every
  * keystroke. 250ms is below the threshold where a pause feels like lag and
  * above the rate anyone types molfile lines.
@@ -819,15 +926,83 @@ async function updateWorkbench() {
 const loadPastedInputDebounced = debounce(() => loadPastedInput(), 250);
 
 /*
- * The last thing pasted, verbatim, and what it was taken to be.
+ * What the conversion reads: "editor" or "paste".
  *
- * Attached to a problem report so a bug that lives in the pasted *file* — a
- * malformed counts line, a V3000 quirk Ketcher normalises away — is still
- * reproducible from the report. The old molfile tab sent the bytes it
- * converted; this surface converts what the editor holds (spec D2, one source
- * of truth), so the bytes would otherwise be lost. Never used for conversion.
+ * Pasted text is converted *verbatim* and the editor shows it as a preview.
+ * This is the point of the tool — an InChI generated here has to be the one
+ * the library gives for that exact file, and routing a paste through a 2D
+ * editor normalised it on the way: V3000 downgraded to V2000, coordinates
+ * rescaled, hydrogens re-expressed per Ketcher's settings. A bug living in
+ * the file was unreproducible, and the answer could differ from what the
+ * InChI command-line tool gives for the same input.
+ *
+ * The editor stays fully editable. Touching it makes it the source again —
+ * that edit is a newer intent than the paste — and the status line names the
+ * side every answer came from, so the handover is never silent.
  */
-let lastPastedInput = { text: "", kind: "" };
+let conversionSource = "editor";
+let pastedInput = { text: "", kind: "", label: "" };
+
+/*
+ * Ketcher's serialization immediately after a programmatic load, and a guard
+ * around the load itself. setMolecule() dispatches the editor's own `change`
+ * event, so without these a preview would be indistinguishable from a user
+ * edit and the source would flip back the instant it was shown.
+ */
+let editorBaseline = null;
+let loadingIntoEditor = false;
+
+/*
+ * Every change the editor reports, filtered.
+ *
+ * A programmatic load is not an edit: whatever caused it converts on its own
+ * terms. A real edit while a paste is in force hands the source back to the
+ * editor, because the visitor has just expressed a newer intent.
+ */
+async function onEditorChanged() {
+  if (loadingIntoEditor) {
+    return;
+  }
+
+  if (conversionSource === "paste") {
+    const ketcher = getKetcher("workbench-ketcher");
+    const now = ketcher ? await getMolfileFromKetcher(ketcher, "v2000") : null;
+    if (now !== editorBaseline) {
+      conversionSource = "editor";
+      syncEditorRole();
+    }
+  }
+
+  await updateWorkbench();
+}
+
+/*
+ * Say whether the editor is the source or a preview. An editor that silently
+ * stopped being what gets converted would be the exact ambiguity the single
+ * surface exists to remove.
+ */
+function syncEditorRole() {
+  const note = document.querySelector("[data-editor-role]");
+  if (!note) {
+    return;
+  }
+  if (conversionSource === "paste") {
+    note.textContent =
+      `Previewing ${pastedInput.label} — that text is what gets converted. ` +
+      `Edit here to convert the drawing instead.`;
+    note.hidden = false;
+  } else {
+    note.hidden = true;
+    note.textContent = "";
+  }
+}
+
+/* What the status line calls the thing it just converted. */
+function sourceLabel() {
+  return conversionSource === "paste"
+    ? `the pasted ${pastedInput.label.replace(/^an? /, "")}`
+    : "the drawn structure";
+}
 
 /*
  * Take whatever is in the paste field into the editor.
@@ -842,7 +1017,6 @@ let lastPastedInput = { text: "", kind: "" };
 async function loadPastedInput() {
   const text = document.getElementById("workbench-paste").value;
   const format = detectInputFormat(text);
-  lastPastedInput = { text, kind: format.kind };
   const ketcher = getKetcher("workbench-ketcher");
 
   if (!ketcher) {
@@ -855,55 +1029,80 @@ async function loadPastedInput() {
 
   if (format.kind === "empty") {
     /*
-     * Clearing the field does not clear the editor: the structure may have
-     * been edited since it was pasted, and throwing that away because the
-     * visitor tidied the box would be destructive.
+     * Clearing the field hands the source back to the editor but does not
+     * clear it: the structure may have been edited since it was pasted, and
+     * throwing that away because the visitor tidied the box is destructive.
      */
-    setConversionStatus(null);
+    pastedInput = { text: "", kind: "", label: "" };
+    conversionSource = "editor";
+    syncEditorRole();
+    await updateWorkbench();
     return;
   }
 
   if (!format.convertible) {
+    /*
+     * Not a structure, so it cannot be the source — and neither can whatever
+     * was pasted before it. Leaving the previous paste in force would show an
+     * answer derived from text the field no longer contains, which is exactly
+     * the field-and-answer disagreement this design removes. The editor takes
+     * over; it still holds the last preview, and the status line says why.
+     */
+    pastedInput = { text: "", kind: "", label: "" };
+    conversionSource = "editor";
+    syncEditorRole();
+    await updateWorkbench();
     setConversionStatus("error", `This looks like ${format.label}. ${format.reason}`);
     return;
   }
 
+  /*
+   * The paste becomes the basis for conversion before anything is drawn. What
+   * follows only builds a preview; if it fails, the identifiers are still the
+   * library's verdict on these exact bytes, which is the answer being asked
+   * for.
+   */
+  pastedInput = { text, kind: format.kind, label: format.label };
+  conversionSource = "paste";
+  syncEditorRole();
   setConversionStatus("busy", `Reading ${format.label}…`);
 
+  /*
+   * Draw the preview. Guarded, because setMolecule dispatches `change` and an
+   * unguarded one would look like a user edit and hand the source straight
+   * back to the editor. The conversion below is therefore called explicitly.
+   */
+  let previewFailed = "";
+  loadingIntoEditor = true;
   try {
     switch (format.kind) {
       case "molfile":
       case "rxnfile":
-        /*
-         * Ketcher identifies these itself, and its parser is the one whose
-         * verdict matters — re-deriving the format here would give us two
-         * parsers that can disagree.
-         */
         await ketcher.setMolecule(text);
         break;
 
       case "rdfile":
         /*
-         * Ketcher has no RD branch: its identifyStructFormat tests $RXN,
-         * "\n$$$$", V2000/V3000, "M  END", CML, CDX, InChI and SMILES. An RD
-         * file embeds an $RXN, so handing it over whole gets it classified as
-         * a reaction and its $RDFILE/$DATM/$RFMT header fed to the RXN parser.
-         * The embedded reaction is the part Ketcher can read.
-         *
-         * Old RInChI tab 2 passed RD text straight to the RInChI library,
-         * which does support it — so this is a real narrowing, and the
-         * header's data fields are dropped rather than carried.
+         * Ketcher has no RD branch — its identifyStructFormat tests $RXN,
+         * "\n$$$$", V2000/V3000, "M  END", CML, CDX, InChI and SMILES — so the
+         * preview gets the embedded reaction. The *conversion* still gets the
+         * whole file, header and data fields included, because the RInChI
+         * library reads RD directly.
          */
         await ketcher.setMolecule(text.slice(text.indexOf("$RXN")));
         break;
 
       case "sdf":
-        /* One pasted record. A whole SD file goes through the picker (Task 7),
-         * which is the path that can show more than one answer. */
+        /* One pasted record. A whole SD file goes through the picker, which is
+         * the path that can show more than one answer. */
         await ketcher.setMolecule(firstSdfRecord(text));
         break;
 
       case "auxinfo": {
+        /*
+         * The library's own molfile, kept: it carries the z coordinates the
+         * AuxInfo encoded, and it is what the conversion reads too.
+         */
         const { molfile, log, message } = await molfileFromAuxinfo(
           text.trim(),
           0,
@@ -912,60 +1111,66 @@ async function loadPastedInput() {
         );
         if (!molfile) {
           const detail = [log, message].filter((part) => part).join(" ");
-          setConversionStatus(
-            "error",
-            `This AuxInfo could not be turned into a structure.${
-              detail ? ` The library reported: ${detail}` : ""
-            }`
-          );
-          return;
+          previewFailed = `This AuxInfo could not be turned into a structure.${
+            detail ? ` The library reported: ${detail}` : ""
+          }`;
+          break;
         }
+        pastedInput.molfile = molfile;
         await ketcher.setMolecule(molfile);
         break;
       }
 
       case "rinchi": {
         /*
-         * Both strings, in whichever order they were pasted. The RAuxInfo is
-         * what carries the coordinates; without it the reaction is drawn as a
-         * pile of atoms at the origin, which is what old RInChI tab 3's
-         * second box existed to prevent.
+         * Both strings, in whichever order they were pasted. The RAuxInfo
+         * carries the coordinates; without it the preview is a pile of atoms
+         * at the origin. The identifiers come from the pasted RInChI itself,
+         * so a reaction Ketcher redraws imperfectly no longer distorts them.
          */
         const paired = splitRinchiPaste(text);
+        pastedInput.rinchi = paired.rinchi;
+        pastedInput.rauxinfo = paired.rauxinfo;
         const rxnfile = await fileTextFromRinchi(
           paired.rinchi,
           paired.rauxinfo,
           "RXN"
         );
         if (rxnfile.error !== "" || !rxnfile.fileText) {
-          setConversionStatus(
-            "error",
-            `This RInChI could not be turned into a reaction. The library reported: ${
-              rxnfile.error || "no detail"
-            }`
-          );
-          return;
+          previewFailed = `This RInChI could not be drawn. The library reported: ${
+            rxnfile.error || "no detail"
+          }`;
+          break;
         }
         await ketcher.setMolecule(rxnfile.fileText);
         break;
       }
     }
   } catch (error) {
-    console.error("Loading pasted input failed", error);
-    setConversionStatus(
-      "error",
-      `This ${format.label} could not be drawn. Detail: ${error.message ?? error}`
-    );
-    return;
+    console.error("Drawing the pasted input failed", error);
+    previewFailed = `This ${format.label} could not be drawn. Detail: ${
+      error.message ?? error
+    }`;
+  } finally {
+    loadingIntoEditor = false;
   }
 
   /*
-   * No updateWorkbench() call here, deliberately. ketcher.setMolecule()
-   * dispatches the editor's own `change` event, and onKetcherLoaded
-   * has subscribed updateWorkbench to it — calling it here as
-   * well runs two conversions concurrently over the same plates and loads the
-   * 3D viewer twice.
+   * The preview's serialization, so a later `change` can be told apart from
+   * this load. Read after the guard is lifted and before any user edit.
    */
+  editorBaseline = await getMolfileFromKetcher(ketcher, "v2000");
+
+  await updateWorkbench();
+
+  /*
+   * A failed preview is reported *after* the conversion, so it does not get
+   * overwritten by it. The identifiers below it are still valid — they came
+   * from the pasted text, not from the drawing.
+   */
+  if (previewFailed) {
+    setConversionStatus("error", `${previewFailed} The identifiers above come from the pasted text.`);
+  }
 }
 
 /*
@@ -1041,15 +1246,13 @@ async function convertMoleculeFromKetcher(ketcher) {
     .loadStructure(molfile, inchi, auxinfo);
 }
 
-async function convertReactionFromKetcher(ketcher) {
-  setConversionStatus("busy", "Converting the reaction to a RInChI…");
-
-  /*
-   * Cleared first, unlike the InChI path. convertRxnfileToRinchiAndWriteResults
-   * writes only the log when rinchiFromRxnfile throws, so
-   * a previous reaction's RInChI would survive the failure — and the status
-   * check below would then read it and report success.
-   */
+/*
+ * Cleared before every reaction conversion, unlike the InChI path.
+ * convertRxnfileToRinchiAndWriteResults writes only the log when
+ * rinchiFromRxnfile throws, so a previous reaction's RInChI would survive the
+ * failure — and the outcome check below would then read it as success.
+ */
+function clearRinchiResults() {
   writeResult(
     "",
     "workbench-rinchi",
@@ -1059,6 +1262,38 @@ async function convertReactionFromKetcher(ketcher) {
     "workbench-rauxinfo",
     "workbench-rinchi-logs"
   );
+}
+
+/*
+ * RInChI has no version selector of its own — there is one build — so the
+ * status line reports the outcome rather than a version. The build itself is
+ * named beside the results, written once when the workbench connects.
+ */
+function reportRinchiOutcome() {
+  const rinchi = document.getElementById("workbench-rinchi").textContent.trim();
+  const ok = rinchi.startsWith("RInChI=");
+  /*
+   * A pasted RInChI was not converted *to* a RInChI — it is the input. Saying
+   * so would be circular, and worse, it would hide that the string came back
+   * untouched, which is the property that makes the keys trustworthy.
+   */
+  const echoed = conversionSource === "paste" && pastedInput.kind === "rinchi";
+  setConversionStatus(
+    ok ? "ok" : "error",
+    ok
+      ? echoed
+        ? "Derived the three keys from the pasted RInChI, unchanged."
+        : `Converted ${sourceLabel()} to a RInChI.`
+      : echoed
+        ? "No keys derived from the pasted RInChI; see the log."
+        : `No RInChI generated for ${sourceLabel()}; see the log.`
+  );
+  markResultsStale(false);
+}
+
+async function convertReactionFromKetcher(ketcher) {
+  setConversionStatus("busy", "Converting the reaction to a RInChI…");
+  clearRinchiResults();
 
   /*
    * The arrow is the default, the checkbox is the override. Syncing it to the
@@ -1082,20 +1317,7 @@ async function convertReactionFromKetcher(ketcher) {
     "workbench-rauxinfo",
     "workbench-rinchi-logs"
   );
-  /*
-   * RInChI has no version selector of its own — there is one build — so the
-   * status line reports the outcome rather than a version. The build itself is
-   * named beside the results, written once when the workbench connects rather
-   * than on every conversion.
-   */
-  const rinchi = document.getElementById("workbench-rinchi").textContent.trim();
-  setConversionStatus(
-    rinchi.startsWith("RInChI=") ? "ok" : "error",
-    rinchi.startsWith("RInChI=")
-      ? "Converted the reaction to a RInChI."
-      : "No RInChI generated for this reaction; see the log."
-  );
-  markResultsStale(false);
+  reportRinchiOutcome();
 }
 
 async function onChangeInchiVersion() {
@@ -1501,7 +1723,7 @@ async function convertMolfileToInchiAndWriteResults(
       options === "" ? "default options" : `options ${options}`;
     setConversionStatus(
       "ok",
-      `Converted with InChI ${inchiVersion}, ${optionSummary}.` +
+      `Converted ${sourceLabel()} with InChI ${inchiVersion}, ${optionSummary}.` +
         (log !== "" ? " The library reported warnings; see the log." : "")
     );
   }
