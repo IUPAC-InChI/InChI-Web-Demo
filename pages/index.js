@@ -969,7 +969,7 @@ async function onEditorChanged() {
     const now = ketcher ? await getMolfileFromKetcher(ketcher, "v2000") : null;
     if (now !== editorBaseline) {
       conversionSource = "editor";
-      syncEditorRole();
+      syncSourceNotes();
     }
   }
 
@@ -977,23 +977,45 @@ async function onEditorChanged() {
 }
 
 /*
- * Say whether the editor is the source or a preview. An editor that silently
- * stopped being what gets converted would be the exact ambiguity the single
- * surface exists to remove.
+ * Say which side is the source, on whichever side is not obvious.
+ *
+ * Two notes, and both are needed. While a paste is in force the editor is
+ * only drawing it and says so. When the source has gone back to the editor
+ * but the field still holds convertible text — after an edit, or after
+ * Ketcher's own clear-canvas button — that text is inert, and saying nothing
+ * leaves a field full of molfile beside an empty answer with no explanation.
+ * An editor that silently stopped being what gets converted, or a paste field
+ * that silently stopped being read, is the exact ambiguity this surface
+ * exists to remove.
  */
-function syncEditorRole() {
-  const note = document.querySelector("[data-editor-role]");
-  if (!note) {
-    return;
+function syncSourceNotes() {
+  const editorNote = document.querySelector("[data-editor-role]");
+  const pasteNote = document.querySelector("[data-paste-state]");
+
+  if (editorNote) {
+    if (conversionSource === "paste") {
+      editorNote.textContent =
+        `Previewing ${pastedInput.label} — that text is what gets converted. ` +
+        `Edit here to convert the drawing instead.`;
+      editorNote.hidden = false;
+    } else {
+      editorNote.hidden = true;
+      editorNote.textContent = "";
+    }
   }
-  if (conversionSource === "paste") {
-    note.textContent =
-      `Previewing ${pastedInput.label} — that text is what gets converted. ` +
-      `Edit here to convert the drawing instead.`;
-    note.hidden = false;
-  } else {
-    note.hidden = true;
-    note.textContent = "";
+
+  if (pasteNote) {
+    /*
+     * Only for text that *could* be converted. Unconvertible text already has
+     * the status line explaining itself, and offering to convert it again
+     * would be offering something that cannot work.
+     */
+    const field = document.getElementById("workbench-paste");
+    const idle =
+      conversionSource === "editor" &&
+      field &&
+      detectInputFormat(field.value).convertible;
+    pasteNote.hidden = !idle;
   }
 }
 
@@ -1035,7 +1057,7 @@ async function loadPastedInput() {
      */
     pastedInput = { text: "", kind: "", label: "" };
     conversionSource = "editor";
-    syncEditorRole();
+    syncSourceNotes();
     await updateWorkbench();
     return;
   }
@@ -1050,7 +1072,7 @@ async function loadPastedInput() {
      */
     pastedInput = { text: "", kind: "", label: "" };
     conversionSource = "editor";
-    syncEditorRole();
+    syncSourceNotes();
     await updateWorkbench();
     setConversionStatus("error", `This looks like ${format.label}. ${format.reason}`);
     return;
@@ -1064,7 +1086,7 @@ async function loadPastedInput() {
    */
   pastedInput = { text, kind: format.kind, label: format.label };
   conversionSource = "paste";
-  syncEditorRole();
+  syncSourceNotes();
   setConversionStatus("busy", `Reading ${format.label}…`);
 
   /*
