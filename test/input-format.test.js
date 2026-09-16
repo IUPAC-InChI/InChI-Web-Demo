@@ -196,3 +196,69 @@ test("a molfile whose data block mentions an SID is still a molfile", () => {
     "molfile"
   );
 });
+
+/*
+ * SMILES and CXSMILES. Like a PubChem identifier these are not convertible on
+ * their own — there is nothing for the InChI library to read until the editor
+ * has laid the structure out — so they carry convertible: false and index.js
+ * resolves them into a molfile.
+ *
+ * This is the only format with neither a prefix nor a shape to anchor on, so
+ * the scan is element-aware rather than character-class-loose. It has to be:
+ * "SID" and "24866042" are both made of SMILES characters, and both have to
+ * stay unrecognised.
+ */
+test.each([
+  ["CCO"],
+  ["c1ccccc1"],
+  ["C[C@H](N)C(=O)O"],
+  ["OC(=O)c1ccccc1"],
+  ["[Na+].[Cl-]"],
+  ["ClC(Br)I"],
+  ["C%10CCCCCCCCCC%10"],
+  ["*C"],
+])("recognises %p as SMILES", (text) => {
+  const result = detectInputFormat(text);
+  expect(result.kind).toBe("smiles");
+  expect(result.extended).toBe(false);
+  expect(result.smiles).toBe(text);
+});
+
+test.each([
+  ["CCO |$;;OH$|"],
+  ["CC |(0,0,;1.2,0,)|"],
+  ["C[C@H](N)C(=O)O |a:1|"],
+])("recognises %p as CXSMILES", (text) => {
+  const result = detectInputFormat(text);
+  expect(result.kind).toBe("smiles");
+  expect(result.extended).toBe(true);
+  expect(result.smiles).toBe(text);
+});
+
+test("takes an explicit SMILES marker for text it would not have guessed at", () => {
+  const result = detectInputFormat("SMILES=CCO");
+  expect(result.kind).toBe("smiles");
+  expect(result.smiles).toBe("CCO");
+});
+
+test("a SMILES is a structure to lay out, not text to convert directly", () => {
+  expect(detectInputFormat("CCO").convertible).toBe(false);
+});
+
+test.each([
+  ["24866042"],
+  ["SID"],
+  ["TODO"],
+  ["Hello"],
+  ["ethanol"],
+  ["1CCO"],
+  ["C[CH"],
+  ["C[]C"],
+  ["CCO |$;;OH$"],
+])("leaves %p unrecognised rather than reading it as SMILES", (text) => {
+  expect(detectInputFormat(text).kind).toBe("unknown");
+});
+
+test("a molfile is still a molfile, not a SMILES", () => {
+  expect(detectInputFormat(MOLFILE_V2000).kind).toBe("molfile");
+});

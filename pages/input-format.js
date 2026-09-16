@@ -37,6 +37,14 @@ const INPUT_FORMATS = {
     reason: "",
   },
   /*
+   * Also a pointer rather than bytes to convert, for a different reason: a
+   * SMILES carries no coordinates and the InChI library reads molfiles. The
+   * editor's Indigo lays it out, and what gets converted is that molfile —
+   * see the smiles branch in index.js, which says so in the provenance line.
+   */
+  smiles: { label: "a SMILES string", convertible: false, reason: "" },
+
+  /*
    * Both refusals name the thing that is missing rather than reporting a
    * category error: "not supported" tells the visitor nothing they can act on.
    */
@@ -59,8 +67,8 @@ const INPUT_FORMATS = {
     convertible: false,
     reason:
       "This is not a format the app recognises. It reads molfiles, SD file " +
-      "text, AuxInfo strings, RXN and RD files, RInChI strings, and a " +
-      "PubChem identifier such as SID 24866042 or CID 2244.",
+      "text, AuxInfo strings, RXN and RD files, RInChI strings, SMILES and " +
+      "CXSMILES, and a PubChem identifier such as SID 24866042 or CID 2244.",
   },
 };
 
@@ -81,6 +89,102 @@ function looksLikeMolfile(text) {
   }
   // A molfile trimmed of its header block still ends the same way.
   return /^M {2}END\s*$/m.test(text);
+}
+
+/*
+ * Is this a sequence of SMILES tokens, from the first character to the last?
+ *
+ * Element-aware on purpose, and this is the whole reason SMILES sits last.
+ * Every other format announces itself with a prefix or a line shape; a SMILES
+ * is bare text made of ordinary letters, so a character-class test would claim
+ * "SID" and "24866042" and hand the editor something nobody pasted. Reading
+ * the atoms costs twenty lines and refuses both.
+ *
+ * Deliberately generous about what it accepts beyond that: the grammar is not
+ * re-implemented here, valence is not checked and neither are ring closures.
+ * Indigo is the arbiter of meaning — index.js reports unrecognised text when
+ * the parse fails — so this only has to be tight enough that prose, a bare
+ * number and a mistyped identifier never reach it.
+ */
+const SMILES_ATOM = /^(Cl|Br|se|as|[BCNOPSFI]|[bcnops])/;
+
+function scansAsSmiles(core) {
+  let index = 0;
+  let atoms = 0;
+
+  while (index < core.length) {
+    const character = core[index];
+
+    // A bracket atom: anything up to the closing bracket, but not nothing.
+    if (character === "[") {
+      const end = core.indexOf("]", index);
+      if (end === -1 || end === index + 1) return false;
+      atoms += 1;
+      index = end + 1;
+      continue;
+    }
+
+    const atom = SMILES_ATOM.exec(core.slice(index));
+    if (atom) {
+      atoms += 1;
+      index += atom[0].length;
+      continue;
+    }
+
+    if (character === "*") {
+      atoms += 1;
+      index += 1;
+      continue;
+    }
+
+    // Bonds, branches and the disconnection dot. They bind atoms already seen.
+    if (/[-=#$:/\\.()]/.test(character)) {
+      index += 1;
+      continue;
+    }
+
+    /*
+     * Ring closures, two digits deep behind a %. Both require an atom to have
+     * opened the ring, which is what keeps "24866042" out.
+     */
+    if (character === "%") {
+      if (atoms === 0 || !/^%\d\d/.test(core.slice(index))) return false;
+      index += 3;
+      continue;
+    }
+    if (/\d/.test(character)) {
+      if (atoms === 0) return false;
+      index += 1;
+      continue;
+    }
+
+    return false;
+  }
+
+  return atoms > 0;
+}
+
+/*
+ * A SMILES, or a CXSMILES: the same string with an extension block appended
+ * after a space, in pipes. The block is worth taking — it is where coordinates
+ * and enhanced stereo live, so a CXSMILES arrives with the layout its author
+ * meant rather than one Indigo invented — and its pipes make it the one shape
+ * in this format that is cheap to recognise. What is inside them is Indigo's
+ * business, not this function's.
+ *
+ * An explicit "SMILES=" marker is accepted as well, for a string the scan
+ * above would rather not guess at.
+ */
+function detectSmiles(trimmed) {
+  const declared = /^SMILES\s*[=:]\s*/i.exec(trimmed);
+  const body = declared ? trimmed.slice(declared[0].length) : trimmed;
+  if (body === "") return null;
+
+  const extended = /^(\S+)\s+\|(.+)\|$/.exec(body);
+  if (!extended && /\s/.test(body)) return null;
+
+  if (!scansAsSmiles(extended ? extended[1] : body)) return null;
+  return { ...verdict("smiles"), smiles: body, extended: Boolean(extended) };
 }
 
 function detectInputFormat(text) {
@@ -127,6 +231,10 @@ function detectInputFormat(text) {
   // See the order note above: the terminator wins over the counts line.
   if (/^\$\$\$\$\s*$/m.test(text)) return verdict("sdf");
   if (looksLikeMolfile(text)) return verdict("molfile");
+
+  // Last: the only format with neither a prefix nor a shape. See detectSmiles.
+  const smiles = detectSmiles(trimmed);
+  if (smiles) return smiles;
 
   return verdict("unknown");
 }
