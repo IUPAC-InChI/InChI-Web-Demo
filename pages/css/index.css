@@ -1354,9 +1354,10 @@ inchi-about > h2 {
 .theme-switch {
   display: inline-flex;
   align-items: center;
+  /* Flush right inside the stretched cluster, so its track lines up with the
+   * right edge of the route below it. */
+  justify-content: flex-end;
   gap: 0.5rem;
-  margin-left: auto;
-  align-self: flex-start;
   padding: 0.25rem;
   border: 0;
   background: none;
@@ -1559,25 +1560,94 @@ inchi-about > h2 {
 }
 
 /*
+ * The masthead's corner cluster: the theme preference above the route to the
+ * other page. Stretched rather than merely right-aligned, so the two share a
+ * left edge as well as a right one and read as one piece of apparatus.
+ */
+.masthead-utilities {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+  margin-left: auto;
+  flex: none;
+}
+
+/*
  * About left the tab strip and became its own page, so the masthead carries
  * the only route to it — and the route back.
+ *
+ * Bounded, where the switch above it is not, and that difference is the point:
+ * a box means "go somewhere", a bare label and track means "flip a state". As
+ * a control boundary the border answers to 1.4.11, so it is `rule` and not
+ * `hairline`.
+ *
+ * Quiet at rest rather than brand green. Green is what this palette spends on
+ * links, and spending it here put the loudest thing in the banner on its least
+ * important control — with the switch beside it, the two competed. The route
+ * earns its emphasis on approach instead, which is what button-outline in
+ * DESIGN.md already describes.
  */
 .masthead-link {
-  color: var(--inchi-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.7rem;
+  border: var(--inchi-rule-weight) solid var(--inchi-rule);
+  border-radius: var(--inchi-radius-sm);
+  background: transparent;
+  color: var(--inchi-ink-muted);
   font-size: 0.875rem;
   text-decoration: none;
   white-space: nowrap;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out,
+    color 120ms ease-out;
 }
 
 .masthead-link:hover {
-  text-decoration: underline;
+  background: var(--inchi-field-sunken);
+  border-color: var(--inchi-rule-stroke);
+  color: var(--inchi-ink);
+  text-decoration: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .masthead-link {
+    transition: none;
+  }
 }
 
 @media (pointer: coarse), (any-pointer: coarse) {
   .masthead-link {
-    display: inline-flex;
-    align-items: center;
     min-height: 44px;
+  }
+}
+
+/*
+ * On a phone the cluster stops being a corner and becomes a row of its own.
+ *
+ * Stacked beside the wordmark it took a column the tagline could not spare:
+ * "Chemical identifiers generated in your browser, never on a server." broke
+ * over four lines at 390px. The banner wraps instead, and the two controls sit
+ * side by side under it with the width they need.
+ */
+@media (max-width: 767.98px) {
+  .masthead {
+    flex-wrap: wrap;
+  }
+
+  .masthead-text {
+    flex: 1 1 12rem;
+  }
+
+  .masthead-utilities {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-basis: 100%;
   }
 }
 
@@ -1665,7 +1735,7 @@ inchi-about > h2 {
   height: 1.75rem;
   padding: 0;
   border: none;
-  border-radius: 2px;
+  border-radius: var(--inchi-radius-sm);
   background: none;
   color: var(--inchi-ink-muted);
   cursor: pointer;

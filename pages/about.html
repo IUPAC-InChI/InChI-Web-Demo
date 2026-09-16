@@ -92,28 +92,39 @@
           </p>
         </div>
 
-        <a class="masthead-link" href="index.html">Back to the tool</a>
 
         <!--
-          role="switch" rather than a checkbox: this is a two-state control
-          whose accessible name stays put while its state changes, so the name
-          lives on aria-label and the visible label reports the current mode.
+          The corner cluster: a preference above a destination. Both are
+          masthead apparatus rather than page content, so they share a right
+          edge and a width instead of sitting loose in the banner row — the
+          route used to float mid-row, reading as an afterthought between the
+          tagline and the switch.
         -->
-        <button
-          type="button"
-          class="theme-switch"
-          role="switch"
-          aria-checked="false"
-          aria-label="Dark mode"
-          data-theme-switch
-        >
-          <span class="theme-switch-mode apparatus" data-theme-switch-label
-            >Light</span
+        <div class="masthead-utilities">
+          <!--
+            role="switch" rather than a checkbox: this is a two-state control
+            whose accessible name stays put while its state changes, so the
+            name lives on aria-label and the visible label reports the current
+            mode.
+          -->
+          <button
+            type="button"
+            class="theme-switch"
+            role="switch"
+            aria-checked="false"
+            aria-label="Dark mode"
+            data-theme-switch
           >
-          <span class="theme-switch-track" aria-hidden="true">
-            <span class="theme-switch-knob"></span>
-          </span>
-        </button>
+            <span class="theme-switch-mode apparatus" data-theme-switch-label
+              >Light</span
+            >
+            <span class="theme-switch-track" aria-hidden="true">
+              <span class="theme-switch-knob"></span>
+            </span>
+          </button>
+
+          <a class="masthead-link" href="index.html">Back to the tool</a>
+        </div>
       </header>
       <main class="container-md">
 <hr />
