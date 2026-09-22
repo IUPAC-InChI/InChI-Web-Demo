@@ -629,10 +629,26 @@ async function readStructure() {
     if (auxinfo === "") {
       return "";
     }
-    const converted = await molfileFromAuxinfo(auxinfo, "", el("version").value);
-    if (converted.return_code !== 0) {
+    /*
+     * Four arguments, as inchi.js declares them: (auxinfo, bDoNotAddH,
+     * bDiffUnkUndfStereo, inchiVersion). Passing three put the version string
+     * into bDiffUnkUndfStereo and left inchiVersion undefined, so every
+     * AuxInfo conversion on this surface threw inside the module lookup — the
+     * AUXINFO source never worked at all.
+     */
+    const converted = await molfileFromAuxinfo(
+      auxinfo,
+      0,
+      0,
+      el("version").value
+    );
+    if (converted.return_code !== 0 || !converted.molfile) {
+      /* The wrapper reports the reason in message and log, not in error. */
+      const detail = [converted.log, converted.message]
+        .filter((part) => part)
+        .join(" ");
       throw new Error(
-        converted.error || "That AuxInfo could not be turned back into a structure."
+        detail || "That AuxInfo could not be turned back into a structure."
       );
     }
     return converted.molfile;
