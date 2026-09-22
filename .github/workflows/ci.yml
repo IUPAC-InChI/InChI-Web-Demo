@@ -1,6 +1,12 @@
-name: Deploy GitHub Pages
+name: Build, test and deploy GitHub Pages
 
+# Tests run on every push and pull request; the deploy below stays manual.
+# The Test step was ungated from the WASM cache so the JS suites would run on
+# a change, but the workflow itself only ever fired on workflow_dispatch, so
+# nothing ran automatically at all.
 on:
+  push:
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -8,8 +14,11 @@ permissions:
   pages: write
   id-token: write
 
+# Per ref, not one global "pages" group: with the push trigger above, a
+# shared group plus cancel-in-progress would let a push to any branch cancel
+# an in-flight manual deploy.
 concurrency:
-  group: "pages"
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -92,6 +101,9 @@ jobs:
           path: pages
 
   deploy:
+    # Publishing stays a deliberate act, as it was when workflow_dispatch was
+    # this workflow's only trigger.
+    if: github.event_name == 'workflow_dispatch'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
