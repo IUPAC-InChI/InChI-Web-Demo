@@ -875,7 +875,20 @@ async function convertPastedInput() {
         molfile = pastedInput.text;
       }
 
+      /*
+       * Text classified as an SD file whose first record is empty — a
+       * fragment opening with "$$$$" — reaches here with nothing to convert.
+       * markResultsStale(true) has already dimmed the previous structure's
+       * plates, so returning in silence left that answer on screen as the
+       * answer for this paste.
+       */
       if (!molfile) {
+        clearWorkbenchResults();
+        markResultsStale(false);
+        setConversionStatus(
+          "error",
+          "There is no structure in this text to convert."
+        );
         return;
       }
       setConversionStatus("busy", `Converting ${sourceLabel()} with InChI ${inchiVersion}…`);
@@ -1151,17 +1164,18 @@ async function fetchPubchemRecord(namespace, id) {
 }
 
 /*
- * Discards the answer to a lookup the visitor has already typed past.
+ * Discards the answer to a resolution the visitor has already moved past.
  *
- * The paste field converts as you type, so "SID 2244" can put four requests
- * in flight and they need not come back in order. Without this, a slow reply
- * to "SID 2" could land after the reply to "SID 2244" and quietly replace a
- * correct answer with the wrong substance.
+ * The paste field converts as you type, so "SID 2244" can put four requests in
+ * flight and they need not come back in order. Without this, a slow reply to
+ * "SID 2" could land after the reply to "SID 2244" and quietly replace a
+ * correct answer with the wrong substance — or, worse, land after the field
+ * was cleared and become the answer to nothing on screen.
+ *
+ * One counter covers both slow routes, a PubChem fetch and the editor's
+ * layout of a pasted SMILES, because either one can be overtaken by the other.
  */
-let pubchemRequest = 0;
-
-/* The same, for the editor's layout of a pasted SMILES. */
-let smilesRequest = 0;
+let inputGeneration = 0;
 
 /*
  * Empty both sides of the workbench.
@@ -1183,6 +1197,8 @@ async function clearPasteField() {
   }
   field.value = "";
   syncPasteControls();
+  clearSdFile();
+  document.getElementById("workbench-sdf").value = "";
   field.focus();
 
   const ketcher = getKetcher("workbench-ketcher");
@@ -1226,6 +1242,18 @@ function syncPasteControls() {
  * silently did nothing.
  */
 async function loadPastedInput() {
+  /*
+   * One counter for every route that resolves a paste into a structure, bumped
+   * here because this is where a new intent arrives — a keystroke, a fresh
+   * paste, the bin, an emptied field.
+   *
+   * It used to be bumped inside the PubChem and SMILES branches alone, so only
+   * a second lookup could overtake the first. Clearing the field or replacing
+   * it with a molfile did not, and the reply that was already in flight landed
+   * afterwards and wrote its own record into pastedInput: the field showed one
+   * structure and the plates gave the InChI of another.
+   */
+  const generation = ++inputGeneration;
   const text = document.getElementById("workbench-paste").value;
   const format = detectInputFormat(text);
   const ketcher = getKetcher("workbench-ketcher");
@@ -1253,7 +1281,6 @@ async function loadPastedInput() {
    * then treats it exactly like a pasted SD file, because that is what it is.
    */
   if (format.kind === "pubchem") {
-    const generation = ++pubchemRequest;
     const name = `${format.namespace.toUpperCase()} ${format.id}`;
     setConversionStatus("busy", `Fetching ${name} from PubChem…`);
 
@@ -1261,7 +1288,7 @@ async function loadPastedInput() {
     try {
       record = await fetchPubchemRecord(format.namespace, format.id);
     } catch (error) {
-      if (generation !== pubchemRequest) {
+      if (generation !== inputGeneration) {
         return;
       }
       pastedInput = { text: "", kind: "", label: "" };
@@ -1273,7 +1300,7 @@ async function loadPastedInput() {
       );
       return;
     }
-    if (generation !== pubchemRequest) {
+    if (generation !== inputGeneration) {
       return;
     }
 
@@ -1316,11 +1343,11 @@ async function loadPastedInput() {
     setConversionStatus("busy", `Reading the ${name} with the editor…`);
 
     /*
-     * Generations, as for a PubChem fetch: the field is debounced but a
-     * layout is not instant, so a second paste can arrive mid-flight and the
-     * answer must come from the text that is in the field now.
+     * The generation taken at the top of this call guards the layout the same
+     * way it guards a PubChem fetch: the field is debounced but a layout is
+     * not instant, so a newer intent can arrive mid-flight and the answer must
+     * come from the text that is in the field now.
      */
-    const generation = ++smilesRequest;
     let molfile;
     loadingIntoEditor = true;
     try {
@@ -1335,7 +1362,7 @@ async function loadPastedInput() {
       if (!molfile) throw new Error("the editor produced no structure");
     } catch (error) {
       console.error("Laying out the pasted SMILES failed", error);
-      if (generation !== smilesRequest) {
+      if (generation !== inputGeneration) {
         return;
       }
       /*
@@ -1352,7 +1379,7 @@ async function loadPastedInput() {
       loadingIntoEditor = false;
     }
 
-    if (generation !== smilesRequest) {
+    if (generation !== inputGeneration) {
       return;
     }
 
@@ -1479,8 +1506,16 @@ function previewTextFor(input) {
     case "molfile":
     case "rxnfile":
       return input.text;
-    case "rdfile":
-      return input.text.slice(input.text.indexOf("$RXN"));
+    case "rdfile": {
+      /*
+       * An RD file of molecules is legal and carries no $RXN at all. An
+       * unguarded indexOf handed Ketcher the last character of the file, so
+       * the visitor was told the editor could not draw it rather than that
+       * there is no reaction in it to draw.
+       */
+      const rxn = input.text.indexOf("$RXN");
+      return rxn === -1 ? null : input.text.slice(rxn);
+    }
     case "sdf":
       return firstSdfRecord(input.text);
     case "auxinfo":
@@ -1525,7 +1560,15 @@ function clearWorkbenchResults() {
     "workbench-shortrinchikey",
     "workbench-webrinchikey",
     "workbench-rauxinfo",
-    "workbench-rinchi-logs"
+    "workbench-rinchi-logs",
+    /*
+     * Generated reaction file text is a result of this surface like any other
+     * plate. It survived a clear, so the RXN text for a reaction that was no
+     * longer anywhere on the workbench sat beside the blank identifiers, and
+     * the next reaction's answer appeared under it unchanged.
+     */
+    "workbench-reaction-file",
+    "workbench-reaction-file-logs"
   );
   /*
    * The 3D view is a result too. It was the one plate that survived a clear,
@@ -1686,17 +1729,30 @@ function markSdfRecordsStale() {
   }
 }
 
-async function loadSdFile() {
-  const input = document.getElementById("workbench-sdf");
+/*
+ * Empty the record list and its export, and let go of the file itself.
+ *
+ * Called before reading a new file and by the bin. The bin used not to reach
+ * it, so emptying the workbench left a record list of InChIKeys — with one row
+ * still marked as the selected record — beside blank plates and an empty
+ * field, which is the half-reset state the bin exists to avoid.
+ */
+function clearSdFile() {
   const host = document.querySelector("[data-sdf-records]");
-  const file = input.files[0];
-
   sdfRecords = [];
   selectedSdfRecord = -1;
   host.hidden = true;
   host.replaceChildren();
+  host.classList.remove("records-stale");
   writeResult("", "workbench-sdf-export");
   document.getElementById("workbench-sdf-export-wrapper").hidden = true;
+}
+
+async function loadSdFile() {
+  const input = document.getElementById("workbench-sdf");
+  const file = input.files[0];
+
+  clearSdFile();
 
   if (!file) {
     return;
@@ -2201,22 +2257,31 @@ async function convertRinchiToRinchikeyAndWriteResult(
  */
 async function downloadReactionFile() {
   /*
-   * The pasted RInChI wins over the generated one when there is one.
+   * The pasted RInChI wins over the generated one — but only while the paste
+   * is still what is being converted.
    *
-   * Old RInChI tab 4 converted whatever you pasted, with no round trip
-   * through an editor. Here the reaction has been drawn by Ketcher and read
-   * back, so the RInChI on the plate may not be byte-identical to the one
-   * pasted — and it is the pasted string the visitor wants a file for.
+   * Old RInChI tab 4 converted whatever you pasted, with no round trip through
+   * an editor. Here the reaction has been drawn by Ketcher and read back, so
+   * the RInChI on the plate may not be byte-identical to the one pasted, and
+   * it is the pasted string the visitor wants a file for.
+   *
+   * Reading the field directly ignored that. Once the drawing had been edited
+   * the surface said so — the paste is labelled "Not being converted" — and
+   * this still generated the file for the pasted string. The two halves were
+   * chosen independently too, so a pasted RInChI with no RAuxInfo beside it
+   * was paired with the drawn reaction's RAuxInfo: a file whose coordinates
+   * belong to a different reaction, reported as a success.
    */
-  const pasted = splitRinchiPaste(
-    document.getElementById("workbench-paste").value
-  );
+  const pasted =
+    conversionSource === "paste" && pastedInput.kind === "rinchi"
+      ? splitRinchiPaste(pastedInput.text)
+      : { rinchi: "", rauxinfo: "" };
   const rinchi =
     pasted.rinchi ||
     document.getElementById("workbench-rinchi").textContent.trim();
-  const rauxinfo =
-    pasted.rauxinfo ||
-    document.getElementById("workbench-rauxinfo").textContent.trim();
+  const rauxinfo = pasted.rinchi
+    ? pasted.rauxinfo
+    : document.getElementById("workbench-rauxinfo").textContent.trim();
   const format = document.querySelector(
     'input[name="reactionFileFormat"]:checked'
   ).value;
