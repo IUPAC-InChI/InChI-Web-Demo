@@ -155,3 +155,60 @@ describe("marking changed layers inside a complete string", () => {
     );
   });
 });
+
+/*
+ * Non-standard InChIs restart the layer letters after a /f or /r marker: the
+ * reconnected-metal structure has its own /c and /h, the fixed-hydrogen layer
+ * its own /h. Reading only the first segment per letter made every one of
+ * those invisible — two different strings compared as identical, and the
+ * summary then said so in as many words.
+ */
+describe("sublayers after an /f or /r marker", () => {
+  const RECONNECTED = "InChI=1S/CH4.Na/c;/h1H4;/q;+1/rCH3Na/c1-2/h1H3";
+  const RECONNECTED_OTHER = "InChI=1S/CH4.Na/c;/h1H4;/q;+1/rCH3Na/c1-2/h1H2";
+
+  test("parses the reconnected layer's own hydrogens separately", () => {
+    const keys = parseInchiLayers(RECONNECTED).layers.map((layer) => layer.key);
+    expect(keys).toContain("h");
+    expect(keys).toContain("r/h");
+    expect(keys).toContain("r/c");
+  });
+
+  test("sees a difference confined to a reconnected sublayer", () => {
+    const rows = diffInchiLayers(RECONNECTED, RECONNECTED_OTHER);
+    const changed = rows.filter((row) => row.status === "changed");
+    expect(changed.map((row) => row.key)).toEqual(["r/h"]);
+  });
+
+  test("sees a difference confined to the fixed-H sublayer", () => {
+    const rows = diffInchiLayers(
+      "InChI=1/C2H4O2/c1-2(3)4/h1H3,(H,3,4)/f/h3H",
+      "InChI=1/C2H4O2/c1-2(3)4/h1H3,(H,3,4)/f/h4H"
+    );
+    expect(rows.filter((row) => row.status === "changed").map((r) => r.key)).toEqual([
+      "f/h",
+    ]);
+  });
+
+  test("marks only the segment that changed, not every /h in the string", () => {
+    const marked = markChangedLayers(
+      "InChI=1/C2H4O2/c1-2(3)4/h1H3,(H,3,4)/f/h3H",
+      new Set(["h"])
+    );
+    expect(marked).toContain("<mark class=\"layer-highlight\">h1H3,(H,3,4)</mark>");
+    expect(marked).not.toContain("<mark class=\"layer-highlight\">h3H</mark>");
+  });
+
+  test("keeps the string character-for-character when nothing is marked", () => {
+    expect(markChangedLayers(RECONNECTED, new Set(["r/c"])).replace(/<[^>]*>/g, "")).toBe(
+      RECONNECTED
+    );
+  });
+});
+
+/*
+ * An InChI with no layers at all still has to survive the round trip.
+ */
+test("does not append a slash to a layerless InChI", () => {
+  expect(markChangedLayers("InChI=1S", new Set(["formula"]))).toBe("InChI=1S");
+});
