@@ -838,7 +838,7 @@ class InChIResultFieldElement extends HTMLElement {
     const rows = [completeRow];
 
     for (const layer of parsed.layers) {
-      const letter = layer.key === "formula" ? "" : `/${layer.key}`;
+      const letter = layerMark(layer.key);
       rows.push(
         `<div class="layer-key"><span class="layer-letter">${escapeHtml(
           letter

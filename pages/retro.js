@@ -446,7 +446,7 @@ function layerRows(parsed) {
   html += `<div class="head">${escapeHtmlText(parsed.prefix + parsed.version)}</div>`;
 
   for (const layer of parsed.layers) {
-    const letter = layer.key === "formula" ? "/" : "/" + layer.key;
+    const letter = layerMark(layer.key) || "/";
     html +=
       '<div class="gutter"></div>' +
       `<div class="key"><span class="letter">${escapeHtmlText(letter)}</span> ${escapeHtmlText(layer.name)}</div>` +
@@ -528,7 +528,7 @@ function renderComparison() {
 
   let html = "";
   for (const row of rows) {
-    const letter = row.key === "formula" ? "/" : "/" + row.key;
+    const letter = layerMark(row.key) || "/";
     const same = row.status === "same";
     html += `<div class="gutter">${same ? "" : "&gt;"}</div>`;
     html +=

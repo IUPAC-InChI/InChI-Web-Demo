@@ -32,14 +32,130 @@ const INCHI_LAYERS = [
   ["t", "Tetrahedral", "Parities at tetrahedral stereocentres."],
   ["m", "Parity", "Which enantiomer the parities are relative to."],
   ["s", "Stereo type", "Absolute, relative, or racemic stereochemistry."],
-  ["i", "Isotopes", "Isotopic substitution."],
-  ["f", "Fixed H", "Fixed-hydrogen layer (non-standard InChI)."],
-  ["r", "Reconnected", "Reconnected-metal layer (non-standard InChI)."],
+  ["i", "Isotopes", "Isotopic substitution.", "Isotopic"],
+  ["f", "Fixed H", "Fixed-hydrogen layer (non-standard InChI).", "Fixed-H"],
+  ["r", "Reconnected", "Reconnected-metal layer (non-standard InChI).", "Reconnected"],
 ];
 
 const INCHI_LAYER_NAMES = new Map(
-  INCHI_LAYERS.map(([key, name, hint]) => [key, { name, hint }])
+  INCHI_LAYERS.map(([key, name, hint, adjective]) => [
+    key,
+    { name, hint, adjective },
+  ])
 );
+
+const INCHI_LAYER_ORDER = new Map(INCHI_LAYERS.map(([key], index) => [key, index]));
+
+/*
+ * A layer key is either a letter ("h") or a letter inside one or more
+ * sublayer namespaces ("r/h", "r/f/h"). These two read the parts back.
+ */
+function layerLetter(key) {
+  return key.slice(key.lastIndexOf("/") + 1);
+}
+
+/*
+ * The letter as the notation writes it: "/h" for a hydrogen layer, and the
+ * same "/h" for a reconnected one — the row's name already says which. The
+ * formula has no letter of its own.
+ */
+function layerMark(key) {
+  return key === "formula" ? "" : `/${layerLetter(key)}`;
+}
+
+function layerNamespace(key) {
+  const cut = key.lastIndexOf("/");
+  return cut === -1 ? "" : key.slice(0, cut + 1);
+}
+
+/*
+ * What the interface calls a layer. A namespaced key is named after the
+ * markers it sits under, so "r/h" reads "Reconnected hydrogens" rather than
+ * repeating "Hydrogens" twice in one table.
+ */
+function layerLabel(key) {
+  const letter = layerLetter(key);
+  const base = INCHI_LAYER_NAMES.get(letter);
+  if (!base) {
+    return { name: key, hint: "" };
+  }
+  const markers = key.split("/").slice(0, -1);
+  if (markers.length === 0) {
+    return { name: base.name, hint: base.hint };
+  }
+  const adjectives = markers.map((marker, index) => {
+    const word = INCHI_LAYER_NAMES.get(marker)?.adjective ?? marker;
+    return index === 0 ? word : word.charAt(0).toLowerCase() + word.slice(1);
+  });
+  const innermost = INCHI_LAYER_NAMES.get(markers[markers.length - 1]);
+  return {
+    name: `${adjectives.join(" ")} ${base.name.toLowerCase()}`,
+    hint: `${base.hint} ${innermost?.hint ?? ""}`.trim(),
+  };
+}
+
+/*
+ * Walk an InChI's segments in document order, giving each one the key it
+ * belongs to.
+ *
+ * The layer letters are not unique across a string: a non-standard InChI
+ * restarts them after a /f (fixed hydrogens) or /r (reconnected metals)
+ * marker, and an /i layer carries its own sublayers too. Keeping only the
+ * first segment per letter therefore lost every one of those — two InChIs
+ * differing only in their reconnected /h compared as identical, and the
+ * comparison plate said "0 of 5 layers differ" about two different strings.
+ *
+ * So a marker opens a namespace and the segments after it are keyed inside
+ * it. /r resets to the top level, because the reconnected structure starts a
+ * fresh layer sequence; /f and /i nest inside whatever is current.
+ *
+ * Returns the raw segment alongside the key: markChangedLayers rebuilds the
+ * string from these, and it must stay character-for-character what the
+ * library returned.
+ */
+function walkInchiSegments(text) {
+  const segments = text.slice("InChI=".length).split("/");
+  const version = segments.shift() ?? "";
+
+  const walked = [];
+  let base = "";
+  let namespace = "";
+  let sawFormula = false;
+
+  for (const segment of segments) {
+    if (segment === "") {
+      walked.push({ key: null, raw: segment, value: "" });
+      continue;
+    }
+    let key;
+    if (!sawFormula && !/^[a-z]/.test(segment)) {
+      sawFormula = true;
+      key = "formula";
+    } else {
+      const letter = segment[0];
+      if (letter === "r") {
+        base = "r/";
+        namespace = "r/";
+        key = "r";
+      } else if (letter === "f") {
+        namespace = `${base}f/`;
+        key = namespace.slice(0, -1);
+      } else if (letter === "i") {
+        namespace = `${namespace}i/`;
+        key = namespace.slice(0, -1);
+      } else {
+        key = namespace + letter;
+      }
+    }
+    walked.push({
+      key,
+      raw: segment,
+      value: key === "formula" ? segment : segment.slice(1),
+    });
+  }
+
+  return { version, walked };
+}
 
 /*
  * Split an InChI into ordered layers.
@@ -55,43 +171,29 @@ function parseInchiLayers(inchi) {
     return { prefix: "", version: "", layers: [] };
   }
 
-  const segments = text.slice("InChI=".length).split("/");
-  const version = segments.shift() ?? "";
+  const { version, walked } = walkInchiSegments(text);
 
-  const found = new Map();
-
-  /*
-   * The formula is the one layer with no letter prefix, and it is always
-   * first. Guard on the letter anyway: a charge-only InChI such as
-   * "InChI=1S//q+1" has an empty formula segment.
-   */
-  if (segments.length > 0 && !/^[a-z]/.test(segments[0])) {
-    const formula = segments.shift();
-    // "InChI=1S//q+1" has no formula at all; an empty row is noise, not a layer.
-    if (formula !== "") {
-      found.set("formula", formula);
-    }
-  }
-
-  for (const segment of segments) {
-    if (segment === "") {
+  const layers = [];
+  const seen = new Set();
+  for (const segment of walked) {
+    /*
+     * "InChI=1S//q+1" has no formula at all; an empty row is noise, not a
+     * layer. A repeated key inside one namespace is not legal InChI — keep
+     * the first, as before, rather than render two rows with one name.
+     */
+    if (segment.key === null || seen.has(segment.key)) {
       continue;
     }
-    const key = segment[0];
-    const value = segment.slice(1);
-    /*
-     * Keep the first occurrence. A layer letter can legitimately repeat in a
-     * multi-component InChI, and the first is the one the canonical order
-     * refers to.
-     */
-    if (INCHI_LAYER_NAMES.has(key) && !found.has(key)) {
-      found.set(key, value);
+    if (segment.key === "formula" && segment.value === "") {
+      continue;
     }
+    if (!INCHI_LAYER_NAMES.has(layerLetter(segment.key))) {
+      continue;
+    }
+    seen.add(segment.key);
+    const { name, hint } = layerLabel(segment.key);
+    layers.push({ key: segment.key, name, hint, value: segment.value });
   }
-
-  const layers = INCHI_LAYERS.filter(([key]) => found.has(key)).map(
-    ([key, name, hint]) => ({ key, name, hint, value: found.get(key) })
-  );
 
   return { prefix: "InChI=", version, layers };
 }
@@ -112,11 +214,38 @@ function diffInchiLayers(left, right) {
     parseInchiLayers(right).layers.map((layer) => [layer.key, layer])
   );
 
-  return INCHI_LAYERS.filter(
-    ([key]) => leftLayers.has(key) || rightLayers.has(key)
-  ).map(([key, name, hint]) => {
+  /*
+   * Canonical order within a namespace, namespaces in the order they first
+   * appear — which for an InChI is the order the string itself puts them in:
+   * the main layers, then /f, then /r and its own sublayers.
+   */
+  const namespaces = [];
+  const keys = [];
+  for (const key of [...leftLayers.keys(), ...rightLayers.keys()]) {
+    const namespace = layerNamespace(key);
+    if (!namespaces.includes(namespace)) {
+      namespaces.push(namespace);
+    }
+    if (!keys.includes(key)) {
+      keys.push(key);
+    }
+  }
+  keys.sort((a, b) => {
+    const byNamespace =
+      namespaces.indexOf(layerNamespace(a)) - namespaces.indexOf(layerNamespace(b));
+    if (byNamespace !== 0) {
+      return byNamespace;
+    }
+    return (
+      (INCHI_LAYER_ORDER.get(layerLetter(a)) ?? INCHI_LAYERS.length) -
+      (INCHI_LAYER_ORDER.get(layerLetter(b)) ?? INCHI_LAYERS.length)
+    );
+  });
+
+  return keys.map((key) => {
     const before = leftLayers.get(key)?.value;
     const after = rightLayers.get(key)?.value;
+    const { name, hint } = layerLabel(key);
 
     let status;
     if (before === undefined) {
@@ -250,25 +379,26 @@ function markChangedLayers(inchi, changedKeys) {
     return escapeHtml(text);
   }
 
-  const segments = text.slice("InChI=".length).split("/");
-  const version = segments.shift() ?? "";
+  const { version, walked } = walkInchiSegments(text);
+  const prefix = escapeHtml(`InChI=${version}`);
+  /* "InChI=1S" alone has no segments, and must not grow a trailing slash. */
+  if (walked.length === 0) {
+    return prefix;
+  }
 
-  let sawFormula = false;
-  const rendered = segments.map((segment) => {
-    let key;
-    if (!sawFormula && !/^[a-z]/.test(segment)) {
-      key = "formula";
-      sawFormula = true;
-    } else {
-      key = segment.slice(0, 1);
-    }
-    const escaped = escapeHtml(segment);
-    return changedKeys.has(key)
+  /*
+   * Keyed through the same walk as the diff, so a changed main /h marks the
+   * main /h alone — marking every segment whose letter matched highlighted
+   * an identical fixed-H layer alongside it.
+   */
+  const rendered = walked.map((segment) => {
+    const escaped = escapeHtml(segment.raw);
+    return segment.key !== null && changedKeys.has(segment.key)
       ? `<mark class="layer-highlight">${escaped}</mark>`
       : escaped;
   });
 
-  return `${escapeHtml("InChI=" + version)}/${rendered.join("/")}`;
+  return `${prefix}/${rendered.join("/")}`;
 }
 
 /*
@@ -484,6 +614,7 @@ if (typeof module === "object" && module.exports) {
     INCHI_LAYERS,
     parseInchiLayers,
     diffInchiLayers,
+    layerMark,
     parseInchikeyBlocks,
     diffInchikeyBlocks,
     markChangedLayers,

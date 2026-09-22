@@ -246,7 +246,7 @@ function renderComparison() {
 
   const body = rows
     .map((row) =>
-      comparisonRow(row.name, row.key === "formula" ? "" : `/${row.key}`, row)
+      comparisonRow(row.name, layerMark(row.key), row)
     )
     .join("");
 
