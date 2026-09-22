@@ -74,6 +74,23 @@ test("recognises a RInChI paired with its RAuxInfo, in either order", () => {
   expect(detectInputFormat(`${rauxinfo}\n${rinchi}`).kind).toBe("rinchi");
 });
 
+test("does not read an SD file as a RInChI because of a data field", () => {
+  /*
+   * A RInChI line wins anywhere in the paste so the pair can arrive in either
+   * order — but an SD file may carry the same string in a data field, and
+   * reading that file as a bare RInChI drops every record in it.
+   */
+  const sdf = [
+    MOLFILE_V2000,
+    "> <RINCHI>",
+    "RInChI=1.00.1S/CH4/h1H4<>C2H6/c1-2/h1-2H3/d+",
+    "",
+    "$$$$",
+    "",
+  ].join("\n");
+  expect(detectInputFormat(sdf).kind).toBe("sdf");
+});
+
 test("splits a paired paste into its two strings", () => {
   const rinchi = "RInChI=1.00.1S/CH4/h1H4<>C2H6/c1-2/h1-2H3/d+";
   const rauxinfo = "RAuxInfo=1.00.1/0/N:1/rA:1nC/rB:/rC:0,0,0;";

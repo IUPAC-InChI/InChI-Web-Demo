@@ -195,11 +195,25 @@ function detectInputFormat(text) {
   const trimmed = text.trim();
 
   /*
-   * A RInChI on any line wins, so that a RInChI and its RAuxInfo can be
+   * A RInChI may sit on either line, so that a RInChI and its RAuxInfo can be
    * pasted together in either order — old RInChI tab 3 had a box for each,
    * and without the RAuxInfo the reaction is drawn with no coordinates.
+   *
+   * Every line has to be one of the two, though. Matching a RInChI anywhere
+   * in the text read an SD file carrying a RINCHI data field as a bare
+   * RInChI: the file's records were never listed, and the one line from the
+   * data block was converted in their place. This is the same trap the
+   * $$$$-before-the-counts-line ordering below avoids.
    */
-  if (/^RInChI=/m.test(trimmed)) return verdict("rinchi");
+  const rinchiLines = trimmed.split(/\r\n|\r|\n/).filter((line) => line.trim() !== "");
+  if (
+    rinchiLines.some((line) => line.startsWith("RInChI=")) &&
+    rinchiLines.every(
+      (line) => line.startsWith("RInChI=") || line.startsWith("RAuxInfo=")
+    )
+  ) {
+    return verdict("rinchi");
+  }
 
   // RAuxInfo before AuxInfo: the shorter prefix is a suffix of the longer one.
   if (trimmed.startsWith("RAuxInfo=")) return verdict("rauxinfo");
