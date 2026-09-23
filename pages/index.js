@@ -1082,8 +1082,9 @@ function syncSourceNotes() {
   if (editorNote) {
     if (conversionSource === "paste") {
       editorNote.textContent =
+        pastedInput.editorNote ??
         `Previewing ${pastedInput.label} — that text is what gets converted. ` +
-        `Edit here to convert the drawing instead.`;
+          `Edit here to convert the drawing instead.`;
       editorNote.hidden = false;
     } else {
       editorNote.hidden = true;
@@ -1314,6 +1315,10 @@ async function loadPastedInput() {
       kind: "sdf",
       label: "SD file text",
       provenance: `the record PubChem returned for ${name}`,
+      /* The field holds the identifier, not the text being converted. */
+      editorNote:
+        `Previewing the record PubChem returned for ${name} — that SD file ` +
+        `text is what gets converted, not the identifier itself.`,
     };
     conversionSource = "paste";
     syncSourceNotes();
@@ -1395,6 +1400,13 @@ async function loadPastedInput() {
       kind: "molfile",
       label: "a molfile",
       provenance: `the structure the editor laid out from your ${name}`,
+      /*
+       * The default note says the field's text is converted verbatim, which
+       * is what a SMILES is not: the drawing is the input here.
+       */
+      editorNote:
+        `Drawn by the editor from your ${name} — the editor's molfile is ` +
+        `what gets converted, not the ${name} string itself.`,
     };
     conversionSource = "paste";
     syncSourceNotes();
