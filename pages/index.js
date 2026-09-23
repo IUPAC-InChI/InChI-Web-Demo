@@ -1314,6 +1314,13 @@ async function loadPastedInput() {
       kind: "molfile",
       label: "a molfile",
       provenance: `the structure the editor laid out from your ${name}`,
+      /*
+       * The default note says the field's text is converted verbatim, which
+       * is what a SMILES is not: the drawing is the input here.
+       */
+      editorNote:
+        `Drawn by the editor from your ${name} — the editor's molfile is ` +
+        `what gets converted, not the ${name} string itself.`,
     };
     conversionSource = "paste";
     syncSourceNotes();
