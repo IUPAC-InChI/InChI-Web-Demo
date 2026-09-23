@@ -869,8 +869,13 @@ async function convertPastedInput() {
           );
           return;
         }
-        pastedInput.molfile = rebuilt;
-        molfile = rebuilt;
+        /*
+         * The library writes an SD record, "$$$$" line and all. Ketcher drew
+         * some of those and silently drew nothing for others (an Au complex,
+         * for one) with no error to report, so the terminator goes here.
+         */
+        molfile = firstSdfRecord(rebuilt);
+        pastedInput.molfile = molfile;
       } else {
         molfile = pastedInput.text;
       }
