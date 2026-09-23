@@ -1,5 +1,5 @@
-<div class="row">
-  <div class="col">
+<div class="row-cols-auto">
+  <div>
     <div class="form-check">
       <input
         data-id="includeStereo"
@@ -12,11 +12,14 @@
       <label class="form-check-label">Include Stereo:</label>
     </div>
   </div>
-  <div class="col">
-    <div class="form-check ms-xl-0 ms-lg-4">
+  <div>
+    <fieldset>
+      <legend class="visually-hidden">Stereochemistry to report</legend>
+    <div class="form-check option-indent">
       <input
         data-id="EnhancedStereochemistry"
         class="form-check-input"
+        data-inchi-sub-option
         type="radio"
         name="stereoRadio"
         data-inchi-option-on="EnhancedStereochemistry"
@@ -26,29 +29,43 @@
       />
       <label class="form-check-label">
         Enhanced Stereochemistry
-        <i
-          class="bi bi-question-circle-fill colored-icon"
-          data-bs-toggle="tooltip"
-          data-bs-custom-class="custom-tooltip"
-          data-bs-html="true"
-          data-bs-title="The functionality for enhanced stereochemistry is a work in progress. You can expect to encounter warnings. <p><b>Note: </b> Enhanced stereochemistry is only supported in the v3000 mol file format."
-        ></i>
+        <button
+          type="button"
+          class="option-help"
+          popovertarget="help-EnhancedStereochemistry"
+          aria-label="What “Enhanced Stereochemistry” does"
+        >
+          ?
+        </button>
       </label>
+      <!-- Outside the label: see the note in base-options.html. -->
+      <div id="help-EnhancedStereochemistry" popover class="option-help-panel">
+        <p>
+          The functionality for enhanced stereochemistry is a work in progress.
+          You can expect to encounter warnings.
+        </p>
+        <p>
+          <b>Note:</b> enhanced stereochemistry is only supported in the V3000
+          molfile format.
+        </p>
+      </div>
     </div>
-    <div class="form-check ms-xl-0 ms-lg-4">
+    <div class="form-check option-indent">
       <input
         data-id="SAbs"
         class="form-check-input"
+        data-inchi-sub-option
         type="radio"
         name="stereoRadio"
         data-inchi-stereo-option
       />
       <label class="form-check-label">Absolute</label>
     </div>
-    <div class="form-check ms-xl-0 ms-lg-4">
+    <div class="form-check option-indent">
       <input
         data-id="SRel"
         class="form-check-input"
+        data-inchi-sub-option
         type="radio"
         name="stereoRadio"
         data-inchi-option-on="SRel"
@@ -56,10 +73,11 @@
       />
       <label class="form-check-label">Relative</label>
     </div>
-    <div class="form-check ms-xl-0 ms-lg-4">
+    <div class="form-check option-indent">
       <input
         data-id="SRac"
         class="form-check-input"
+        data-inchi-sub-option
         type="radio"
         name="stereoRadio"
         data-inchi-option-on="SRac"
@@ -67,10 +85,11 @@
       />
       <label class="form-check-label">Racemic</label>
     </div>
-    <div class="form-check ms-xl-0 ms-lg-4">
+    <div class="form-check option-indent">
       <input
         data-id="SUCF"
         class="form-check-input"
+        data-inchi-sub-option
         type="radio"
         name="stereoRadio"
         data-inchi-option-on="SUCF"
@@ -78,12 +97,14 @@
       />
       <label class="form-check-label">From chiral flag</label>
     </div>
+    </fieldset>
   </div>
 </div>
-<div class="form-check ms-4">
+<div class="form-check option-indent">
   <input
     data-id="SUU"
     class="form-check-input"
+    data-inchi-sub-option
     type="checkbox"
     data-inchi-option-on="SUU"
     data-inchi-stereo-option
@@ -92,10 +113,11 @@
     >Always include omitted/undefined stereo</label
   >
 </div>
-<div class="form-check ms-4">
+<div class="form-check option-indent">
   <input
     data-id="SLUUD"
     class="form-check-input"
+    data-inchi-sub-option
     type="checkbox"
     data-inchi-option-on="SLUUD"
     data-inchi-stereo-option
@@ -104,10 +126,11 @@
     >Different marks for unknown/undefined stereo</label
   >
 </div>
-<div class="form-check ms-4">
+<div class="form-check option-indent">
   <input
     data-id="NEWPSOFF"
     class="form-check-input"
+    data-inchi-sub-option
     type="checkbox"
     data-inchi-option-on="NEWPSOFF"
     data-inchi-stereo-option

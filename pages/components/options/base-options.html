@@ -18,14 +18,38 @@
   />
   <label class="form-check-label"
     >Do not add implicit H atoms
-    <i
-      class="bi bi-question-circle-fill colored-icon"
-      data-bs-toggle="tooltip"
-      data-bs-custom-class="custom-tooltip"
-      data-bs-html="true"
-      data-bs-title="If enabled all hydrogens in input structure will be treated as explicit hydrogens. Reflects the <i>doNotAddH</i> option in the InChI command line tool. If disabled, implicit hydrogens will be added to the structure before InChI generation. <p><b>Note: </b> The Ketcher structural drawing tool does not take this option into account. Therefore, implicit hydrogen atoms are displayed based on the Ketcher settings.</p>"
-    ></i
-  ></label>
+    <button
+      type="button"
+      class="option-help"
+      popovertarget="help-doNotAddH"
+      aria-label="What “Do not add implicit H atoms” does"
+    >
+      ?
+    </button></label>
+  <!--
+    OUTSIDE the label, and this is not cosmetic. A popover nested in a <label>
+    is a label descendant, so clicking its prose would activate the labelled
+    checkbox and fire a conversion. It would also land in label.textContent,
+    which pages/retro.js reads to build its 3270 captions.
+
+    A native popover toggles, dismisses on Escape and on a click outside, and
+    sits in the top layer — all without script. The Bootstrap version put this
+    text in a data-bs-title attribute, which gave the control no accessible
+    name and no keyboard path at all.
+  -->
+  <div id="help-doNotAddH" popover class="option-help-panel">
+    <p>
+      If enabled, all hydrogens in the input structure are treated as explicit
+      hydrogens. Reflects the <i>doNotAddH</i> option in the InChI command line
+      tool. If disabled, implicit hydrogens are added to the structure before
+      InChI generation.
+    </p>
+    <p>
+      <b>Note:</b> the Ketcher structure editor does not take this option into
+      account, so implicit hydrogen atoms are displayed according to the
+      Ketcher settings.
+    </p>
+  </div>
 </div>
 <div class="form-check">
   <input
@@ -45,10 +69,11 @@
   />
   <label class="form-check-label">Treat polymers:</label>
 </div>
-<div class="form-check ms-4">
+<div class="form-check option-indent">
   <input
     data-id="NoEdits"
     class="form-check-input"
+    data-inchi-sub-option
     type="checkbox"
     data-inchi-option-on="NoEdits"
     data-inchi-polymer-option
@@ -59,10 +84,11 @@
     >No pre-edits of original polymer structure</label
   >
 </div>
-<div class="form-check ms-4">
+<div class="form-check option-indent">
   <input
     data-id="FoldCRU"
     class="form-check-input"
+    data-inchi-sub-option
     type="checkbox"
     data-inchi-option-on="FoldCRU"
     data-inchi-polymer-option
@@ -71,10 +97,11 @@
   />
   <label class="form-check-label">Enable CRU folding</label>
 </div>
-<div class="form-check ms-4">
+<div class="form-check option-indent">
   <input
     data-id="NoFrameShift"
     class="form-check-input"
+    data-inchi-sub-option
     type="checkbox"
     data-inchi-option-on="NoFrameShift"
     data-inchi-polymer-option
@@ -92,17 +119,50 @@
   />
   <label class="form-check-label"
     >Allow non-polymer Zz pseudoatoms
-    <i
-      class="bi bi-question-circle-fill colored-icon"
-      data-bs-toggle="tooltip"
-      data-bs-custom-class="custom-tooltip"
-      data-bs-html="true"
-      data-bs-title='The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating an entity of undefined/unknown/variable nature. It is typically used for handling polymers, but may also be used outside the polymer context with this InChI option (<i>NPZz</i>). See the InChI Technical Manual, section IV. "g. Zz (star, pseudo element) atoms", for details.<br /><br />How to draw?<br />"*" pseudoatoms can be selected within the Ketcher structure editor either via the <i>Extended Table</i> in the right toolbar or using the hotkey "*".'
-    ></i
-  ></label>
+    <button
+      type="button"
+      class="option-help"
+      popovertarget="help-NPZz"
+      aria-label="What “Allow non-polymer Zz pseudoatoms” does"
+    >
+      ?
+    </button></label>
+  <div id="help-NPZz" popover class="option-help-panel">
+    <p>
+      The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating
+      an entity of undefined, unknown or variable nature. It is typically used
+      for handling polymers, but may also be used outside the polymer context
+      with this InChI option (<i>NPZz</i>). See the InChI Technical Manual,
+      section IV, "g. Zz (star, pseudo element) atoms", for details.
+    </p>
+    <p>
+      <b>How to draw one:</b> "*" pseudoatoms can be selected within the
+      Ketcher structure editor either via the <i>Extended Table</i> in the
+      right toolbar, or with the hotkey "*".
+    </p>
+  </div>
 </div>
 <div class="mt-2">
-  <a style="text-decoration: none" role="button" data-reset-inchi-options
-    ><i class="bi bi-arrow-clockwise pe-2"></i>Reset InChI Options</a
-  >
+  <!--
+    A real <button>: an <a> without href is not focusable and cannot be
+    activated from the keyboard, whatever role it carries.
+  -->
+  <button type="button" class="link-button" data-reset-inchi-options>
+    <svg
+      class="app-icon me-2"
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d="M13 8A5 5 0 1 1 8 3M8 3 10.6 0.9M8 3 10.6 5.1"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="square"
+      />
+    </svg>Reset InChI Options
+  </button>
 </div>

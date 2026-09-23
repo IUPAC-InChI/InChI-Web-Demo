@@ -1,6 +1,17 @@
-name: Deploy GitHub Pages
+name: Build, test and deploy GitHub Pages
 
+# Tests run on every pull request and on every push to main; the deploy below
+# stays manual. The Test step was ungated from the WASM cache so the JS suites
+# would run on a change, but the workflow itself only ever fired on
+# workflow_dispatch, so nothing ran automatically at all.
+#
+# Push is narrowed to main because a branch with a pull request open would
+# otherwise run the whole emscripten and Ketcher build twice for one push,
+# once per event. A branch with no pull request yet is covered by opening one.
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -8,8 +19,11 @@ permissions:
   pages: write
   id-token: write
 
+# Per ref, not one global "pages" group: with the push trigger above, a
+# shared group plus cancel-in-progress would let a push to any branch cancel
+# an in-flight manual deploy.
 concurrency:
-  group: "pages"
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -29,11 +43,14 @@ jobs:
           path: |
             pages/jquery
             pages/bootstrap
-            pages/bootstrap-icons
             pages/bootstrap-multiselect
             pages/ngl
-          # The hashed script contains the versions of the dependencies.
-          key: ${{ hashFiles('pages/download_packages.sh') }}
+          # download_packages.sh pins the versions, and utils.sh holds the
+          # download itself — including the source-map strip — so a change to
+          # either has to invalidate this cache. Hashing only the first meant
+          # a change to how packages are unpacked restored a stale tree
+          # instead of rebuilding it.
+          key: ${{ hashFiles('pages/download_packages.sh', 'pages/utils.sh') }}
 
       - name: Download dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
@@ -44,7 +61,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: pages/ketcher
-          key: ${{ hashFiles('ketcher/react-app/**/*') }}
+          # Same reasoning: build_ketcher lives in utils.sh, so a change to
+          # the build has to invalidate the cached build.
+          key: ${{ hashFiles('ketcher/react-app/**/*', 'pages/utils.sh') }}
 
       - name: Build Ketcher
         if: steps.cache-ketcher.outputs.cache-hit != 'true'
@@ -68,8 +87,12 @@ jobs:
           apt-get update -y && apt-get install -y jq
           $GITHUB_WORKSPACE/pages/build_wasm_modules.sh $GITHUB_WORKSPACE
 
-      - name: Test WASM modules
-        if: steps.cache-wasm-modules.outputs.cache-hit != 'true'
+      # Not gated on the WASM cache. It used to be, which meant the suite only
+      # ran when inchi_versions.json changed — so the pure-JS tests (format
+      # sniffing, layer parsing) never ran in CI at all, however often the code
+      # they cover was edited. The modules are on disk either way by this
+      # point, from the cache or from the build above.
+      - name: Test
         run: |
           cd $GITHUB_WORKSPACE/test
           yarn install
@@ -83,6 +106,9 @@ jobs:
           path: pages
 
   deploy:
+    # Publishing stays a deliberate act, as it was when workflow_dispatch was
+    # this workflow's only trigger.
+    if: github.event_name == 'workflow_dispatch'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

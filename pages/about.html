@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- viewport-fit=cover so env(safe-area-inset-*) works on notched phones. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <link rel="icon" href="data:," />
+    <title>About the InChI Web App</title>
+    <meta
+      name="description"
+      content="How the InChI Web App works, the open source projects it depends on, and who funds it."
+    />
+    <meta name="color-scheme" content="light dark" />
+
+    <!--
+      The stored theme choice, applied before first paint. This has to be
+      inline and blocking: read it from theme.js instead and the page paints
+      once in the system theme and then flips, which is worse than no toggle
+      at all. Absent a stored choice, nothing is set and the media queries in
+      css/tokens.css follow the system preference.
+    -->
+    <script>
+      try {
+        var storedTheme = localStorage.getItem("inchi-theme");
+        if (storedTheme === "light" || storedTheme === "dark") {
+          document.documentElement.dataset.theme = storedTheme;
+        }
+      } catch (error) {
+        /* Private mode or blocked storage: the system preference stands. */
+      }
+    </script>
+
+    <!--
+      base.css first: the controls and the handful of utilities this app uses,
+      hand-written against the tokens, where Bootstrap's 192 KB stylesheet
+      used to sit. Then tokens.css, which defines those tokens, then the app's
+      own rules — which therefore win ties without "!important".
+    -->
+    <link href="css/base.css" rel="stylesheet" />
+    <link href="css/tokens.css" rel="stylesheet" />
+    <link href="css/index.css" rel="stylesheet" />
+    <link href="css/report-mask.css" rel="stylesheet" />
+    <link href="css/report-feedback.css" rel="stylesheet" />
+
+    <!--
+      This page is prose. It carries the theme control and nothing else — not
+      index.js, which would throw on availableInchiVersions during warm-up and
+      install the tool surface's key listener on a page with no tool on it.
+    -->
+    <!-- The theme control, shared with the tool surface. -->
+    <script defer src="theme.js"></script>
+    <script>
+      var _paq = (window._paq = window._paq || []);
+      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+      _paq.push(["trackPageView"]);
+      _paq.push(["enableLinkTracking"]);
+      (function () {
+        var u = "https://matomo.beilstein.org/";
+        _paq.push(["setTrackerUrl", u + "matomo.php"]);
+        _paq.push(["setSiteId", "10"]);
+        var d = document,
+          g = d.createElement("script"),
+          s = d.getElementsByTagName("script")[0];
+        g.async = true;
+        g.src = u + "matomo.js";
+        s.parentNode.insertBefore(g, s);
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="masthead">
+        <a
+          href="https://www.inchi-trust.org/"
+          target="_blank"
+          rel="noopener"
+        >
+          <img
+            class="masthead-logo"
+            src="img/InChI-logo2.png"
+            width="180"
+            height="56"
+            alt="InChI Trust"
+          />
+        </a>
+        <div class="masthead-text">
+          <h1>InChI Web App</h1>
+          <p class="masthead-tagline">
+            Chemical identifiers generated in your browser, never on a server.
+          </p>
+        </div>
+
+
+        <!--
+          The corner cluster: a preference above a destination. Both are
+          masthead apparatus rather than page content, so they share a right
+          edge and a width instead of sitting loose in the banner row — the
+          route used to float mid-row, reading as an afterthought between the
+          tagline and the switch.
+        -->
+        <div class="masthead-utilities">
+          <!--
+            role="switch" rather than a checkbox: this is a two-state control
+            whose accessible name stays put while its state changes, so the
+            name lives on aria-label and the visible label reports the current
+            mode.
+          -->
+          <button
+            type="button"
+            class="theme-switch"
+            role="switch"
+            aria-checked="false"
+            aria-label="Dark mode"
+            data-theme-switch
+          >
+            <span class="theme-switch-mode apparatus" data-theme-switch-label
+              >Light</span
+            >
+            <span class="theme-switch-track" aria-hidden="true">
+              <span class="theme-switch-knob"></span>
+            </span>
+          </button>
+
+          <a class="masthead-link" href="index.html">Back to the tool</a>
+        </div>
+      </header>
+      <main class="container-md">
+<hr />
+
+<p>
+  This web application runs entirely in your browser using
+  <a href="https://webassembly.org" target="_blank" rel="noopener"
+    >WebAssembly</a
+  >. Structures you draw or paste are converted in your browser and are not sent
+  to a server. Two things do leave your browser, both only when you ask for
+  them: the report form sends a structure you explicitly choose to report, and
+  a PubChem lookup sends the identifier you typed &mdash; SID 24866042 or CID
+  2244 &mdash; to
+  <a
+    href="https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest"
+    target="_blank"
+    rel="noopener"
+    >PubChem&rsquo;s PUG REST service</a
+  >, which returns the record. No structure of yours is sent in that request,
+  but PubChem does see your IP address and which record you asked for. Running
+  everything locally comes at the cost that
+  the initial loading might take a while, since the structure editor and the
+  InChI libraries
+  have to be downloaded first (they would otherwise live on a server). If the
+  application behaves unexpectedly, try clearing your browser cache and
+  reloading the page (CTRL + F5 in most browsers). Clearing the cache helps
+  because an update might have changed files that are now in conflict with the
+  files in your browser cache.
+</p>
+
+<p>
+  One thing leaves your browser without being asked for: this site counts page
+  views with
+  <a href="https://matomo.org" target="_blank" rel="noopener">Matomo</a>, hosted
+  by the Beilstein-Institut at <code>matomo.beilstein.org</code>. It records
+  that a page was opened and which links were followed, and it sees your IP
+  address. No structure you draw, paste or convert is part of that &mdash; the
+  chemistry never reaches it.
+</p>
+
+<h2>Acknowledgements</h2>
+<p>
+  We'd like to express our gratitude to the developers of the open source
+  projects we're depending on:
+</p>
+<ul>
+    <li>
+      We're rendering structures using the NGL Viewer (<a href="https://github.com/nglviewer/ngl" target="_blank"
+    >github.com/nglviewer/ngl</a>, <a href="https://doi.org/10.1093/bioinformatics/bty419" target="_blank">doi:10.1093/bioinformatics/bty419</a>)</li>
+    <li>
+      We're using Ketcher as our structure editor (<a href="https://github.com/epam/ketcher" target="_blank"
+    >github.com/epam/ketcher</a>)
+    </li>
+</ul>
+
+<h2>Contact</h2>
+<p>
+  If you have any questions, suggestions, or feedback, please reach out to us:
+  <a href="mailto:inchi@ac.rwth-aachen.de">inchi@ac.rwth-aachen.de</a>. We
+  especially encourage you to report problematic structures (please include a
+  molfile along with a description of the problem). You can also submit an issue
+  via our
+  <a href="https://github.com/IUPAC-InChI/InChI-Web-Demo" target="_blank"
+    >GitHub repository</a
+  >.
+</p>
+
+<h2>Funding</h2>
+<p>
+  The development of this web application has been supported by the following
+  organizations:
+</p>
+
+<div class="funder-row">
+  <div class="funder-text">
+    The Volkswagen Foundation with the project
+    <a
+      href="https://portal.volkswagenstiftung.de/search/projectDetails.do?ref=98698"
+      target="_blank"
+    >
+      <i
+        >Universal molecular syntax for sustainable machine learning
+        applications</i
+      > </a
+    >.
+  </div>
+  <div>
+    <a href="https://www.volkswagenstiftung.de" target="_blank">
+      <img
+        class="funder-logo"
+        src="img/Logo_Volkswagenstiftung.svg"
+        width="200"
+        height="50"
+        loading="lazy"
+        decoding="async"
+        alt="Volkswagenstiftung"
+      />
+    </a>
+  </div>
+</div>
+
+<hr />
+
+<div class="funder-row">
+  <div class="funder-text">
+    <a href="https://www.nfdi4chem.de" target="_blank"><i>NFDI4Chem</i></a>
+    funded by the German Research Foundation (project number
+    <a href="https://gepris.dfg.de/gepris/projekt/441958208" target="_blank"
+      >441958208</a
+    >).
+  </div>
+  <div>
+    <a href="https://www.dfg.de" target="_blank">
+      <img
+        class="funder-logo"
+        src="img/dfg_logo_schriftzug_blau_foerderung_en.gif"
+        width="800"
+        height="260"
+        loading="lazy"
+        decoding="async"
+        alt="Deutsche Forschungsgemeinschaft"
+      />
+    </a>
+  </div>
+  <div>
+    <a href="https://www.nfdi4chem.de" target="_blank">
+      <img
+        class="funder-logo"
+        src="img/NFDI4Chem-Logo_mehrfarbig_schwarz.png"
+        width="1756"
+        height="696"
+        loading="lazy"
+        decoding="async"
+        alt="NFDI4Chem"
+      />
+    </a>
+    <small>
+      "<a
+        href="https://commons.wikimedia.org/wiki/File:NFDI4Chem-Logo_mehrfarbig_schwarz.png"
+        target="_blank"
+        >Logo of NFDI4Chem</a
+      >" by <i>TimeSpin</i> is licensed under
+      <a
+        href="https://creativecommons.org/licenses/by-sa/4.0/deed.en"
+        target="_blank"
+        >CC BY-SA 4.0</a
+      >.
+    </small>
+  </div>
+</div>
+
+<hr />
+
+<div class="funder-row">
+  <div class="funder-text">
+    <i>DALIA</i> funded by the German Federal Ministry of Education and Research
+    (funding ID
+    <a
+      href="https://foerderportal.bund.de/foekat/jsp/SucheAction.do?actionMode=view&fkz=16DWWQP07B"
+      target="_blank"
+      >16DWWQP07B</a
+    >) and Next Generation EU.
+  </div>
+  <div>
+    <a href="https://www.bmbf.de" target="_blank">
+      <img
+        class="funder-logo"
+        src="img/Foerderhinweis_BMBF.jpg"
+        width="881"
+        height="625"
+        loading="lazy"
+        decoding="async"
+        alt="Bundesministerium für Bildung und Forschung"
+      />
+    </a>
+    <img
+      class="funder-logo"
+      src="img/Foerderhinweis_EU_horizontal.jpg"
+        width="3938"
+        height="1019"
+        loading="lazy"
+        decoding="async"
+      alt="Funded by the European Union — NextGenerationEU"
+    />
+  </div>
+  <div>
+    <img
+      class="funder-logo"
+      src="img/Dalia_Wortmarke_Kompakt_Blau_RGB.svg"
+        width="1000"
+        height="200"
+        loading="lazy"
+        decoding="async"
+      alt="DALIA"
+    />
+  </div>
+</div>
+
+<hr />
+
+<div class="funder-row">
+  <div class="funder-text">
+    The
+    <a href="https://www.beilstein-institut.de/en/" target="_blank"
+      ><i>Beilstein-Institut</i></a
+    >
+    zur Förderung der Chemischen Wissenschaften
+  </div>
+  <div>
+    <a href="https://www.beilstein-institut.de/en/" target="_blank">
+      <img
+        class="funder-logo"
+        src="img/Logo_Beilstein_sRGB.jpg"
+        width="800"
+        height="365"
+        loading="lazy"
+        decoding="async"
+        alt="Beilstein-Institut"
+      />
+    </a>
+  </div>
+</div>
+      </main>
+    </div>
+  </body>
+</html>

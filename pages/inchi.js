@@ -2,27 +2,52 @@
 
 // Only run this in the browser, not in Node.js.
 if (typeof window !== "undefined") {
-  // Instantiate `availableInchiVersions` with IIFE (https://developer.mozilla.org/en-US/docs/Glossary/IIFE).
-  (async () => {
+  /*
+   * `window.inchiVersionsReady` resolves once `availableInchiVersions` exists.
+   * Consumers must await it instead of reading the global straight away: the
+   * version list is fetched, so a component that connects first would otherwise
+   * render an empty version selector on a cold cache or a slow connection.
+   */
+  window.inchiVersionsReady = (async () => {
     const response = await fetch("inchi_versions.json");
+    if (!response.ok) {
+      throw new Error(
+        `inchi_versions.json: ${response.status} ${response.statusText}`
+      );
+    }
     const inchiVersions = await response.json();
 
     const availableInchiVersions = Object.fromEntries(
-      Object.entries(inchiVersions).map(([version, cfg]) => [
-        version,
-        {
-          ...cfg,
-          /*
-           * WASM module(s) initialization
-           *
-           * Calling the factory function returns a Promise which resolves to the module object.
-           * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
-           */
-          module: window[cfg.module](),
-        },
-      ])
+      Object.entries(inchiVersions).map(([version, cfg]) => {
+        let modulePromise;
+        return [
+          version,
+          {
+            ...cfg,
+            /*
+             * WASM module initialization, deferred to first use.
+             *
+             * Reading `.module` loads that version's Emscripten glue and calls
+             * its factory, which returns a Promise resolving to the module
+             * object; the promise is kept, so later reads reuse it. Eagerly
+             * instantiating every entry cost ~7 MB of downloads and seven WASM
+             * compilations on page load for the one version in use.
+             * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
+             */
+            get module() {
+              if (!modulePromise) {
+                modulePromise = loadScriptOnce(`inchi/${cfg.name}.js`).then(
+                  () => window[cfg.module]()
+                );
+              }
+              return modulePromise;
+            },
+          },
+        ];
+      })
     );
     window.availableInchiVersions = availableInchiVersions;
+    return availableInchiVersions;
   })();
 }
 

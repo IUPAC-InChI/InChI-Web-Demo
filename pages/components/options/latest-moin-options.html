@@ -9,22 +9,35 @@
   />
   <label class="form-check-label"
     >Molecular Inorganics
-    <i
-      class="bi bi-exclamation-circle-fill colored-icon"
-      data-bs-toggle="tooltip"
-      data-bs-custom-class="custom-tooltip"
-      data-bs-html="true"
-      data-bs-title="
-        The functionality for molecular incorganics is a work in progress. You can expect to encounter warnings.
-        </br>
-        </br>
-        For an improved experience when working with inorganic structures, consider the following tips:
-        <ul>
-          <li>Input crystal structures as molfiles. Convert the CIF to a molfile, e.g., using Mercury (CCDC), or codcif2sdf (cod-tools).</li>
-          <li>In the structure editor, for donor atoms beyond nitrogen please change the 'valence' (i.e., coordination number) of the atoms accordingly by right-clicking on the corresponding atoms.</li>
-        </ul>
-      "
+    <button
+      type="button"
+      class="option-help"
+      popovertarget="help-MolecularInorganics"
+      aria-label="Caveats for “Molecular Inorganics”"
     >
-    </i>
+      !
+    </button>
   </label>
+  <!-- Outside the label: see the note in base-options.html. -->
+  <div id="help-MolecularInorganics" popover class="option-help-panel">
+    <p>
+      The functionality for molecular inorganics is a work in progress. You can
+      expect to encounter warnings.
+    </p>
+    <p>
+      For an improved experience when working with inorganic structures,
+      consider the following tips:
+    </p>
+    <ul>
+      <li>
+        Input crystal structures as molfiles. Convert the CIF to a molfile,
+        e.g. using Mercury (CCDC), or codcif2sdf (cod-tools).
+      </li>
+      <li>
+        In the structure editor, for donor atoms beyond nitrogen, change the
+        valence (i.e. coordination number) of the atoms accordingly by
+        right-clicking the corresponding atoms.
+      </li>
+    </ul>
+  </div>
 </div>
