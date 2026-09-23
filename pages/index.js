@@ -996,8 +996,9 @@ function syncSourceNotes() {
   if (editorNote) {
     if (conversionSource === "paste") {
       editorNote.textContent =
+        pastedInput.editorNote ??
         `Previewing ${pastedInput.label} — that text is what gets converted. ` +
-        `Edit here to convert the drawing instead.`;
+          `Edit here to convert the drawing instead.`;
       editorNote.hidden = false;
     } else {
       editorNote.hidden = true;
@@ -1223,6 +1224,10 @@ async function loadPastedInput() {
       kind: "sdf",
       label: "SD file text",
       provenance: `the record PubChem returned for ${name}`,
+      /* The field holds the identifier, not the text being converted. */
+      editorNote:
+        `Previewing the record PubChem returned for ${name} — that SD file ` +
+        `text is what gets converted, not the identifier itself.`,
     };
     conversionSource = "paste";
     syncSourceNotes();
