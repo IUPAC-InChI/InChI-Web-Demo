@@ -1,11 +1,16 @@
 name: Build, test and deploy GitHub Pages
 
-# Tests run on every push and pull request; the deploy below stays manual.
-# The Test step was ungated from the WASM cache so the JS suites would run on
-# a change, but the workflow itself only ever fired on workflow_dispatch, so
-# nothing ran automatically at all.
+# Tests run on every pull request and on every push to main; the deploy below
+# stays manual. The Test step was ungated from the WASM cache so the JS suites
+# would run on a change, but the workflow itself only ever fired on
+# workflow_dispatch, so nothing ran automatically at all.
+#
+# Push is narrowed to main because a branch with a pull request open would
+# otherwise run the whole emscripten and Ketcher build twice for one push,
+# once per event. A branch with no pull request yet is covered by opening one.
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
