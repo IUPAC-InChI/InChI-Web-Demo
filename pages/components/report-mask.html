@@ -21,21 +21,35 @@
     <header>
       <h2 id="maskTitle">Report a problem</h2>
       <button type="button" class="mask-close" aria-label="Close dialog">
-        <svg class="app-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
+        <svg
+          class="app-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+        </svg>
       </button>
     </header>
 
     <form>
       <p class="mask-intro">
-        This is the only place where your structure leaves your browser.
-        Every conversion — InChI, InChIKey, RInChI, AuxInfo — runs locally and
-        is never uploaded.
+        This is the only place where your structure leaves your browser. Every
+        conversion — InChI, InChIKey, RInChI, AuxInfo — runs locally and is
+        never uploaded.
       </p>
       <p class="mask-intro">
-        Your structure, the generated InChI and InChIKey, the options you
-        selected and the log are sent with your description, to the report
-        endpoint at <code>cheminfo.beilstein.org</code>, run by the
-        Beilstein-Institut for the InChI Trust.
+        Your structure and description, along with the generated InChI,
+        InChIKey,log, and selected options are sent to the Beilstein-Institut
+        for the InChI Trust.
       </p>
 
       <label class="mask-label" for="nameInput"

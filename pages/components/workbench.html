@@ -62,7 +62,10 @@
           placeholder="Paste or drop a molfile, SD file text, an AuxInfo string, an RXN or RD file, a RInChI (with its RAuxInfo on a second line), or a PubChem identifier such as SID 24866042 or CID 2244"
           ondragover="onTextareaDragover(event)"
           ondrop="onTextareaDrop(event, () => loadPastedInput())"
-          oninput="syncPasteControls(); loadPastedInputDebounced()"
+          oninput="
+            syncPasteControls();
+            loadPastedInputDebounced();
+          "
         ></textarea>
         <!--
           Emptying a six-row box of molfile by hand is a select-all away, but
@@ -80,7 +83,22 @@
           title="Clear the paste field and the drawing"
           disabled
         >
-          <svg class="app-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2.5 4.5h11M6.5 4.5V2.5h3v2M4 4.5l.8 9h6.4l.8-9M6.5 7v4M9.5 7v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
+          <svg
+            class="app-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M2.5 4.5h11M6.5 4.5V2.5h3v2M4 4.5l.8 9h6.4l.8-9M6.5 7v4M9.5 7v4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="square"
+            />
+          </svg>
         </button>
       </div>
       <!--
@@ -119,7 +137,7 @@
       />
       <small id="workbench-sdf-hint" class="text-muted">
         One InChI and InChIKey per record. Choosing a record draws it in the
-        editor above, with the full apparatus.
+        editor and fills the output fields.
       </small>
     </div>
   </div>
@@ -314,7 +332,9 @@
               value="RXN"
               checked
             />
-            <label class="form-check-label" for="reaction-format-rxn">RXN</label>
+            <label class="form-check-label" for="reaction-format-rxn"
+              >RXN</label
+            >
           </div>
           <div class="form-check">
             <input
