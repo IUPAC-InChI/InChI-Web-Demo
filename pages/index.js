@@ -1748,11 +1748,11 @@ async function updateInchiOptions(updateFunction) {
   markResultsStale(true);
 
   /*
-   * Snapshotted after addInchiOptionsForm has already rebuilt the panel, so
-   * this restore is a no-op.
+   * Carry the visitor's choices over to the new version's panel. Taken before
+   * the rebuild, which replaces the inputs.
    */
-  await addInchiOptionsForm(() => updateFunction());
   const optionsState = getInchiOptionsState(optionsPanel());
+  await addInchiOptionsForm(() => updateFunction());
   applyInchiOptionsState(optionsPanel(), optionsState);
   updateChangedOptionCount();
 
