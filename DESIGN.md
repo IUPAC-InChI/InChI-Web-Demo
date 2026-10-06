@@ -186,7 +186,7 @@ instead of one.
 
 What this world refuses, explicitly: the category default of four identical cards holding the
 answer, the derived answer, a diagnostic dump and an error channel as visual peers. The answer
-gets a plate; the evidence gets a collapsed hairline summary. It also refuses hue as a carrier of
+gets a plate; the evidence sits under a hairline summary, open by default. It also refuses hue as a carrier of
 difference — a layer that moved between two versions is marked with a hashed-bond glyph, a 3px
 gutter stroke and heavier ink, never with red and green.
 
@@ -336,7 +336,7 @@ also means reading order, tab order and visual order agree in all three states w
 The input rail holds the editor, a paste field that takes any supported notation, and an SD-file
 picker. Within the output column the order is: status line, the SD record list when a file is
 loaded, answer plate, derived answer plate, comparison controls, comparison plate, the 3D viewer,
-then a collapsed `<details>` holding AuxInfo and the library log.
+then an open `<details>` holding AuxInfo and the library log.
 
 **What the editor holds decides which answer appears.** A molecule yields InChI and InChIKey; a
 reaction yields RInChI and its three keys. The two output blocks are siblings that hide as units
@@ -412,7 +412,7 @@ no travel left and it quietly stops sticking. A sticky pane that clips its own f
 one that scrolls.
 
 **The Answer-Above-Evidence Rule.** In one column the order is status, then answer, then evidence.
-AuxInfo and the library log are collapsed by default behind one hairline summary; they are never
+AuxInfo and the library log sit open by default under one hairline summary; they are never
 given a container equal to the identifier's. The status line sits **above** the plate (a cited
 deviation from the direction contract, which first put it beneath): it answers "did that work?",
 which is read before the answer, and on a failure there is no plate to read under.
@@ -609,7 +609,7 @@ animates its elevation.
 - **Don't** use monospace for anything but identifier values.
 - **Don't** carry difference, state or severity with hue alone — the comparison must read in greyscale. Mark, weight and position first; colour at most as reinforcement.
 - **Don't** re-theme the annotation chips per theme; the categorical key means the same colour in both.
-- **Don't** give the diagnostic evidence (AuxInfo, library log) a container equal to the identifier's, or expand it by default.
+- **Don't** give the diagnostic evidence (AuxInfo, library log) a container equal to the identifier's.
 - **Don't** blank a result field and wait — mark it superseded at 0.45 opacity instead.
 - **Don't** write a status message only into a node that can be hidden; the live region must be always present and must not move.
 - **Don't** put uppercase or letter-spacing on anything that is not an apparatus label.
