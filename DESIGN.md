@@ -629,7 +629,6 @@ These are the build's own gaps, not rules to inherit.
 - **No URL state.** A result is not addressable, so a comparison cannot be linked to a colleague or cited from a paper.
 - **Two dialog stylesheets were never migrated to these tokens.** `pages/css/report-mask.css` and `pages/css/report-feedback.css` reference seven custom properties that do not exist anywhere in the project — `--inchi-text-muted`, `--inchi-border-strong`, `--inchi-surface-muted`, `--inchi-success-fg`, `--inchi-success-surface`, `--inchi-error-fg`, `--inchi-error-surface` — so those colours silently fall back to inherited values. The correct tokens are `ink-muted`, `rule`, `field-sunken`, `brand`/`brand-quiet` and `error`/`error-quiet`. **This is a defect, not a system rule.**
 - **A pasted AuxInfo, reaction file or RInChI rides in the report's description field.** A pasted molfile now goes in `molfile_v2`/`molfile_v3` as converted, but the other notations have no field of their own in the report payload, which is the endpoint's shape rather than ours.
-- **No favicon.** Neither page declares one, so every load spends a request on a 404 for `/favicon.ico`.
 
 ## Verification in-repo
 
