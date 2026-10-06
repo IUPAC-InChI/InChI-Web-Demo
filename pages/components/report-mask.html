@@ -1,20 +1,10 @@
-<!--
-  Outline, not filled. This was the only filled button on the page and
-  therefore its loudest element — for a tertiary action, on a surface whose
-  job is generating identifiers. The primary action here has no button at all,
-  because drawing converts on its own.
--->
 <button type="button" class="btn btn-sm btn-outline-secondary mask-open mt-3">
   Report a problem
 </button>
 
 <!--
-  A native <dialog> supplies the modal behaviour this form needs: focus is
-  trapped while it is open, Escape closes it, the page behind it is inert and
-  focus returns to the "Report a problem" button on close.
-  Ids are suffixed per tab by scopeIds() because this component is rendered once
-  per tab; "for" and "aria-labelledby" resolve to the first matching id in the
-  document, so unscoped ids would wire the second dialog to the first one.
+  A native <dialog> supplies the modal behaviour: focus trap, Escape to close,
+  an inert page behind it and focus returned to the trigger on close.
 -->
 <dialog class="inchi-dialog mask-dialog" aria-labelledby="maskTitle">
   <div class="inchi-dialog-body">

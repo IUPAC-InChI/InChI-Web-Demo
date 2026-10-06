@@ -1,16 +1,8 @@
 "use strict";
 
 /*
- * The theme switch, on its own so that more than one page can carry it.
- *
- * Extracted from index.js when About became a separate page: that page needs
- * the control and nothing else index.js does. Loading index.js there would
- * throw on availableInchiVersions during warm-up and install the tool
- * surface's key listener on a page with no tool on it.
- */
-
-/*
- * Theme switch.
+ * The theme switch, on its own so that pages without the tool (About) can
+ * carry it without loading index.js.
  *
  * Three states exist even though the control has two: an explicit "light", an
  * explicit "dark", and no choice at all — in which case the page follows the

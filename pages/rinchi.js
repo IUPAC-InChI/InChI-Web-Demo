@@ -9,7 +9,7 @@ const RINCHI_VERSION = "1.1-dev with Latest InChI";
  * object, and that promise is reused for every later call.
  * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
  *
- * In the browser the 1.7 MB module is only fetched once something needs a
+ * In the browser the module is only fetched once something needs a
  * RInChI; under Node the test harness has already put the factory on `global`.
  */
 let rinchiModulePromise;

@@ -100,10 +100,9 @@ function layerLabel(key) {
  *
  * The layer letters are not unique across a string: a non-standard InChI
  * restarts them after a /f (fixed hydrogens) or /r (reconnected metals)
- * marker, and an /i layer carries its own sublayers too. Keeping only the
- * first segment per letter therefore lost every one of those — two InChIs
- * differing only in their reconnected /h compared as identical, and the
- * comparison plate said "0 of 5 layers differ" about two different strings.
+ * marker, and an /i layer carries its own sublayers too. Keyed by letter
+ * alone, two InChIs differing only in their reconnected /h would compare as
+ * identical.
  *
  * So a marker opens a namespace and the segments after it are keyed inside
  * it. /r resets to the top level, because the reconnected structure starts a
@@ -179,7 +178,7 @@ function parseInchiLayers(inchi) {
     /*
      * "InChI=1S//q+1" has no formula at all; an empty row is noise, not a
      * layer. A repeated key inside one namespace is not legal InChI — keep
-     * the first, as before, rather than render two rows with one name.
+     * the first rather than render two rows with one name.
      */
     if (segment.key === null || seen.has(segment.key)) {
       continue;
@@ -286,14 +285,9 @@ function parseInchikeyBlocks(inchikey) {
 }
 
 /*
- * Notation marks. Drawn, in one stroke weight, from the vocabulary of a
- * structure diagram rather than from an icon font: a filled wedge points
- * toward the viewer and means confirmed, crossed hairlines mean refused, an
- * open square means in progress, and a hash marks a layer that differs.
- *
- * Authored here rather than pulled from the icon set because the icon set has
- * no wedge and no hash, and a check mark would say "valid" where this world
- * says "drawn".
+ * Notation marks, drawn from the vocabulary of a structure diagram: a filled
+ * wedge means confirmed, crossed hairlines mean refused, an open square means
+ * in progress, and a hash marks a layer that differs.
  */
 function notationMark(kind) {
   const open = '<svg class="notation-mark" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false">';
@@ -388,8 +382,7 @@ function markChangedLayers(inchi, changedKeys) {
 
   /*
    * Keyed through the same walk as the diff, so a changed main /h marks the
-   * main /h alone — marking every segment whose letter matched highlighted
-   * an identical fixed-H layer alongside it.
+   * main /h alone and not an identical fixed-H /h alongside it.
    */
   const rendered = walked.map((segment) => {
     const escaped = escapeHtml(segment.raw);
@@ -421,17 +414,8 @@ function markChangedKeyBlocks(inchikey, changedIndices) {
 }
 
 /*
- * The interface's icons, authored in one stroke weight.
- *
- * These replace the eight Bootstrap Icons glyphs the app used to pull from a
- * 121 KB webfont plus a 95 KB stylesheet declaring about 1800 icons. Two
- * reasons to draw them instead: the webfont's weight sat visibly next to the
- * authored chemistry marks in notationMark(), which is two icon systems on one
- * surface; and eight shapes do not justify that payload on a page whose first
- * load the audit measured at 7.5 MB.
- *
- * 16x16, 1.5px stroke, currentColor, no fill, square joins — the same hand as
- * the notation marks.
+ * The interface's icons, drawn in the same stroke as the notation marks so
+ * the page has one icon system.
  */
 const ICON_PATHS = {
   clipboard: "M6 2.5H10V4.5H6ZM3.5 4.5H12.5V14H3.5Z",

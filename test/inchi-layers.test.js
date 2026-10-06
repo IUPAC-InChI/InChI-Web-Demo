@@ -86,8 +86,8 @@ test("escapes text destined for an innerHTML template", () => {
 
 test("marks which InChIKey block moved, not the whole key", () => {
   // Same structure, different stereochemistry: the skeleton block is
-  // identical and only the stereo block changes. Comparing the keys as two
-  // 27-character runs would hide exactly that.
+  // identical and only the stereo block changes. Comparing the whole keys
+  // would hide exactly that.
   const rows = diffInchikeyBlocks(
     "HEFNNWSXXWATRW-JTQLQIEISA-N",
     "HEFNNWSXXWATRW-UHFFFAOYSA-N"
@@ -162,9 +162,8 @@ describe("marking changed layers inside a complete string", () => {
 /*
  * Non-standard InChIs restart the layer letters after a /f or /r marker: the
  * reconnected-metal structure has its own /c and /h, the fixed-hydrogen layer
- * its own /h. Reading only the first segment per letter made every one of
- * those invisible — two different strings compared as identical, and the
- * summary then said so in as many words.
+ * its own /h. Each has to be compared on its own, or two different strings
+ * compare as identical.
  */
 describe("sublayers after an /f or /r marker", () => {
   const RECONNECTED = "InChI=1S/CH4.Na/c;/h1H4;/q;+1/rCH3Na/c1-2/h1H3";

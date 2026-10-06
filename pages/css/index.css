@@ -17,11 +17,7 @@
  */
 
 /* ---- Type scale -------------------------------------------------------- */
-/*
- * A deliberate scale with visible steps. The audit measured nine sizes
- * spanning 2.0:1 — Bootstrap's defaults, which is a flat hierarchy pretending
- * to be a rich one. These five steps span 3.6:1 and each one has a job.
- */
+/* A deliberate scale with visible steps, each one with a job. */
 body {
   font-size: 1rem;
   line-height: 1.5;
@@ -41,10 +37,8 @@ h1 {
 }
 
 /*
- * Section headings on the tool surface. The audit found no headings at all
- * here — "Version" and "Options" were a <label class="h4"> and a
- * <summary class="h4">, so a screen-reader user had no way to move between
- * the editor, the options and the results.
+ * Section headings on the tool surface, so a screen-reader user can move
+ * between the editor, the options and the results.
  */
 .inchi-section-heading {
   font-size: var(--inchi-apparatus-size);
@@ -91,8 +85,7 @@ h1 {
 /* ---- Panels ------------------------------------------------------------ */
 /*
  * Panel around a group of controls: version selector, options, 3D viewer.
- * Keeps its class name so the components and the touch-sizing rules below
- * still find it.
+ * The components and the touch-sizing rules below find it by this class name.
  */
 .bounding-box {
   border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
@@ -111,10 +104,9 @@ h1 {
 }
 
 /*
- * A <summary> with `display: flex` loses its ::marker in Blink and WebKit, and
- * nothing replaced it: the options panel was a grey bar with no indication it
- * opened at all. Authored disclosure mark instead — a triangle in the same
- * hand as the icons, rotating a quarter turn when open.
+ * A <summary> with `display: flex` loses its ::marker in Blink and WebKit, so
+ * the disclosure mark is authored — a triangle in the same hand as the icons,
+ * rotating a quarter turn when open.
  */
 .bounding-box > summary::marker,
 .secondary-plates > summary::marker,
@@ -150,7 +142,7 @@ details[open] > summary::before {
 
 /*
  * The options panel says how many flags differ from this version's defaults,
- * so "Reset" is no longer a button that discards seventeen settings blind.
+ * so "Reset" is not a button that discards settings blind.
  */
 .options-changed-count {
   font-variant-numeric: tabular-nums;
@@ -164,7 +156,7 @@ details[open] > summary::before {
 
 /* ---- The identifier: a keyed notation stack ---------------------------- */
 /*
- * This is the centre of the redesign. An InChI is not a line of text, it is
+ * An InChI is not a line of text, it is
  * a layered notation — version, formula, connections, hydrogens, stereo — and
  * a chemist comparing two algorithm versions needs to see *which layer moved*.
  * So the string is set as one row per layer, keyed in the margin, in a
@@ -338,9 +330,8 @@ details[open] > summary::before {
 
 /* ---- Demoted plates ---------------------------------------------------- */
 /*
- * AuxInfo and the library log are evidence, not the answer. They used to get
- * containers identical to the InChI's, which made the diagnostic dump a peer
- * of the identifier. Collapsed by default, one hairline summary each.
+ * AuxInfo and the library log are evidence, not the answer, so they get a
+ * quieter container than the identifier: one hairline summary each.
  */
 .secondary-plates {
   margin-top: 1rem;
@@ -361,11 +352,7 @@ details[open] > summary::before {
 }
 
 /* ---- Conversion status ------------------------------------------------- */
-/*
- * The audit's worst finding: an invalid structure produced four empty boxes
- * and a log containing the literal string "InChI options:". Success was
- * equally unsignalled. This line always says what happened.
- */
+/* This line always says what happened, success or failure. */
 .conversion-status {
   display: flex;
   align-items: baseline;
@@ -409,10 +396,7 @@ details[open] > summary::before {
   color: var(--inchi-error);
 }
 
-/*
- * Busy. The version switch used to blank all four fields and then wait several
- * seconds on a cold ~1 MB WebAssembly module with no indication at all.
- */
+/* Busy: a version switch can wait on a cold WebAssembly module. */
 .conversion-status-busy .conversion-status-mark {
   animation: inchi-pulse 1.1s ease-in-out infinite;
 }
@@ -450,8 +434,7 @@ details[open] > summary::before {
 /* ---- Comparison -------------------------------------------------------- */
 /*
  * Pinned results accumulate instead of being destroyed. Comparing versions is
- * the job this tool exists for; it used to be a <select> that deleted the
- * answer you were comparing against.
+ * the job this tool exists for.
  */
 .comparison-stack {
   display: grid;
@@ -492,11 +475,9 @@ input.form-check-input {
 }
 
 /*
- * One focus system. The audit found two — a 3.08:1 olive ring on controls and
- * brand green on the annotation buttons — plus the framework's blue glow on
- * the green buttons, from a variable that was never overridden. base.css now
- * gives everything the same outline; this list adds the border promotion,
- * which only makes sense on something that has a border.
+ * One focus system. base.css gives everything the same outline; this list
+ * adds the border promotion, which only makes sense on something that has a
+ * border.
  */
 :is(
     input.form-check-input,
@@ -530,11 +511,7 @@ input.form-check-input {
   text-decoration: underline;
 }
 
-/*
- * The option explanations used to hang on a non-focusable <i> with the text in
- * data-bs-title: no accessible name, no keyboard path, and no native title
- * fallback either. They are real buttons now.
- */
+/* The option explanations are real buttons, so they are keyboard-operable. */
 inchi-option-help {
   display: contents;
 }
@@ -563,9 +540,8 @@ inchi-option-help {
 
 /* ---- Result text ------------------------------------------------------- */
 /*
- * The 500px cap on result panels used to clip anything longer out of reach;
- * overflow makes the rest scrollable instead of invisible. The inset shadow
- * signals that it scrolls, which the audit found nothing did.
+ * Overflow makes a long result scrollable instead of clipped. The inset
+ * shadow signals that it scrolls.
  */
 .inchi-result-text {
   white-space: pre-wrap;
@@ -588,16 +564,12 @@ inchi-option-help {
 
 /* ---- Page shell -------------------------------------------------------- */
 /*
- * The page takes the screen. It used to be a Bootstrap `container-md`, which
- * caps at 1320px however wide the display is — on a 2560px monitor that left
- * a third of the screen as margin on either side of a tool whose two halves
- * both want room. A workbench earns the glass it is given.
+ * The page takes the screen: a tool whose two halves both want room earns the
+ * glass it is given.
  *
- * 2400px is where it stops, in px rather than rem because this is a cap on
- * screen real estate, not on text: it should not move when someone raises
- * their browser's font size. Past that the two columns are wider than either
- * half has any use for, and an ultrawide would put the masthead logo and the
- * theme switch a metre apart.
+ * The cap is in px rather than rem because it limits screen real estate, not
+ * text: it should not move when someone raises their browser's font size.
+ * Past it the two columns are wider than either half has any use for.
  *
  * The About surface caps again inside this: it keeps `container-md` on its
  * own pane and a measure on its prose, because a paragraph is not a
@@ -608,8 +580,8 @@ inchi-option-help {
   max-width: 2400px;
   margin-inline: auto;
   margin-bottom: 2rem;
-  /* The gutter Bootstrap's container gave us, kept, then widened where the
-     workbench appears and the content is running to the screen edges. */
+  /* Widened where the workbench appears and the content runs to the screen
+     edges. */
   padding-inline: 0.75rem;
 }
 
@@ -625,26 +597,20 @@ inchi-option-help {
  * feed the conversion, what configures it, what it produced — arranged three
  * ways by width:
  *
- *   below 1200px      one column: input, controls, output
- *   1200 - 1399px     input | controls on one row, output full width beneath
- *   1400px and up     input above controls in a left rail, output alongside
+ *   narrow     one column: input, controls, output
+ *   medium     input | controls on one row, output full width beneath
+ *   wide       input above controls in a left rail, output alongside
  *
- * Grid areas rather than nested Bootstrap rows, because the three children
- * change *arrangement*, not just width: expressing the wide case with columns
- * would mean writing the output markup twice and letting the two copies drift.
- * One DOM order also means reading order, tab order and visual order agree in
- * all three states without a single `order` declaration.
+ * Grid areas, because the three children change *arrangement*, not just
+ * width: expressing the wide case with columns would mean writing the output
+ * markup twice and letting the two copies drift. One DOM order also means
+ * reading order, tab order and visual order agree in all three states without
+ * a single `order` declaration.
  *
- * TWO widths now, and both are load-bearing. 1200px is where a pane stops
- * being one column; JavaScript reasons about that one too, so it is named
- * INCHI_STACK_BREAKPOINT in index.js and the two must stay in step. 1400px is
- * where the answer moves *beside* the input instead of beneath it; nothing in
- * JavaScript depends on it, so this rule is its only home.
- *
- * The second width is not cosmetic. The page is a container-md, so at 1200px
- * there are 1140px to divide and half of that is narrower than either the
- * structure editor or the notation stack wants; the side-by-side arrangement
- * only pays for itself once the container reaches its 1320px maximum.
+ * The first breakpoint, where a pane stops being one column, is also named
+ * INCHI_STACK_BREAKPOINT in index.js, and the two must stay in step. The
+ * second, where the answer moves *beside* the input, has no JavaScript
+ * counterpart, so this rule is its only home.
  */
 .tool-workbench {
   display: grid;
@@ -658,7 +624,7 @@ inchi-option-help {
 
 /*
  * min-width: 0 on all three: a grid item's automatic minimum size is its
- * content, and an InChI is one unbreakable-looking 60-character run. Without
+ * content, and an InChI is one long unbreakable-looking run. Without
  * this the notation column refuses to shrink and the whole grid overflows.
  */
 .tool-input,
@@ -689,9 +655,9 @@ inchi-option-help {
 }
 
 /*
- * The version selector used to carry `mt-auto`, sitting on the editor's
- * baseline rather than floating at the top of a short column. That only makes
- * sense while the two share a row, so it ends at the workbench breakpoint.
+ * The version selector sits on the editor's baseline rather than floating at
+ * the top of a short column. That only makes sense while the two share a row,
+ * so it ends at the workbench breakpoint.
  */
 @media (min-width: 1200px) and (max-width: 1399.98px) {
   .tool-controls-bottom {
@@ -718,19 +684,18 @@ inchi-option-help {
 
   /*
    * Width stops being scarce here, and two things in the rail have to be told
-   * that. A checkbox list does not get better at 1200px wide — it just leaves
-   * a column of empty ground beside it — so the controls keep the width they
-   * had when the container was capped.
+   * that. A checkbox list does not get better wider — it just leaves a column
+   * of empty ground beside it — so the controls are capped.
    */
   .tool-controls {
     max-width: 42rem;
   }
 
   /*
-   * And an editor sized by aspect ratio would climb with the column: 62% of a
-   * 1200px half is a 750px-tall canvas, taller than the screen it is drawn
-   * on. Past this width the height answers to the viewport instead, and the
-   * ratio is switched off rather than fought.
+   * And an editor sized by aspect ratio would climb with the column until it
+   * is taller than the screen it is drawn on. Past this width the height
+   * answers to the viewport instead, and the ratio is switched off rather than
+   * fought.
    */
   .tool-input > .ratio.ketcher,
   .tool-output > .ratio.ketcher {
@@ -742,7 +707,7 @@ inchi-option-help {
    * The answer follows you down the rail.
    *
    * The two columns are lopsided by nature and always the same way round: the
-   * input rail is an editor plus twenty-odd option checkboxes, the output is
+   * input rail is an editor plus a long list of option checkboxes, the output is
    * an identifier and its key. Reaching an option means scrolling the answer
    * off the top of the screen, and the loop this tool exists for is "change a
    * flag, watch which layer moves". So the *short* column is the one that
@@ -775,8 +740,8 @@ inchi-option-help {
 
 /*
  * Crossing the [data-output] wrapper: the molecule and reaction answers are
- * each a block that hides as a unit, so the leading plate is no longer a
- * direct child of .tool-output.
+ * each a block that hides as a unit, so the leading plate is not a direct
+ * child of .tool-output.
  */
 .tool-output [data-output] > inchi-result-field:first-of-type > .identifier-plate {
   margin-top: 0;
@@ -789,9 +754,8 @@ inchi-option-help {
 /* ---- Editor, paste box, viewer ---------------------------------------- */
 /*
  * Editor and paste box: on wide screens the aspect ratio governs and the
- * min-height never applies. It only takes over below ~855px, which is where
- * these floors are aimed — a fixed 530px filled four fifths of a phone screen
- * and pushed the results two screens down.
+ * min-height never applies. The floor is aimed at phones, where a fixed height
+ * would push the results screens down.
  */
 .ketcher {
   --inchi-aspect-ratio: 62%;
@@ -827,10 +791,7 @@ inchi-option-help {
 
 @media (min-width: 768px) {
   .ngl-viewport {
-    /*
-     * 600px used to outweigh the identifier it explains by about 3:1 in
-     * visual area. The evidence should not dwarf the answer.
-     */
+    /* The evidence should not dwarf the answer it explains. */
     height: 420px;
   }
 }
@@ -841,7 +802,7 @@ inchi-option-help {
 
 /*
  * The help panel. A plate, by the system's own reckoning — it lifts, so it
- * gets the 12px radius and the plate shadow, not the control's 8px.
+ * gets the plate radius and shadow, not the control's.
  *
  * No open/closed selector of its own: the `popover` attribute makes the
  * platform own that, along with Escape, click-outside dismissal and the top
@@ -881,10 +842,8 @@ inchi-option-help {
 }
 
 /*
- * The five annotation toggles used to read as a tab strip — white boxes in a
- * row above the viewer, whose colour appeared only once pressed, so the
- * colour-to-meaning mapping was undiscoverable. They are chips now, each
- * carrying its own swatch at rest: the control *is* the legend.
+ * The annotation toggles are chips, each carrying its own swatch at rest: the
+ * control *is* the legend.
  */
 .annotation-selection {
   display: flex;
@@ -923,8 +882,8 @@ inchi-option-help {
 }
 
 /*
- * Pressed used to be read off a heavier border. Both rule weights are 1px in
- * this world, so the state is carried by a brand fill instead.
+ * Both rule weights are the same thin line in this world, so pressed is
+ * carried by a brand fill rather than a heavier border.
  */
 .annotation-button[aria-pressed="true"] {
   border-color: var(--inchi-brand);
@@ -965,10 +924,6 @@ inchi-option-help {
 /*
  * The banner strip: logo, wordmark, tagline and the theme switch, over the
  * rule that separates it from the tabs.
- *
- * The <h1> used to sit in a col-md-9 beside the logo, so its left edge landed
- * ~270px right of every other element on the page. It aligns to the page grid
- * now, with the logo beside it on one baseline.
  */
 .masthead {
   position: relative;
@@ -982,11 +937,10 @@ inchi-option-help {
 }
 
 /*
- * The supplied logo has an opaque light background baked in, so on the dark
- * theme it was a bright rectangle floating on the ground. Given a deliberate
- * plate with the same hairline as everything else, it reads as a mounted mark
- * rather than an artefact. The asset itself is a brand commitment; the mount
- * is ours.
+ * The supplied logo has an opaque light background baked in, which on the
+ * dark theme would be a bright rectangle floating on the ground. Given a
+ * deliberate plate with the same hairline as everything else, it reads as a
+ * mounted mark rather than an artefact.
  */
 .masthead-logo {
   display: block;
@@ -1015,8 +969,7 @@ inchi-option-help {
  * touchscreen needs it and a narrow desktop window does not.
  *
  * `any-pointer: coarse` as well as `pointer: coarse`, because a stylus 2-in-1
- * reports a fine primary pointer and still needs the targets — the audit found
- * those devices getting 30px buttons in a stack of seventeen checkboxes.
+ * reports a fine primary pointer and still needs the targets.
  */
 @media (pointer: coarse), (any-pointer: coarse) {
   .btn,
@@ -1059,7 +1012,7 @@ inchi-option-help {
     justify-content: center;
   }
 
-  /* Room to hit the right checkbox in a stack of twenty. */
+  /* Room to hit the right checkbox in a long stack. */
   .bounding-box .form-check {
     margin-bottom: 0.5rem;
   }
@@ -1068,10 +1021,8 @@ inchi-option-help {
 /* ---- About surface ----------------------------------------------------- */
 /*
  * The one Read surface here, and the only place on this site where a line is
- * meant to be read start to finish rather than scanned. Its paragraphs ran
- * the full width of the pane — about 165 characters a line, more than twice a
- * comfortable measure — so the running text gets a measure and nothing else
- * does.
+ * meant to be read start to finish rather than scanned, so the running text
+ * gets a measure and nothing else does.
  *
  * Scoped to the prose deliberately. The funder rows are a logo grid, not
  * text: `.funder-logo` is `width: 100%`, so narrowing their columns halves
@@ -1080,8 +1031,8 @@ inchi-option-help {
 inchi-about > p,
 inchi-about > ul,
 inchi-about > h2 {
-  /* 64ch of the system stack renders as roughly 73 characters, inside the
-     65-75 the type scale is built for. */
+  /* A ch is wider than the average character of the system stack, so this
+     lands inside the readable range. */
   max-width: 64ch;
 }
 
@@ -1147,9 +1098,8 @@ inchi-about > h2 {
  */
 @media (max-width: 767.98px) {
   /*
-   * A long version stamp ("Dev with Enhanced Stereochemistry") pushed the copy
-   * and download buttons off the right edge of a phone screen and made the
-   * whole page scroll sideways. The head wraps instead.
+   * A long version stamp would push the copy and download buttons off the
+   * right edge of a phone screen, so the head wraps.
    */
   .identifier-head {
     flex-wrap: wrap;
@@ -1251,10 +1201,8 @@ inchi-about > h2 {
 
 /* ---- Select caret ------------------------------------------------------ */
 /*
- * Bootstrap 5.2.3 bakes #343a40 into the caret's data URI, which is 1.5:1
- * against the dark field — a WCAG 1.4.11 failure on the version selector, the
- * most important control on the surface for the primary user. A data URI
- * cannot read a custom property, so the stroke is literal in each theme.
+ * A data URI cannot read a custom property, so the caret's stroke is literal
+ * in each theme, chosen to hold WCAG 1.4.11 against that theme's field.
  */
 .form-select {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2314171a' stroke-linecap='square' stroke-width='1.5' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
@@ -1379,10 +1327,10 @@ inchi-about > h2 {
 /*
  * The track's paper and ink are deliberately NOT tokens: they are literal in
  * both themes, because they *depict* light and dark rather than participating
- * in the current theme. Tokenised, --inchi-rule-stroke inverts per theme and
- * switching to dark filled the track with near-white — darkness shown as
- * light. Only the border follows the theme, so the control still sits in the
- * page it belongs to.
+ * in the current theme. Tokenised, --inchi-rule-stroke would invert per
+ * theme and fill the dark track with near-white — darkness shown as light.
+ * Only the border follows the theme, so the control still sits in the page it
+ * belongs to.
  */
 .theme-switch-track {
   position: relative;
@@ -1505,7 +1453,7 @@ inchi-about > h2 {
 }
 
 /*
- * The selected row carries the 3px stroke in its gutter — the same mark a
+ * The selected row carries the stroke in its gutter — the same mark a
  * divergent layer gets in the notation stack, because it is the same job:
  * this is the one being read.
  */
@@ -1534,8 +1482,8 @@ inchi-about > h2 {
 }
 
 /*
- * Stale rows get the same treatment a superseded result plate gets — 0.45
- * opacity — except the one still being read, which the editor and the plates
+ * Stale rows get the same treatment a superseded result plate gets, except
+ * the one still being read, which the editor and the plates
  * below do describe correctly.
  */
 .records-stale-notice {
@@ -1569,8 +1517,7 @@ inchi-about > h2 {
 }
 
 /*
- * About left the tab strip and became its own page, so the masthead carries
- * the only route to it — and the route back.
+ * The masthead carries the only route to About — and the route back.
  *
  * Bounded, where the switch above it is not, and that difference is the point:
  * a box means "go somewhere", a bare label and track means "flip a state". As
@@ -1578,10 +1525,9 @@ inchi-about > h2 {
  * `hairline`.
  *
  * Quiet at rest rather than brand green. Green is what this palette spends on
- * links, and spending it here put the loudest thing in the banner on its least
- * important control — with the switch beside it, the two competed. The route
- * earns its emphasis on approach instead, which is what button-outline in
- * DESIGN.md already describes.
+ * links, and spending it here would put the loudest thing in the banner on
+ * its least important control, competing with the switch beside it. The
+ * route earns its emphasis on approach instead.
  */
 .masthead-link {
   display: flex;
@@ -1621,12 +1567,10 @@ inchi-about > h2 {
 }
 
 /*
- * On a phone the cluster stops being a corner and becomes a row of its own.
- *
- * Stacked beside the wordmark it took a column the tagline could not spare:
- * "Chemical identifiers generated in your browser, never on a server." broke
- * over four lines at 390px. The banner wraps instead, and the two controls sit
- * side by side under it with the width they need.
+ * On a phone the cluster stops being a corner and becomes a row of its own:
+ * stacked beside the wordmark it would take a column the tagline cannot
+ * spare. The banner wraps instead, and the two controls sit side by side
+ * under it with the width they need.
  */
 @media (max-width: 767.98px) {
   .masthead {
@@ -1648,11 +1592,7 @@ inchi-about > h2 {
 
 /*
  * The funder acknowledgements: prose on the left, the funder's logo beside it,
- * wrapping under on a narrow screen.
- *
- * This was a Bootstrap grid row of .col-lg-4 and .col-lg-3.offset-lg-1 — five
- * grid classes to lay out two things side by side. Some rows carry a second
- * logo, which flex handles without a third column class.
+ * wrapping under on a narrow screen. Some rows carry a second logo.
  */
 .funder-row {
   display: flex;
@@ -1672,11 +1612,10 @@ inchi-about > h2 {
 }
 
 /*
- * The logo cells are capped. .funder-logo is width:100%, which the Bootstrap
- * column used to bound; as a bare flex item it stretched to whatever the row
- * could give it and one logo came out 1296px wide. 12rem is about the
- * intrinsic width these files are drawn at, so they also come out consistent
- * with each other, which the old grid never quite managed.
+ * The logo cells are capped. .funder-logo is width:100%, so as a bare flex
+ * item it would stretch to whatever the row could give it. The cap is about
+ * the intrinsic width these files are drawn at, so they also come out
+ * consistent with each other.
  */
 .funder-row > :not(.funder-text) {
   flex: 0 1 12rem;
@@ -1687,7 +1626,7 @@ inchi-about > h2 {
  *
  * A quiet apparatus line rather than a badge on the canvas: it reports a
  * state the visitor created by pasting, and it must not compete with the
- * answer for attention. The 3px stroke marks it as the active condition,
+ * answer for attention. The stroke marks it as the active condition,
  * which is the same job that mark does on a divergent layer and a selected
  * record.
  */
@@ -1709,7 +1648,7 @@ inchi-about > h2 {
  * Inside the field rather than under it, because that is where the thing it
  * empties is. The field reserves the width so notation never runs under the
  * icon, and the button is inset far enough to clear a scrollbar once the
- * text is longer than six rows.
+ * text overflows.
  *
  * A disabled button stays visible rather than vanishing: a control that
  * appears and disappears under the pointer is harder to hit than one that is
@@ -1749,7 +1688,7 @@ inchi-about > h2 {
 /*
  * The paste field's own state line, for when its text is no longer the thing
  * being converted. Same device as the editor's role note and the stale record
- * list: the 3px stroke marks the condition, the words carry the meaning.
+ * list: the stroke marks the condition, the words carry the meaning.
  */
 .paste-state {
   display: flex;

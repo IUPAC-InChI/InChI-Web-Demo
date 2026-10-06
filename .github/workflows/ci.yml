@@ -1,9 +1,7 @@
 name: Build, test and deploy GitHub Pages
 
 # Tests run on all listed triggers, whereas a deployment needs to be triggered manually.
-# Push is narrowed to main because a branch with a pull request open would
-# otherwise run the emscripten and Ketcher build twice for one push,
-# once per event. A branch with no pull request yet is covered by opening one.
+# Push is narrowed to main so a branch with an open pull request is not built twice.
 on:
   push:
     branches: [main]
@@ -35,9 +33,8 @@ jobs:
         with:
           path: |
             pages/ngl
-          # download_packages.sh pins the versions, and utils.sh holds the
-          # download itself — including the source-map strip — so a change to
-          # either has to invalidate this cache.
+          # download_packages.sh pins the versions and utils.sh holds the
+          # download itself, so a change to either invalidates this cache.
           key: ${{ hashFiles('pages/download_packages.sh', 'pages/utils.sh') }}
 
       - name: Download dependencies
