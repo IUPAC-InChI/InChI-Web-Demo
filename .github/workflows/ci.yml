@@ -1,6 +1,11 @@
-name: Deploy GitHub Pages
+name: Build, test and deploy GitHub Pages
 
+# Tests run on all listed triggers, whereas a deployment needs to be triggered manually.
+# Push is narrowed to main so a branch with an open pull request is not built twice.
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -9,7 +14,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -27,10 +32,6 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            pages/jquery
-            pages/bootstrap
-            pages/bootstrap-icons
-            pages/bootstrap-multiselect
             pages/ngl
           # The hashed script contains the versions of the dependencies.
           key: ${{ hashFiles('pages/download_packages.sh') }}
@@ -68,8 +69,7 @@ jobs:
           apt-get update -y && apt-get install -y jq
           $GITHUB_WORKSPACE/pages/build_wasm_modules.sh $GITHUB_WORKSPACE
 
-      - name: Test WASM modules
-        if: steps.cache-wasm-modules.outputs.cache-hit != 'true'
+      - name: Test
         run: |
           cd $GITHUB_WORKSPACE/test
           yarn install
@@ -83,6 +83,7 @@ jobs:
           path: pages
 
   deploy:
+    if: github.event_name == 'workflow_dispatch'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

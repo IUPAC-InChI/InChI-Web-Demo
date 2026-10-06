@@ -1,4 +1,4 @@
-# InChI-Web-Demo
+# InChI Web App
 
 ## Local development
 
@@ -30,7 +30,7 @@ cd pages && python3 -m http.server
 
 You find a test suite for the WASM modules under `test`.
 
-Note that we're not aiming to comprehensively exercise the functionality of the modules under test. We leave that up to the underlying packages themselves (e.g., we rely on InChI's downstream test coverage). Rather, this directory contains smoke tests that aim to ensure successful compilation of the WASM modules.
+Note that we're not aiming to comprehensively exercise the functionality of the modules under test. We leave that up to the underlying packages themselves (e.g., we rely on InChI's downstream test coverage). Rather, `inchi.test.js` and `rinchi.test.js` are smoke tests that aim to ensure successful compilation of the WASM modules. `inchi-layers.test.js` covers the InChI layer grammar and the version diff, and `input-format.test.js` covers the format detection behind the paste field.
 
 The following commands are assumed to be run from within the `test` directory.
 Install the test dependencies by running

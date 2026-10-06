@@ -1,0 +1,328 @@
+<!--
+  The editor is the single source of truth for what is converted; the paste
+  field and the file picker fill it. The output column reads
+  containsReaction() and shows the InChI block or the RInChI block.
+-->
+<div class="tool-workbench">
+  <div class="tool-input">
+    <div class="ratio ketcher">
+      <iframe
+        id="workbench-ketcher"
+        title="Structure and reaction editor"
+        class="w-100"
+        src="ketcher/index.html"
+        onload="onKetcherLoaded('workbench-ketcher', () => onEditorChanged())"
+      ></iframe>
+    </div>
+    <!--
+      Shown only when a paste is being converted verbatim and the editor is
+      only drawing it.
+    -->
+    <p class="editor-role apparatus" data-editor-role hidden></p>
+    <!--
+      Pasted text is converted verbatim: this is a reference tool, so an InChI
+      it reports has to be the one the library gives for that exact file. The
+      editor draws the paste as a preview; editing the drawing hands the
+      source back to it.
+    -->
+    <details class="bounding-box mt-2" data-paste-panel>
+      <summary>
+        <h2 class="inchi-section-heading">Paste a structure</h2>
+      </summary>
+      <label class="visually-hidden" for="workbench-paste">
+        Molfile, SD file text, AuxInfo, reaction file, RInChI or PubChem
+        identifier
+      </label>
+      <div class="paste-shell mt-1">
+        <textarea
+          id="workbench-paste"
+          class="form-control paste-field"
+          autocomplete="off"
+          spellcheck="false"
+          rows="6"
+          aria-describedby="workbench-paste-hint"
+          placeholder="Paste or drop a molfile, SD file text, an AuxInfo string, an RXN or RD file, a RInChI (with its RAuxInfo on a second line), or a PubChem identifier such as SID 24866042 or CID 2244"
+          ondragover="onTextareaDragover(event)"
+          ondrop="onTextareaDrop(event, () => loadPastedInput())"
+          oninput="
+            syncPasteControls();
+            loadPastedInputDebounced();
+          "
+        ></textarea>
+        <!--
+          Clears the canvas too, so the two halves of the input cannot be left
+          disagreeing.
+        -->
+        <button
+          type="button"
+          class="paste-clear"
+          data-paste-clear
+          onclick="clearPasteField()"
+          aria-label="Clear the paste field and the drawing"
+          title="Clear the paste field and the drawing"
+          disabled
+        >
+          <svg
+            class="app-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M2.5 4.5h11M6.5 4.5V2.5h3v2M4 4.5l.8 9h6.4l.8-9M6.5 7v4M9.5 7v4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="square"
+            />
+          </svg>
+        </button>
+      </div>
+      <!--
+        Shown after an edit to the drawing. The text stays; emptying the canvas
+        clears it (see onEditorChanged).
+      -->
+      <p class="paste-state" data-paste-state hidden>
+        <span class="apparatus">Not being converted — the drawing is</span>
+        <button type="button" class="link-button" onclick="loadPastedInput()">
+          Convert this text again
+        </button>
+      </p>
+      <small id="workbench-paste-hint" class="text-muted">
+        What you paste is converted exactly as given — the editor above only
+        draws it, so nothing is rewritten on the way to the library. Edit the
+        drawing and it becomes the source instead. An AuxInfo has to contain
+        atom coordinates, or there is nothing to draw. A PubChem identifier is
+        the one exception to converting what you gave: the record is fetched
+        from PubChem over the network and that is what gets converted, so the
+        prefix is required — SID and CID number different things.
+      </small>
+    </details>
+
+    <div class="bounding-box mt-2">
+      <h2 class="inchi-section-heading" id="workbench-sdf-heading">SD file</h2>
+      <label class="visually-hidden" for="workbench-sdf">SD file</label>
+      <input
+        id="workbench-sdf"
+        type="file"
+        class="form-control mt-1"
+        accept=".sdf"
+        aria-describedby="workbench-sdf-hint"
+        onchange="loadSdFile()"
+      />
+      <small id="workbench-sdf-hint" class="text-muted">
+        One InChI and InChIKey per record. Choosing a record draws it in the
+        editor and fills the output fields.
+      </small>
+    </div>
+  </div>
+
+  <div class="tool-controls tool-controls-bottom">
+    <inchi-version-selection
+      onVersionChange="onChangeInchiVersion()"
+    ></inchi-version-selection>
+    <div data-inchi-options></div>
+  </div>
+
+  <div class="tool-output">
+    <!--
+      The announcer is never hidden, because a hidden node is out of the
+      accessibility tree.
+    -->
+    <div
+      class="visually-hidden"
+      data-status-announcer
+      role="status"
+      aria-live="polite"
+    ></div>
+    <div class="conversion-status" data-status hidden></div>
+
+    <!--
+      Selecting an SD file record draws it in the editor; the plates below
+      then describe that record.
+    -->
+    <div data-sdf-records hidden></div>
+    <!--
+      The whole file as text: one InChI, AuxInfo and InChIKey per record, in
+      file order. The plate's copy and download buttons are the export.
+    -->
+    <inchi-result-field
+      id="workbench-sdf-export"
+      title="All records"
+      placeholder="Every record's InChI, AuxInfo and InChIKey, once an SD file is chosen."
+      hidden
+    ></inchi-result-field>
+
+    <!--
+      Hidden when the editor holds a reaction; the fields keep their content,
+      so switching back does not re-run a conversion.
+    -->
+    <div data-output="inchi">
+      <inchi-result-field
+        id="workbench-inchi"
+        title="InChI"
+        placeholder="The InChI appears here as you draw, split into its layers."
+        notation="inchi"
+        live
+      ></inchi-result-field>
+      <inchi-result-field
+        id="workbench-inchikey"
+        title="InChIKey"
+        placeholder="The hashed key, derived from the InChI above."
+        notation="inchikey"
+      ></inchi-result-field>
+
+      <div class="comparison-controls">
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          data-pin
+          disabled
+          onclick="pinCurrentResult()"
+        >
+          Pin this result to compare
+        </button>
+        <button
+          type="button"
+          class="link-button comparison-clear"
+          data-clear-comparison
+          disabled
+          onclick="clearComparison()"
+        >
+          Clear comparison
+        </button>
+      </div>
+      <div data-comparison hidden></div>
+
+      <div class="bounding-box mt-3">
+        <inchi-ngl-viewer id="workbench-ngl-viewer"></inchi-ngl-viewer>
+      </div>
+
+      <details class="secondary-plates" open>
+        <summary>Auxiliary information and library log</summary>
+        <inchi-result-field
+          id="workbench-auxinfo"
+          title="AuxInfo"
+          placeholder="Auxiliary information: atom numbering and coordinates."
+        ></inchi-result-field>
+        <inchi-result-field
+          id="workbench-logs"
+          title="Log"
+          placeholder="Messages from the InChI library, when it has any."
+        ></inchi-result-field>
+      </details>
+    </div>
+
+    <!--
+      RInChI has no layer grammar (inchi-layers.js parses InChI only), so
+      these render as plain text.
+    -->
+    <div data-output="rinchi" hidden>
+      <!--
+        RXN format has no equilibrium notation, so a pasted reaction can only
+        be declared an equilibrium here. Initialised from the drawn arrow on
+        every conversion; overrides it when the visitor sets it.
+      -->
+      <div class="bounding-box">
+        <div class="form-check">
+          <input
+            id="workbench-forceequilibrium"
+            class="form-check-input"
+            type="checkbox"
+            onchange="updateWorkbench()"
+          />
+          <label class="form-check-label" for="workbench-forceequilibrium">
+            Treat this reaction as an equilibrium
+          </label>
+        </div>
+        <p class="rinchi-version apparatus mb-0"></p>
+      </div>
+      <inchi-result-field
+        id="workbench-rinchi"
+        title="RInChI"
+        placeholder="Draw a reaction arrow and the RInChI appears here."
+        live
+      ></inchi-result-field>
+      <inchi-result-field
+        id="workbench-longrinchikey"
+        title="Long-RInChIKey"
+        placeholder="The long key, derived from the RInChI above."
+      ></inchi-result-field>
+      <inchi-result-field
+        id="workbench-shortrinchikey"
+        title="Short-RInChIKey"
+        placeholder="The short key, derived from the RInChI above."
+      ></inchi-result-field>
+      <inchi-result-field
+        id="workbench-webrinchikey"
+        title="Web-RInChIKey"
+        placeholder="The web key, derived from the RInChI above."
+      ></inchi-result-field>
+      <div class="bounding-box mt-3">
+        <h2 class="inchi-section-heading">Reaction file</h2>
+        <div class="row-cols-auto mt-1" role="group" aria-label="File format">
+          <div class="form-check">
+            <input
+              id="reaction-format-rxn"
+              class="form-check-input"
+              type="radio"
+              name="reactionFileFormat"
+              value="RXN"
+              checked
+            />
+            <label class="form-check-label" for="reaction-format-rxn"
+              >RXN</label
+            >
+          </div>
+          <div class="form-check">
+            <input
+              id="reaction-format-rd"
+              class="form-check-input"
+              type="radio"
+              name="reactionFileFormat"
+              value="RD"
+            />
+            <label class="form-check-label" for="reaction-format-rd">RD</label>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary mt-2"
+          data-generate-reaction-file
+          onclick="downloadReactionFile()"
+        >
+          Generate file text
+        </button>
+        <inchi-result-field
+          id="workbench-reaction-file"
+          title="Reaction file"
+          placeholder="The RXN or RD file text for the RInChI above."
+        ></inchi-result-field>
+        <inchi-result-field
+          id="workbench-reaction-file-logs"
+          title="Log"
+          placeholder="Messages from the RInChI library, when it has any."
+        ></inchi-result-field>
+      </div>
+      <details class="secondary-plates" open>
+        <summary>Auxiliary information and library log</summary>
+        <inchi-result-field
+          id="workbench-rauxinfo"
+          title="RAuxInfo"
+          placeholder="Auxiliary information for the reaction's structures."
+        ></inchi-result-field>
+        <inchi-result-field
+          id="workbench-rinchi-logs"
+          title="Log"
+          placeholder="Messages from the RInChI library, when it has any."
+        ></inchi-result-field>
+      </details>
+    </div>
+
+    <report-mask></report-mask>
+  </div>
+</div>
+
+<feedback-dialog id="feedbackDialog"></feedback-dialog>

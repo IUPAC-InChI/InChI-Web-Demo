@@ -1,75 +1,64 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>InChI Web Demo</title>
+    <!-- viewport-fit=cover so env(safe-area-inset-*) works on notched phones. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <link rel="icon" href="data:," />
+    <title>InChI Web App — generate InChI, InChIKey and RInChI in your browser</title>
+    <meta
+      name="description"
+      content="Generate InChI, InChIKey, AuxInfo and RInChI from a drawn structure, a molfile, AuxInfo or an SD file. Runs entirely in your browser: structures are never sent to a server. Compare output across InChI algorithm versions, including development branches and open pull requests."
+    />
+    <meta name="color-scheme" content="light dark" />
 
-    <!-- InChI modules -->
-    <script type="text/javascript" src="inchi/inchi-web-1075.js"></script>
-    <script type="text/javascript" src="inchi/inchi-web-dev.js"></script>
-    <script type="text/javascript" src="inchi/inchi-web-dev-moin.js"></script>
-    <script type="text/javascript" src="inchi/inchi-web106.js"></script>
-    <script
-      type="text/javascript"
-      src="inchi/inchi-web-dev-enhanced-stereo.js"
-    ></script>
-    <script type="text/javascript" src="inchi/inchi-web-no-metal-h.js"></script>
-    <script
-      type="text/javascript"
-      src="inchi/inchi-web-explicit-zero-valence.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="inchi/inchi-web-polymer-support.js"
-    ></script>
+    <!--
+      The stored theme choice, inline and blocking so it applies before first
+      paint instead of the page flipping from the system theme. Absent a
+      stored choice, css/tokens.css follows the system preference.
+    -->
+    <script>
+      try {
+        var storedTheme = localStorage.getItem("inchi-theme");
+        if (storedTheme === "light" || storedTheme === "dark") {
+          document.documentElement.dataset.theme = storedTheme;
+        }
+      } catch (error) {
+        /* Private mode or blocked storage: the system preference stands. */
+      }
+    </script>
 
-    <!-- RInChI modules -->
-    <script type="text/javascript" src="rinchi/librinchi-1.1.js"></script>
-
-    <script src="inchi.js"></script>
-    <script src="rinchi.js"></script>
-    <script src="index.js"></script>
-    <script src="components/components.js"></script>
-    <script src="ngl/ngl.js"></script>
-
+    <!--
+      base.css, then tokens.css, then the app's own rules, which therefore win
+      ties without "!important".
+    -->
+    <link href="css/base.css" rel="stylesheet" />
+    <link href="css/tokens.css" rel="stylesheet" />
     <link href="css/index.css" rel="stylesheet" />
     <link href="css/report-mask.css" rel="stylesheet" />
     <link href="css/report-feedback.css" rel="stylesheet" />
-    <link
-      href="bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
-      crossorigin="anonymous"
-    />
-    <!-- Only bootstrap-multiselect needs jQuery. -->
-    <script
-      src="jquery/jquery-3.7.1.min.js"
-      integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="bootstrap/bootstrap-5.2.3-dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-      crossorigin="anonymous"
-    ></script>
-    <link
-      href="bootstrap-icons/bootstrap-icons-1.10.3/bootstrap-icons.css"
-      rel="stylesheet"
-      integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e"
-      crossorigin="anonymous"
-    />
-    <script
-      src="bootstrap-multiselect/bootstrap-multiselect-1.1.2/dist/js/bootstrap-multiselect.min.js"
-      integrity="sha384-0bKqY/QpXas8sskCT4hKi1EsfrCHXH7kZYNMr05pTeUbEdxf5xdjxEy1fjdU861x"
-      crossorigin="anonymous"
-    ></script>
-    <link
-      href="bootstrap-multiselect/bootstrap-multiselect-1.1.2/dist/css/bootstrap-multiselect.min.css"
-      rel="stylesheet"
-      integrity="sha384-sRRK8QIx/nQdgIMFawlqpzKW5yaVcx63vbU82I9nuHAdsQN/blJQNrf6GORupDMI"
-      crossorigin="anonymous"
-    />
+
+    <!--
+      The InChI modules, the RInChI module and the NGL viewer are large and a
+      visit needs one InChI version at most, so index.js loads them on demand
+      through loadScriptOnce().
+
+      Deferred scripts still run in document order, which is what lets the
+      components rely on everything above them.
+    -->
+    <!-- The theme control, shared with about.html. -->
+    <script defer src="theme.js"></script>
+    <!-- What the paste field was handed: pure, no dependencies of its own. -->
+    <script defer src="input-format.js"></script>
+    <!-- The InChI string's layer grammar: needed before the components render. -->
+    <script defer src="inchi-layers.js"></script>
+    <script defer src="inchi.js"></script>
+    <script defer src="rinchi.js"></script>
+    <script defer src="index.js"></script>
+    <script defer src="components/components.js"></script>
     <script>
       var _paq = (window._paq = window._paq || []);
       /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
@@ -89,94 +78,58 @@
     </script>
   </head>
   <body>
-    <div class="container-md" style="margin-bottom: 2rem">
-      <div class="row mt-1">
-        <div class="col-md-3">
-          <a href="https://www.inchi-trust.org/" target="_blank">
-            <img
-              style="height: 80px; width: auto"
-              src="img/InChI-logo2.png"
-              alt="InChI Trust Logo"
-            />
-          </a>
+    <div class="page-shell">
+      <header class="masthead">
+        <a
+          href="https://www.inchi-trust.org/"
+          target="_blank"
+          rel="noopener"
+        >
+          <img
+            class="masthead-logo"
+            src="img/InChI-logo2.png"
+            width="180"
+            height="56"
+            alt="InChI Trust"
+          />
+        </a>
+        <div class="masthead-text">
+          <h1>InChI Web App</h1>
+          <p class="masthead-tagline">
+            Chemical identifiers generated in your browser, never on a server.
+          </p>
         </div>
-        <h1 class="col-md-9 mt-auto">InChI Web Demo</h1>
-      </div>
+
+
+        <div class="masthead-utilities">
+          <!--
+            role="switch" rather than a checkbox: this is a two-state control
+            whose accessible name stays put while its state changes, so the
+            name lives on aria-label and the visible label reports the current
+            mode.
+          -->
+          <button
+            type="button"
+            class="theme-switch"
+            role="switch"
+            aria-checked="false"
+            aria-label="Dark mode"
+            data-theme-switch
+          >
+            <span class="theme-switch-mode apparatus" data-theme-switch-label
+              >Light</span
+            >
+            <span class="theme-switch-track" aria-hidden="true">
+              <span class="theme-switch-knob"></span>
+            </span>
+          </button>
+
+          <a class="masthead-link" href="about.html">About</a>
+        </div>
+      </header>
       <noscript>You need to enable JavaScript!</noscript>
 
-      <ul class="nav nav-pills mt-1" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link active"
-            id="pills-inchi-tab"
-            data-bs-toggle="pill"
-            data-bs-target="#pills-inchi"
-            type="button"
-            role="tab"
-            aria-controls="pills-inchi"
-            aria-selected="true"
-          >
-            InChI
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            id="pills-rinchi-tab"
-            data-bs-toggle="pill"
-            data-bs-target="#pills-rinchi"
-            type="button"
-            role="tab"
-            aria-controls="pills-rinchi"
-            aria-selected="false"
-          >
-            RInChI
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            id="pills-about-tab"
-            data-bs-toggle="pill"
-            data-bs-target="#pills-about"
-            type="button"
-            role="tab"
-            aria-controls="pills-about"
-            aria-selected="false"
-          >
-            About
-          </button>
-        </li>
-      </ul>
-
-      <!-- Contents of pills -->
-      <div class="tab-content">
-        <!-- InChI pill -->
-        <inchi-inchi-tools
-          class="tab-pane fade show active"
-          id="pills-inchi"
-          role="tabpanel"
-          aria-labelledby="pills-inchi-tab"
-          tabindex="0"
-        ></inchi-inchi-tools>
-
-        <!-- RInChI pill -->
-        <inchi-rinchi-tools
-          class="tab-pane fade"
-          id="pills-rinchi"
-          role="tabpanel"
-          aria-labelledby="pills-rinchi-tab"
-          tabindex="0"
-        ></inchi-rinchi-tools>
-
-        <!-- About pill -->
-        <inchi-about
-          class="tab-pane fade"
-          id="pills-about"
-          role="tabpanel"
-          tabindex="0"
-        ></inchi-about>
-      </div>
+      <inchi-workbench></inchi-workbench>
     </div>
   </body>
 </html>
