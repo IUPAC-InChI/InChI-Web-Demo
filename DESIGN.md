@@ -257,8 +257,7 @@ categorical key has to mean the same colour in both; only the surroundings chang
 
 **The Quiet-Hairline Exception.** `rule-hairline` is the one token allowed below 3:1, because the
 boundary it marks is already carried by a surface change. Nothing that bounds a control may take
-its border from it. `test/check_contrast.py` encodes this: the hairline pairs are reported as
-deliberate deviations, everything else must pass.
+its border from it.
 
 **The Both-Themes-First Rule.** Every colour is defined on bare `:root` for light, redefined under
 `@media (prefers-color-scheme: dark)` guarded as `:root:not([data-theme="light"])`, and redefined
@@ -600,7 +599,6 @@ animates its elevation.
 - **Do** key touch sizing to `(pointer: coarse), (any-pointer: coarse)` — a stylus 2-in-1 reports a fine primary pointer and still needs 44px targets.
 - **Do** read `INCHI_STACK_BREAKPOINT` when code needs to know whether the layout is stacked; never hardcode a width.
 - **Do** run `cd test && npx jest inchi-layers` after touching the layer grammar or the icon set.
-- **Do** run `python3 test/check_contrast.py` after touching a colour token; it fails on anything below its threshold and lists the hairline exemption separately.
 - **Do** give a control its border from `--inchi-rule`, never from `--inchi-rule-hairline` — the hairline is exempt from 3:1 precisely because nothing bounding a control uses it.
 
 ### Don't:
@@ -636,6 +634,5 @@ These are the build's own gaps, not rules to inherit.
 ## Verification in-repo
 
 - `cd test && npx jest` — 4 suites (`inchi`, `rinchi`, `inchi-layers`, `input-format`), 119 cases. Requires the WASM build to have run.
-- `python3 test/check_contrast.py` — every text pair at 4.5:1 and every boundary pair at 3:1, in both themes, with the hairline exemption reported separately.
 - `node <impeccable>/scripts/detect.mjs --json pages/index.html pages/components` — returns `[]`.
 - `grep -rin "bootstrap\|jquery" pages --include=*.html --include=*.js --include=*.css --include=*.sh` — only prose in comments recording that the framework was removed. No `<link>`, `<script>`, `class=` or `--bs-` hit is acceptable.
