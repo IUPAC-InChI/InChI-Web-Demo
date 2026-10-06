@@ -34,9 +34,6 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            pages/jquery
-            pages/bootstrap
-            pages/bootstrap-multiselect
             pages/ngl
           # download_packages.sh pins the versions, and utils.sh holds the
           # download itself — including the source-map strip — so a change to
