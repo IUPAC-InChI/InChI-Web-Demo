@@ -1087,14 +1087,6 @@ inchi-about > h2 {
   height: auto;
 }
 
-/*
- * The file-input textareas are sized by their container, so the drag handle
- * would only let the visitor break the layout.
- */
-.resize-none {
-  resize: none;
-}
-
 /* Prose measure: 65-75 characters is the readable range, and About is prose. */
 .prose {
   max-width: 68ch;
