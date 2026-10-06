@@ -1,40 +1,10 @@
 /*
- * Suffix every id below `root` and rewrite the attributes that point at them.
- * Components that are rendered once per tab ship the same static markup several
- * times; "for" and "aria-labelledby" resolve to the first matching id in the
- * document, so without scoping the second instance's label would drive the
- * first instance's control.
- */
-function scopeIds(root, suffix) {
-  root.querySelectorAll("[id]").forEach((element) => {
-    element.id = `${element.id}-${suffix}`;
-  });
-
-  ["for", "aria-labelledby", "aria-describedby", "aria-controls"].forEach(
-    (attribute) => {
-      root.querySelectorAll(`[${attribute}]`).forEach((element) => {
-        const scoped = element
-          .getAttribute(attribute)
-          .split(/\s+/)
-          .filter((id) => id)
-          .map((id) => `${id}-${suffix}`)
-          .join(" ");
-        element.setAttribute(attribute, scoped);
-      });
-    }
-  );
-}
-
-/*
  * Fetch an HTML fragment, revalidating it and reusing the result.
  *
  * These fragments are pulled in from JS rather than linked from index.html, so
- * a hard reload does not necessarily refresh them: the browser can pair a new
- * stylesheet with a fragment it still holds in cache, which is how a rewritten
- * component ends up rendered against styles that no longer match it. "no-cache"
- * forces a conditional request, so an unchanged fragment still costs only a
- * 304, and memoising by URL means the templates several tabs share are fetched
- * once instead of once per tab.
+ * a hard reload does not necessarily refresh them and the browser can pair a
+ * new stylesheet with a stale fragment. "no-cache" forces a conditional
+ * request; memoising by URL fetches a shared template only once.
  */
 const fragmentCache = new Map();
 
@@ -62,14 +32,6 @@ class InsertHTMLElement extends HTMLElement {
   }
 
   async connectedCallback() {
-    /*
-     * `defer-until-shown` used to live here, holding this fetch until the
-     * element's tab was first opened. It existed for one surface: About
-     * carries seven funder logos — 507 KB raw, 357 KB over the wire — and a
-     * lazy <img> inside a display:none tab pane has no computed position, so
-     * the browser cannot defer it and fetches it on first paint anyway.
-     * About is its own page now, where loading="lazy" works as intended.
-     */
     try {
       this.innerHTML = await loadFragment(this.htmlPath);
     } catch (error) {
@@ -94,10 +56,6 @@ class ReportMaskElement extends InsertHTMLElement {
   }
 
   async connectedCallback() {
-    /*
-     * No tabId and no scopeIds(): there was one of these per tool pane, so the
-     * fragment's ids had to be suffixed to stay unique. There is one surface.
-     */
     await super.connectedCallback();
 
     this.dialog = this.querySelector("dialog");
@@ -118,10 +76,6 @@ class ReportMaskElement extends InsertHTMLElement {
   }
 
   open() {
-    /*
-     * showModal() traps focus, closes on Escape, makes the rest of the page
-     * inert and restores focus to the trigger on close.
-     */
     this.dialog.showModal();
     this.nameInput.focus();
   }
@@ -171,13 +125,8 @@ class ReportMaskElement extends InsertHTMLElement {
     };
 
     /*
-     * Whatever was actually converted.
-     *
-     * A pasted molfile is converted verbatim, so the report carries those
-     * bytes rather than the editor's re-serialization of them — otherwise a
-     * bug living in the file is normalised away before anyone else sees it,
-     * which is the whole reason the report exists. Only the editor's own
-     * structure goes through getMolfileFromKetcher.
+     * A pasted molfile is reported verbatim rather than re-serialized by the
+     * editor, so a bug living in the file is not normalised away.
      */
     let molfile_v2 = null;
     let molfile_v3 = null;
@@ -208,7 +157,6 @@ class ReportMaskElement extends InsertHTMLElement {
     const inchi = textOrNull("workbench-inchi");
     const inchikey = textOrNull("workbench-inchikey");
     const auxinfo = textOrNull("workbench-auxinfo");
-    // Remove InChI options from the log
     const log = textOrNull("workbench-logs");
     const cleanedLog =
       log && log.startsWith("InChI options: ")
@@ -216,7 +164,6 @@ class ReportMaskElement extends InsertHTMLElement {
         : log;
     const inchi_version = getVersion();
 
-    // Collect InChI options as a string
     let options = "";
     try {
       options = getInchiOptions(optionsPanel())
@@ -229,10 +176,8 @@ class ReportMaskElement extends InsertHTMLElement {
     const { name, description } = data;
 
     /*
-     * The notations no molfile field can carry — an AuxInfo, a reaction file,
-     * a RInChI — still ride in the description: the payload shape is the
-     * report endpoint's and they have no field of their own. A pasted molfile
-     * needs none of this; it is in molfile_v2/v3 above, exactly as converted.
+     * Pasted input that no molfile field can carry (AuxInfo, a reaction file,
+     * a RInChI) rides in the description: the endpoint has no field for it.
      */
     const pasted =
       conversionSource === "paste" && pastedMolfile === null
@@ -302,7 +247,6 @@ class ReportMaskElement extends InsertHTMLElement {
   async submit(event) {
     event.preventDefault();
 
-    // Guard against a second submission while the first request is in flight.
     if (this.submitBtn.disabled) {
       return;
     }
@@ -327,10 +271,7 @@ class ReportMaskElement extends InsertHTMLElement {
       this.submitBtn.textContent = submitLabel;
     }
 
-    /*
-     * Keep the user's text when the report did not go through, so a failed
-     * submission can be retried without retyping the description.
-     */
+    // Keep the text on failure so the submission can be retried.
     if (feedback.status === "success") {
       this.form.reset();
     }
@@ -358,7 +299,6 @@ class FeedbackDialogElement extends InsertHTMLElement {
     this.messageEl = this.querySelector("#feedbackMessage");
     this.confirmBtn = this.querySelector(".feedback-confirm");
 
-    // Escape and focus handling come from <dialog>.showModal().
     this.confirmBtn.addEventListener("click", () => this.dialog.close());
     this.dialog.addEventListener("click", (event) => {
       if (event.target === this.dialog) {
@@ -411,23 +351,13 @@ class InChIWorkbenchElement extends InsertHTMLElement {
     await super.connectedCallback();
 
     /*
-     * The options panel is built per InChI version, so it cannot be part of
-     * the fragment.
-     *
-     * addInchiOptionsForm, NOT updateInchiOptions: the latter ends with
-     * `await updateFunction()`, which would run a conversion before the
-     * Ketcher iframe has loaded — getKetcher returns undefined and the page
-     * paints a red "the structure editor is not ready yet". The first
-     * conversion is driven by onKetcherLoaded's `change` subscription, which
-     * is what the two tools elements this replaces relied on.
+     * addInchiOptionsForm, not updateInchiOptions: the latter runs a
+     * conversion before the Ketcher iframe has loaded. The first conversion
+     * is driven by onKetcherLoaded's `change` subscription.
      */
     await addInchiOptionsForm(() => updateWorkbench());
 
-    /*
-     * Provenance for the reaction half. There is one RInChI build and no
-     * selector for it, so it is stated once here rather than stamped on six
-     * plates or rewritten on every conversion.
-     */
+    // There is one RInChI build, so its version is stated once.
     this.querySelectorAll(".rinchi-version").forEach((span) => {
       span.textContent = `Computed with RInChI version ${RINCHI_VERSION}`;
     });
@@ -441,11 +371,7 @@ class InChIVersionSelectionElement extends HTMLElement {
   }
 
   async connectedCallback() {
-    /*
-     * The version list is fetched, so it may not be on `window` yet when this
-     * element connects. Awaiting the promise instead of reading the global
-     * removes a race that renders an empty version selector on a cold cache.
-     */
+    // The version list is fetched and may not be loaded yet when this connects.
     try {
       await window.inchiVersionsReady;
     } catch (error) {
@@ -457,14 +383,8 @@ class InChIVersionSelectionElement extends HTMLElement {
       return;
     }
 
-    // One selector on one surface: a fixed id, no per-tab suffix.
     const dropdownId = "version-dropdown";
 
-    /*
-     * A real heading, not a <label class="h4">. The audit found the whole tool
-     * surface had no headings at all between the page title and the dialogs,
-     * so there was no way to move between editor, options and results.
-     */
     this.innerHTML = `<div class="bounding-box">
       <h2 class="inchi-section-heading" id="version-heading">
         InChI version
@@ -477,12 +397,7 @@ class InChIVersionSelectionElement extends HTMLElement {
     const dropdown = this.querySelector("select[data-version]");
     const commitLink = this.querySelector(".version-commit");
 
-    /*
-     * Released versions and open pull requests used to sit in one flat list of
-     * eight as visual peers, with no cue which was which. The URL already
-     * records the difference, so the grouping is derived rather than added to
-     * inchi_versions.json.
-     */
+    // The grouping is derived from the URL rather than stored in inchi_versions.json.
     const groupFor = (url) => {
       if (typeof url !== "string") {
         return "Other builds";
@@ -533,10 +448,6 @@ class InChIVersionSelectionElement extends HTMLElement {
       link.href = url;
       link.target = "_blank";
       link.rel = "noopener";
-      /*
-       * The raw URL used to be its own link text and wrapped over two lines
-       * inside the panel. Name the destination instead.
-       */
       const group = groupFor(url);
       const pull = url.match(/\/pull\/(\d+)/);
       link.textContent = pull
@@ -574,10 +485,9 @@ class InChIResultFieldElement extends HTMLElement {
 
   connectedCallback() {
     /*
-     * Results are written without any user action (drawing in Ketcher triggers a
-     * conversion), so the fields that carry the outcome announce themselves. It
-     * is opt-in: marking every field live would make one edit produce four
-     * announcements, and AuxInfo or a full key list is not worth reading aloud.
+     * Results arrive without a user action, so the fields that carry the
+     * outcome announce themselves. Opt-in, so one edit is not announced by
+     * every field.
      */
     const live = this.hasAttribute("live")
       ? ' aria-live="polite" aria-atomic="false"'
@@ -592,12 +502,9 @@ class InChIResultFieldElement extends HTMLElement {
     this.notation = this.getAttribute("notation") ?? "";
 
     /*
-     * The <pre> stays as the single source of truth for the text, so every
-     * existing writeResult() call site, the copy and download buttons and the
-     * SD-file batch path keep working untouched. When a notation view is
-     * rendered from it, the <pre> is hidden — the rendered rows carry the same
-     * text as real DOM content, and having both visible would read the
-     * identifier twice to a screen reader.
+     * The <pre> is the single source of truth for the text. When a notation
+     * view is rendered from it, the <pre> is hidden so a screen reader does
+     * not read the identifier twice.
      */
     const hidden =
       this.notation || this.hasAttribute("placeholder") ? " hidden" : "";
@@ -675,31 +582,24 @@ class InChIResultFieldElement extends HTMLElement {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      // Colons are not allowed in Windows filenames, so strip them from the stamp.
+      // Colons are not allowed in Windows filenames.
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       a.download = `${this.fieldTitle}_${timestamp}.txt`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url); // Clean up the URL object
+      URL.revokeObjectURL(url);
     });
 
     /*
-     * Render the notation view from whatever the <pre> now holds. Driven by a
-     * MutationObserver rather than by the callers, so that every path that
-     * writes a result — conversion, error message, SD-file batch — gets the
-     * same treatment without being changed.
+     * Driven by a MutationObserver rather than by the callers, so every path
+     * that writes a result gets the same rendering.
      */
     const placeholder = this.getAttribute("placeholder") ?? "";
 
     const renderNotation = () => {
       const text = resultText.textContent.trim();
 
-      /*
-       * Empty is a state worth writing. Four unlabelled empty plates told a
-       * first-time visitor nothing about what would fill them, or in what
-       * order, or whether an empty one meant "not yet" or "it failed".
-       */
       if (text === "") {
         if (placeholder === "") {
           view.replaceChildren();
@@ -715,8 +615,6 @@ class InChIResultFieldElement extends HTMLElement {
       }
 
       if (!this.notation) {
-        // Plain text field: the <pre> carries it, the view only holds the
-        // empty state.
         view.replaceChildren();
         view.hidden = true;
         resultText.hidden = false;
@@ -725,10 +623,7 @@ class InChIResultFieldElement extends HTMLElement {
 
       const rows = this.buildNotationRows(text);
       if (rows === null) {
-        /*
-         * Not a well-formed identifier — an error message, or a batch of many.
-         * Show it as text rather than pretending it has layers.
-         */
+        // Not a well-formed identifier, e.g. an error message or a batch.
         view.innerHTML = `<div class="layer-value px-3 py-2">${escapeHtml(
           text
         )}</div>`;
@@ -743,11 +638,6 @@ class InChIResultFieldElement extends HTMLElement {
       const resultAvailable = resultText.textContent.trim().length > 0;
       copyButton.disabled = !resultAvailable;
       downloadButton.disabled = !resultAvailable;
-      /*
-       * The version stamp belongs to a result, so it disappears with one.
-       * Provenance is part of the answer: a stamp left behind over an empty
-       * plate would attribute nothing to a version.
-       */
       stamp.hidden = !resultAvailable || stamp.textContent === "";
     };
 
@@ -756,10 +646,6 @@ class InChIResultFieldElement extends HTMLElement {
       renderNotation();
     };
 
-    /*
-     * Only text changes matter here. Watching attributes as well meant every
-     * result field reacted to mutations that can never change its content.
-     */
     const observer = new MutationObserver(update);
     observer.observe(resultText, {
       characterData: true,
@@ -770,10 +656,8 @@ class InChIResultFieldElement extends HTMLElement {
   }
 
   /*
-   * The version that produced the text currently on this plate. Set by
-   * index.js at the end of a conversion rather than read from the selector,
-   * because the selector already shows the new version while a switch is in
-   * flight.
+   * Set at the end of a conversion rather than read from the selector, which
+   * already shows the new version while a switch is in flight.
    */
   setVersionStamp(version) {
     const stamp = this.querySelector("[data-version-stamp]");
@@ -799,12 +683,7 @@ class InChIResultFieldElement extends HTMLElement {
    * not a single well-formed identifier.
    */
   buildNotationRows(text) {
-    /*
-     * Every plate leads with the whole identifier, then breaks it down. The
-     * segmentation is what makes the string readable, but the complete string
-     * is what you copy into a paper or a pipeline, so it has to be present and
-     * selectable as one run — not reassembled by eye from its layers.
-     */
+    // The complete identifier is selectable as one run, ahead of its layers.
     const completeRow =
       `<div class="layer-key">Complete</div>` +
       `<div class="layer-value layer-value-complete">${escapeHtml(text)}</div>`;
@@ -851,6 +730,40 @@ class InChIResultFieldElement extends HTMLElement {
   }
 }
 
+/*
+ * A "?" (or "!") button that opens an explanation of the option next to it.
+ * The element's children are the explanation. It sits after the option's
+ * <label>, never inside it: the popover would otherwise be a label descendant,
+ * so clicking its prose would toggle the checkbox, and it would land in the
+ * label's text.
+ *
+ *   <inchi-option-help label="What “X” does"><p>…</p></inchi-option-help>
+ */
+let optionHelpCount = 0;
+
+class InChIOptionHelpElement extends HTMLElement {
+  connectedCallback() {
+    if (this.querySelector(":scope > .option-help")) {
+      return;
+    }
+
+    const panel = document.createElement("div");
+    panel.id = `option-help-${++optionHelpCount}`;
+    panel.setAttribute("popover", "");
+    panel.className = "option-help-panel";
+    panel.append(...this.childNodes);
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "option-help";
+    button.setAttribute("popovertarget", panel.id);
+    button.setAttribute("aria-label", this.getAttribute("label"));
+    button.textContent = this.getAttribute("mark") ?? "?";
+
+    this.append(button, panel);
+  }
+}
+
 class InChIOptionsElement extends HTMLElement {
   constructor() {
     super();
@@ -870,11 +783,9 @@ class InChIOptionsElement extends HTMLElement {
     );
 
     /*
-     * A <details> rather than a plain panel. Below 1200px the grid is one
-     * column, so these twenty-odd checkboxes sit between the editor and the
-     * results — measured at 500px of scrolling on a portrait tablet. It starts
-     * collapsed there and open on the wide layout that has room for a sidebar.
-     * Closed inputs stay in the DOM, so getInchiOptions() still reads them.
+     * Collapsed when the layout stacks, so the options do not sit between
+     * editor and results. Closed inputs stay in the DOM, so getInchiOptions()
+     * still reads them.
      */
     const boundingBox = document.createElement("details");
     boundingBox.setAttribute("class", "bounding-box");
@@ -885,16 +796,8 @@ class InChIOptionsElement extends HTMLElement {
       htmlFragments.join("");
 
     /*
-     * Follow the layout until the visitor expresses a preference: rotating a
-     * tablet into portrait should collapse the panel, but reopening it by hand
-     * has to stick.
-     *
-     * Keyed to the breakpoint at which the tool grid actually stacks. This
-     * used to read 991.98px while the .tool-workbench grid stacks below
-     * 1200px — so between 992 and 1199.98px the layout was single-column and
-     * the panel opened anyway, producing the exact regression the comment
-     * above claims to prevent. INCHI_STACK_BREAKPOINT is defined in index.js
-     * next to the grid it describes.
+     * Follow the layout until the visitor toggles the panel by hand.
+     * INCHI_STACK_BREAKPOINT (index.js) is where the tool grid stacks.
      */
     const stacked = window.matchMedia(
       `(max-width: ${INCHI_STACK_BREAKPOINT - 0.02}px)`
@@ -946,19 +849,6 @@ class InChIOptionsElement extends HTMLElement {
       });
     }
 
-    /*
-     * Reassign the name of the "stereoRadio" radio button group.
-     */
-    /*
-     * The radio group's name was suffixed per pane, so that four copies of the
-     * same template did not form one group across the page. One panel now, so
-     * the template's own name stands and this rewrite is gone with it.
-     */
-
-    /*
-     * Register an on-change event on the "Include Stereo" checkbox to switch the
-     * 'disabled' state of the inputs that cope with stereo options.
-     */
     this.querySelector(
       'input.form-check-input[data-id="includeStereo"]',
       // Optional: an options template is free to leave the checkbox out.
@@ -970,10 +860,6 @@ class InChIOptionsElement extends HTMLElement {
         });
     });
 
-    /*
-     * Register an on-change event on the "Treat polymers" checkbox to switch the
-     * 'disabled' state of the inputs that cope with polymer options.
-     */
     this.querySelector(
       'input.form-check-input[data-id="treatPolymers"]'
     )?.addEventListener("change", function () {
@@ -987,26 +873,16 @@ class InChIOptionsElement extends HTMLElement {
         this.checked;
     });
 
-    /*
-     * Register an on-click event on the "Reset InChI Options" link.
-     */
     this.querySelector("[data-reset-inchi-options]")?.addEventListener(
       "click",
       function () {
         resetInchiOptions(optionsPanel());
-        /* Was the last line of resetInchiOptions, which takes an element now. */
         updateChangedOptionCount();
         updateFunction();
       }
     );
 
-    /*
-     * Assign ids to all <input> elements and assign the target id of their
-     * <label> element accordingly. Also register an on-change event to call
-     * updateFunction.
-     */
     this.querySelectorAll("input.form-check-input").forEach((input) => {
-      /* Unique without a suffix: one options panel, one input per data-id. */
       input.id = input.dataset.id;
       const label = input.nextElementSibling;
       if (label instanceof HTMLLabelElement) {
@@ -1097,11 +973,8 @@ function createAnnotation(text, color) {
   const annotation = document.createElement("div");
   annotation.textContent = text;
   /*
-   * `annotation-label` distinguishes a label painted onto an atom in the 3D
-   * viewer from the toggle chip that switches it on. Both carry the same
-   * category class, but the chip shows its colour as a swatch while the label
-   * is filled with it — so the fill has to be scoped to the label, or
-   * pressing a chip would flood the chip itself.
+   * The toggle chip carries the same colour class, so the fill is scoped to
+   * `annotation-label` to keep it off the chip.
    */
   annotation.classList.add("annotation-label");
   annotation.classList.add(color);
@@ -1188,20 +1061,10 @@ class NGLViewerElement extends HTMLElement {
     );
 
     /*
-     * Classes, not ids: this component is rendered in more than one tab, and
-     * duplicate ids in a document are invalid and resolve to the first match.
+     * A labelled group, so the buttons read as independent overlays rather
+     * than a tab strip. Explanations live in a <details>, not a title
+     * attribute, which is mouse-only.
      */
-    /*
-     * A labelled group, not a bare row of buttons. These five read as a tab
-     * strip when they sit unlabelled above the viewport, so people click one
-     * expecting the panel below to switch views instead of understanding them
-     * as independent colour overlays.
-     *
-     * The explanations live in a <details> rather than in a title attribute,
-     * because a title is mouse-only: unreachable by keyboard and absent on the
-     * lab tablets this tool is used on.
-     */
-    // Sizing lives in css/index.css so it can respond to the viewport.
     this.innerHTML = `<h3 class="inchi-section-heading mt-3">Atom annotations</h3>
       <fieldset class="annotation-selection mt-1">
         <legend class="visually-hidden">Atom annotations to overlay</legend>
@@ -1220,9 +1083,8 @@ class NGLViewerElement extends HTMLElement {
   }
 
   /*
-   * NGL is 1.3 MB and only two of the eight tabs render a structure, so the
-   * library and its stage are created the first time one is actually needed.
-   * Returns false when the viewer cannot run at all.
+   * NGL is large, so the library and its stage are created the first time a
+   * structure is shown. Returns false when the viewer cannot run at all.
    */
   async ensureStage() {
     if (this.stagePromise === undefined) {
@@ -1274,12 +1136,6 @@ class NGLViewerElement extends HTMLElement {
       buttonElement.classList.add("annotation-button");
       buttonElement.disabled = true;
 
-      /*
-       * The swatch is part of the control and visible at rest, so the mapping
-       * from colour to meaning is readable before anything is pressed. It used
-       * to appear only once a button was active — the colour key was hidden
-       * inside the thing it was the key for.
-       */
       const swatch = document.createElement("span");
       swatch.className = "annotation-swatch";
       buttonElement.append(swatch, document.createTextNode(button.text));
@@ -1306,13 +1162,7 @@ class NGLViewerElement extends HTMLElement {
     });
   }
 
-  /*
-   * Put the annotation buttons back to "nothing to annotate".
-   *
-   * Shared by the failed-load path and by clearStructure, which used to say
-   * this twice and then only in one of them — the viewer kept a drawing, and
-   * its buttons, after the surface it belongs to had been cleared.
-   */
+  /* Put the annotation buttons back to "nothing to annotate". */
   resetAnnotationButtons() {
     this.annotationButtons.forEach((button) => {
       const buttonElement = this.annotationSelectionElement.querySelector(
@@ -1325,12 +1175,8 @@ class NGLViewerElement extends HTMLElement {
   }
 
   /*
-   * Take the structure off the stage.
-   *
-   * structureKey is cleared along with it, and that is the load-bearing half:
-   * loadStructure returns early when the key matches, so a viewer that kept
-   * the key of a structure it no longer shows would refuse to draw that same
-   * structure again when it was pasted back.
+   * structureKey must be cleared too: loadStructure returns early when the
+   * key matches, so the same structure could not be drawn again.
    */
   clearStructure() {
     this.structure = undefined;
@@ -1454,6 +1300,7 @@ customElements.define("report-mask", ReportMaskElement);
 customElements.define("feedback-dialog", FeedbackDialogElement);
 customElements.define("inchi-version-selection", InChIVersionSelectionElement);
 customElements.define("inchi-result-field", InChIResultFieldElement);
+customElements.define("inchi-option-help", InChIOptionHelpElement);
 customElements.define("inchi-options-106", InChIOptions106Element);
 customElements.define("inchi-options-1075", InChIOptions1075Element);
 customElements.define("inchi-options-dev", InChIOptionsDevElement);

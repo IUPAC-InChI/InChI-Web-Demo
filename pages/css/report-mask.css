@@ -68,10 +68,7 @@
   color: var(--inchi-ink-faint);
 }
 
-/*
- * The report endpoint's hostname. Bootstrap paints <code> #d63384, a pink from
- * outside this palette entirely; here it is the identifier face in body ink.
- */
+/* The report endpoint's hostname: the identifier face, in body ink. */
 .mask-intro code {
   font-family: var(--inchi-font-identifier);
   font-size: 0.875em;

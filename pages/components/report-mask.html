@@ -1,41 +1,45 @@
-<!--
-  Outline, not filled. This was the only filled button on the page and
-  therefore its loudest element — for a tertiary action, on a surface whose
-  job is generating identifiers. The primary action here has no button at all,
-  because drawing converts on its own.
--->
 <button type="button" class="btn btn-sm btn-outline-secondary mask-open mt-3">
   Report a problem
 </button>
 
 <!--
-  A native <dialog> supplies the modal behaviour this form needs: focus is
-  trapped while it is open, Escape closes it, the page behind it is inert and
-  focus returns to the "Report a problem" button on close.
-  Ids are suffixed per tab by scopeIds() because this component is rendered once
-  per tab; "for" and "aria-labelledby" resolve to the first matching id in the
-  document, so unscoped ids would wire the second dialog to the first one.
+  A native <dialog> supplies the modal behaviour: focus trap, Escape to close,
+  an inert page behind it and focus returned to the trigger on close.
 -->
 <dialog class="inchi-dialog mask-dialog" aria-labelledby="maskTitle">
   <div class="inchi-dialog-body">
     <header>
       <h2 id="maskTitle">Report a problem</h2>
       <button type="button" class="mask-close" aria-label="Close dialog">
-        <svg class="app-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
+        <svg
+          class="app-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="square"
+          />
+        </svg>
       </button>
     </header>
 
     <form>
       <p class="mask-intro">
-        This is the only place where your structure leaves your browser.
-        Every conversion — InChI, InChIKey, RInChI, AuxInfo — runs locally and
-        is never uploaded.
+        This is the only place where your structure leaves your browser. Every
+        conversion — InChI, InChIKey, RInChI, AuxInfo — runs locally and is
+        never uploaded.
       </p>
       <p class="mask-intro">
-        Your structure, the generated InChI and InChIKey, the options you
-        selected and the log are sent with your description, to the report
-        endpoint at <code>cheminfo.beilstein.org</code>, run by the
-        Beilstein-Institut for the InChI Trust.
+        Your structure and description, along with the generated InChI,
+        InChIKey,log, and selected options are sent to the Beilstein-Institut
+        for the InChI Trust.
       </p>
 
       <label class="mask-label" for="nameInput"

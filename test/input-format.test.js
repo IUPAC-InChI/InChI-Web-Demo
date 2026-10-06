@@ -1,6 +1,5 @@
 /*
- * Format sniffing for the single paste field. The old app made the user pick a
- * tab per notation; this decides instead, so a wrong answer here sends a
+ * Format sniffing for the single paste field. A wrong answer here sends a
  * molfile down the AuxInfo path.
  */
 const {
@@ -64,9 +63,8 @@ test("prefers sdf over molfile when both signals are present", () => {
 
 test("recognises a RInChI paired with its RAuxInfo, in either order", () => {
   /*
-   * Old RInChI tab 3 had two boxes. One field takes both on separate lines:
-   * without the RAuxInfo the reaction is drawn with no coordinates, which is
-   * a pile of atoms at the origin.
+   * One field takes both on separate lines: without the RAuxInfo the reaction
+   * is drawn with no coordinates, which is a pile of atoms at the origin.
    */
   const rinchi = "RInChI=1.00.1S/CH4/h1H4<>C2H6/c1-2/h1-2H3/d+";
   const rauxinfo = "RAuxInfo=1.00.1/0/N:1/rA:1nC/rB:/rC:0,0,0;";
@@ -131,9 +129,8 @@ test("does not classify prose as a structure", () => {
 
 test("refuses a bare InChI with a reason naming the missing coordinates", () => {
   /*
-   * The app had no answer for this input at all. An InChI carries no
-   * coordinates, so no structure can be drawn from it — say that, rather than
-   * silently doing nothing.
+   * An InChI carries no coordinates, so no structure can be drawn from it —
+   * say that, rather than silently doing nothing.
    */
   const result = detectInputFormat("InChI=1S/CH4/h1H4");
   expect(result.convertible).toBe(false);

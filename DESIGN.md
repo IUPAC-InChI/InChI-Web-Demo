@@ -186,7 +186,7 @@ instead of one.
 
 What this world refuses, explicitly: the category default of four identical cards holding the
 answer, the derived answer, a diagnostic dump and an error channel as visual peers. The answer
-gets a plate; the evidence gets a collapsed hairline summary. It also refuses hue as a carrier of
+gets a plate; the evidence sits under a hairline summary, open by default. It also refuses hue as a carrier of
 difference — a layer that moved between two versions is marked with a hashed-bond glyph, a 3px
 gutter stroke and heavier ink, never with red and green.
 
@@ -257,8 +257,7 @@ categorical key has to mean the same colour in both; only the surroundings chang
 
 **The Quiet-Hairline Exception.** `rule-hairline` is the one token allowed below 3:1, because the
 boundary it marks is already carried by a surface change. Nothing that bounds a control may take
-its border from it. `test/check_contrast.py` encodes this: the hairline pairs are reported as
-deliberate deviations, everything else must pass.
+its border from it.
 
 **The Both-Themes-First Rule.** Every colour is defined on bare `:root` for light, redefined under
 `@media (prefers-color-scheme: dark)` guarded as `:root:not([data-theme="light"])`, and redefined
@@ -337,7 +336,7 @@ also means reading order, tab order and visual order agree in all three states w
 The input rail holds the editor, a paste field that takes any supported notation, and an SD-file
 picker. Within the output column the order is: status line, the SD record list when a file is
 loaded, answer plate, derived answer plate, comparison controls, comparison plate, the 3D viewer,
-then a collapsed `<details>` holding AuxInfo and the library log.
+then an open `<details>` holding AuxInfo and the library log.
 
 **What the editor holds decides which answer appears.** A molecule yields InChI and InChIKey; a
 reaction yields RInChI and its three keys. The two output blocks are siblings that hide as units
@@ -413,7 +412,7 @@ no travel left and it quietly stops sticking. A sticky pane that clips its own f
 one that scrolls.
 
 **The Answer-Above-Evidence Rule.** In one column the order is status, then answer, then evidence.
-AuxInfo and the library log are collapsed by default behind one hairline summary; they are never
+AuxInfo and the library log sit open by default under one hairline summary; they are never
 given a container equal to the identifier's. The status line sits **above** the plate (a cited
 deviation from the direction contract, which first put it beneath): it answers "did that work?",
 which is read before the answer, and on a failure there is no plate to read under.
@@ -599,8 +598,7 @@ animates its elevation.
 - **Do** pair every icon with a real accessible name on the control; icons are always `aria-hidden="true"` and `focusable="false"`.
 - **Do** key touch sizing to `(pointer: coarse), (any-pointer: coarse)` — a stylus 2-in-1 reports a fine primary pointer and still needs 44px targets.
 - **Do** read `INCHI_STACK_BREAKPOINT` when code needs to know whether the layout is stacked; never hardcode a width.
-- **Do** run `node pages/inchi-layers.js` after touching the layer grammar or the icon set — it self-checks both.
-- **Do** run `python3 test/check_contrast.py` after touching a colour token; it fails on anything below its threshold and lists the hairline exemption separately.
+- **Do** run `cd test && npx jest inchi-layers` after touching the layer grammar or the icon set.
 - **Do** give a control its border from `--inchi-rule`, never from `--inchi-rule-hairline` — the hairline is exempt from 3:1 precisely because nothing bounding a control uses it.
 
 ### Don't:
@@ -611,7 +609,7 @@ animates its elevation.
 - **Don't** use monospace for anything but identifier values.
 - **Don't** carry difference, state or severity with hue alone — the comparison must read in greyscale. Mark, weight and position first; colour at most as reinforcement.
 - **Don't** re-theme the annotation chips per theme; the categorical key means the same colour in both.
-- **Don't** give the diagnostic evidence (AuxInfo, library log) a container equal to the identifier's, or expand it by default.
+- **Don't** give the diagnostic evidence (AuxInfo, library log) a container equal to the identifier's.
 - **Don't** blank a result field and wait — mark it superseded at 0.45 opacity instead.
 - **Don't** write a status message only into a node that can be hidden; the live region must be always present and must not move.
 - **Don't** put uppercase or letter-spacing on anything that is not an apparatus label.
@@ -631,12 +629,9 @@ These are the build's own gaps, not rules to inherit.
 - **No URL state.** A result is not addressable, so a comparison cannot be linked to a colleague or cited from a paper.
 - **Two dialog stylesheets were never migrated to these tokens.** `pages/css/report-mask.css` and `pages/css/report-feedback.css` reference seven custom properties that do not exist anywhere in the project — `--inchi-text-muted`, `--inchi-border-strong`, `--inchi-surface-muted`, `--inchi-success-fg`, `--inchi-success-surface`, `--inchi-error-fg`, `--inchi-error-surface` — so those colours silently fall back to inherited values. The correct tokens are `ink-muted`, `rule`, `field-sunken`, `brand`/`brand-quiet` and `error`/`error-quiet`. **This is a defect, not a system rule.**
 - **A pasted AuxInfo, reaction file or RInChI rides in the report's description field.** A pasted molfile now goes in `molfile_v2`/`molfile_v3` as converted, but the other notations have no field of their own in the report payload, which is the endpoint's shape rather than ours.
-- **No favicon.** Neither page declares one, so every load spends a request on a 404 for `/favicon.ico`.
 
 ## Verification in-repo
 
-- `node pages/inchi-layers.js` — self-check on the layer parser, the diff, the InChIKey split, HTML escaping and the icon set.
 - `cd test && npx jest` — 4 suites (`inchi`, `rinchi`, `inchi-layers`, `input-format`), 119 cases. Requires the WASM build to have run.
-- `python3 test/check_contrast.py` — every text pair at 4.5:1 and every boundary pair at 3:1, in both themes, with the hairline exemption reported separately.
 - `node <impeccable>/scripts/detect.mjs --json pages/index.html pages/components` — returns `[]`.
 - `grep -rin "bootstrap\|jquery" pages --include=*.html --include=*.js --include=*.css --include=*.sh` — only prose in comments recording that the framework was removed. No `<link>`, `<script>`, `class=` or `--bs-` hit is acceptable.

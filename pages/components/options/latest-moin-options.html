@@ -7,19 +7,8 @@
     data-default-checked
     checked
   />
-  <label class="form-check-label"
-    >Molecular Inorganics
-    <button
-      type="button"
-      class="option-help"
-      popovertarget="help-MolecularInorganics"
-      aria-label="Caveats for “Molecular Inorganics”"
-    >
-      !
-    </button>
-  </label>
-  <!-- Outside the label: see the note in base-options.html. -->
-  <div id="help-MolecularInorganics" popover class="option-help-panel">
+  <label class="form-check-label">Molecular Inorganics</label>
+  <inchi-option-help label="Caveats for “Molecular Inorganics”" mark="!">
     <p>
       The functionality for molecular inorganics is a work in progress. You can
       expect to encounter warnings.
@@ -39,5 +28,5 @@
         right-clicking the corresponding atoms.
       </li>
     </ul>
-  </div>
+  </inchi-option-help>
 </div>

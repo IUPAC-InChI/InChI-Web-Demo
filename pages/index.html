@@ -16,11 +16,9 @@
     <meta name="color-scheme" content="light dark" />
 
     <!--
-      The stored theme choice, applied before first paint. This has to be
-      inline and blocking: read it from index.js instead and the page paints
-      once in the system theme and then flips, which is worse than no toggle
-      at all. Absent a stored choice, nothing is set and the media queries in
-      css/tokens.css follow the system preference.
+      The stored theme choice, inline and blocking so it applies before first
+      paint instead of the page flipping from the system theme. Absent a
+      stored choice, css/tokens.css follows the system preference.
     -->
     <script>
       try {
@@ -34,10 +32,8 @@
     </script>
 
     <!--
-      base.css first: the controls and the handful of utilities this app uses,
-      hand-written against the tokens, where Bootstrap's 192 KB stylesheet
-      used to sit. Then tokens.css, which defines those tokens, then the app's
-      own rules — which therefore win ties without "!important".
+      base.css, then tokens.css, then the app's own rules, which therefore win
+      ties without "!important".
     -->
     <link href="css/base.css" rel="stylesheet" />
     <link href="css/tokens.css" rel="stylesheet" />
@@ -46,14 +42,12 @@
     <link href="css/report-feedback.css" rel="stylesheet" />
 
     <!--
-      The InChI modules (one per version), the RInChI module and the NGL viewer
-      are not listed here: together they are more than 10 MB, and a visit needs
-      one InChI version at most. index.js pulls them in through loadScriptOnce()
-      when a tab is opened or a conversion is about to run.
+      The InChI modules, the RInChI module and the NGL viewer are large and a
+      visit needs one InChI version at most, so index.js loads them on demand
+      through loadScriptOnce().
 
-      Everything below is deferred, so none of it blocks the parser. Deferred
-      scripts still run in document order, which is what lets the components
-      rely on everything above them.
+      Deferred scripts still run in document order, which is what lets the
+      components rely on everything above them.
     -->
     <!-- The theme control, shared with about.html. -->
     <script defer src="theme.js"></script>
@@ -84,45 +78,6 @@
     </script>
   </head>
   <body>
-    <!--
-      DIRECTION CONTRACT — Soft Modern
-
-      THESIS: The identifier is drawn, not printed — read as keyed layers
-      rather than one opaque run. Refuses this category's default arrangement:
-      four identical cards holding answer, derived answer, diagnostic dump and
-      error channel as peers.
-
-      OWN-WORLD: A thing is bounded by the surface it sits on, not by a line
-      around it. Plates are lifted cards — 12px corners, a soft shadow, a quiet
-      hairline — on a faintly green-grey ground, both themes first-class. One
-      institutional green, colour nowhere else except the categorical atom key.
-      The line jobs split by purpose rather than weight: a hairline separates
-      rows, `rule` bounds a control at 3:1, a 3px stroke marks the active or
-      divergent thing. Tracked small-caps apparatus labels. System mono for
-      identifiers only, where character alignment is the data.
-
-      STORY: A developer draws or pastes, reads the identifier as keyed layers
-      rather than one opaque run, pins it, switches version, and sees which
-      layer moved.
-
-      FIRST VIEWPORT: Masthead on the page grid. One surface, no tabs: the
-      editor and what fills it on the left, version and options beneath them
-      as margin apparatus, and the identifier on the right as a keyed notation
-      plate stamped with the version that produced it. What the editor holds
-      decides which identifier appears — a molecule yields an InChI, a
-      reaction a RInChI — so there is no mode for the visitor to set.
-
-      DEVIATION (cited): the status line sits ABOVE the plate, not beneath it
-      as this block first specified. It answers "did that work?", which is read
-      before the answer itself, and on a failure there is no plate to read
-      under. The announcement it drives is a separate always-present region,
-      because a hidden node is out of the accessibility tree.
-
-      FORM: Soft Modern, adopted from a six-way comparison of token sets.
-
-      FINISH: unreviewed and undocumented is unfinished; this build ends with
-      the finish review, the verdict, and DESIGN.md
-    -->
     <div class="page-shell">
       <header class="masthead">
         <a
@@ -146,13 +101,6 @@
         </div>
 
 
-        <!--
-          The corner cluster: a preference above a destination. Both are
-          masthead apparatus rather than page content, so they share a right
-          edge and a width instead of sitting loose in the banner row — the
-          route used to float mid-row, reading as an afterthought between the
-          tagline and the switch.
-        -->
         <div class="masthead-utilities">
           <!--
             role="switch" rather than a checkbox: this is a two-state control

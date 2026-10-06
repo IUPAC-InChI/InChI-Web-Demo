@@ -4,10 +4,8 @@
  * Load a script on demand, once, and resolve when it has run.
  *
  * The heavy parts of this app — one WebAssembly module per InChI version, the
- * RInChI module, the NGL viewer — used to be fetched and compiled during page
- * load whether or not the visitor ever reached the tab that needs them. They
- * are pulled in through here instead, at the point where something is about to
- * use them (or when opening a tab signals that intent; see warmUp below).
+ * RInChI module, the NGL viewer — are pulled in through here at the point
+ * where something is about to use them (see also warmUp below).
  */
 const loadedScripts = new Map();
 
@@ -29,13 +27,10 @@ function loadScriptOnce(src) {
 }
 
 /*
- * Fetch the heavy modules on intent rather than on demand, so that deferring
- * them off the page load does not turn into a wait at the moment of use.
- *
- * - the default InChI version once the page has loaded and gone idle, because
- *   the first tab converts as soon as the visitor draws something;
- * - the RInChI module and the 3D viewer when their tab is opened, seconds
- *   before either is needed.
+ * Fetch the default InChI version and the 3D viewer once the page has loaded
+ * and gone idle, so that deferring them off the page load does not turn into a
+ * wait at the moment of use. The RInChI module is left to updateWorkbench,
+ * which starts it on the first reaction: most visits never draw one.
  */
 function warmUp() {
   const warm = (promise) =>
@@ -51,13 +46,6 @@ function warmUp() {
   window.addEventListener("load", () =>
     idle(() => {
       warmDefaultInchiVersion();
-      /*
-       * The 3D viewer is on the surface from the first paint, so it is warmed
-       * here. The RInChI module is NOT: pages/rinchi is 1.6 MB, four times the
-       * vendor weight this whole change removes, and most visits never draw a
-       * reaction. updateWorkbench starts that fetch on the first reaction
-       * instead, which is still ahead of the await inside the conversion.
-       */
       warm(document.querySelector("inchi-ngl-viewer")?.ensureStage());
     })
   );
@@ -81,14 +69,9 @@ warmUp();
 /*
  * Version comparison.
  *
- * This is what the tool is for and what it could not do: the version selector
- * destroyed the answer you were comparing against, so comparing meant holding
- * a 60-character identifier in your head while a different one loaded. A
- * pinned result stays, and the next conversion is diffed against it layer by
- * layer — because the useful answer is almost never "a different string", it
- * is "the /t layer moved".
- *
- * One surface, so one pinned result rather than a map keyed by pane.
+ * A pinned result stays, and the next conversion is diffed against it layer
+ * by layer — because the useful answer is almost never "a different string",
+ * it is "the /t layer moved".
  */
 let pinnedResult = null;
 
@@ -184,8 +167,8 @@ function renderComparison() {
       : "";
 
   /*
-   * The key's own comparison. Rendered as its three blocks rather than as two
-   * 27-character runs, so "same skeleton, different stereo" is readable.
+   * The key's own comparison. Rendered as its blocks rather than as two whole
+   * strings, so "same skeleton, different stereo" is readable.
    */
   const keyRows =
     current && (pinned.inchikey || current.inchikey)
@@ -272,8 +255,7 @@ function renderComparison() {
   /*
    * The layers that moved, marked inside the complete strings themselves, so
    * the whole identifier stays readable and copyable while still showing where
-   * the two versions parted company. markChangedLayers only wraps the text; a
-   * self-check in inchi-layers.js asserts the string survives untouched.
+   * the two versions parted company. markChangedLayers only wraps the text.
    */
   const changedKeys = new Set(changed.map((row) => row.key));
   const changedKeyBlocks = new Set(
@@ -355,13 +337,8 @@ function renderComparison() {
 }
 
 /*
- * The status line: one place that says what just happened.
- *
- * The audit's worst finding was that a structure InChI cannot handle produced
- * four empty plates and a log whose entire content was the string
- * "InChI options:" — indistinguishable from an untouched page. Success was
- * equally unsignalled, so the only way to know a conversion had worked was
- * that text appeared.
+ * The status line: one place that says what just happened, so neither a
+ * failed nor a successful conversion looks like an untouched page.
  */
 function setConversionStatus(kind, text) {
   const status = document.querySelector("[data-status]");
@@ -373,8 +350,7 @@ function setConversionStatus(kind, text) {
    * The announcement goes to a region that is never hidden and never moves.
    * The visible box below can hide itself freely; a hidden node is out of the
    * accessibility tree, and text written into one while it is hidden is not
-   * reliably announced — which would have made this whole status line
-   * invisible to exactly the users who most needed it.
+   * reliably announced.
    */
   const announcer = document.querySelector("[data-status-announcer]");
   if (announcer) {
@@ -396,12 +372,12 @@ function setConversionStatus(kind, text) {
 /*
  * Stamp every result plate in a pane with the version that produced it.
  * "Provenance is part of the answer": a string copied out of here without its
- * version is not reproducible, and the selector 600px away is not provenance.
+ * version is not reproducible, and the version selector is not provenance.
  */
 function stampVersion(version) {
   /*
    * Scoped to the molecule block, not the document. The InChI version has no
-   * business on the six RInChI plates — setVersionStamp shows the stamp
+   * business on the RInChI plates — setVersionStamp shows the stamp
    * whenever the plate has text, so a stray one would surface the next time a
    * reaction was drawn.
    */
@@ -411,13 +387,9 @@ function stampVersion(version) {
 }
 
 /*
- * Mark the results as superseded rather than deleting them.
- *
- * Switching version used to blank all four plates and then wait several
- * seconds on a cold ~1 MB WebAssembly module. Comparing versions is the whole
- * point of this tool, and the comparison baseline was destroyed at the exact
- * moment it was needed. The old answer now stays readable, dimmed and marked,
- * until the new one lands.
+ * Mark the results as superseded rather than deleting them: while a version
+ * switch loads, the old answer stays readable, dimmed and marked, as the
+ * baseline to compare against until the new one lands.
  */
 function markResultsStale(isStale) {
   /* Scoped like stampVersion, and for the same reason. */
@@ -428,7 +400,7 @@ function markResultsStale(isStale) {
 
 /*
  * Count the options that differ from this version's defaults, so "Reset" is
- * not a button that discards seventeen settings with no preview.
+ * not a button that discards settings with no preview.
  */
 function updateChangedOptionCount() {
   const panel = optionsPanel();
@@ -449,8 +421,8 @@ function updateChangedOptionCount() {
 }
 
 /*
- * Debounce, for the paste fields. Every keystroke in the molfile textarea used
- * to run a full WebAssembly conversion and reload the 3D structure.
+ * Debounce, for the paste fields, so a keystroke does not run a full
+ * WebAssembly conversion and reload the 3D structure.
  */
 function debounce(fn, delay) {
   let timer;
@@ -462,32 +434,17 @@ function debounce(fn, delay) {
 
 
 /*
- * The width at which a tool pane stops being one column.
- *
- * Every pane is a .tool-workbench grid of three children — input, controls,
- * output. Below this width they stack; at this width the input and the
- * controls share a row and the output runs full width beneath them.
- *
- * Anything that reasons about "is the layout stacked?" reads this constant
- * instead of hardcoding a width, because the two drifted apart once already:
- * the options panel checked 992px against a grid that stacked below 1200px
- * and opened itself expanded across the whole 992-1199px band.
- *
- * css/index.css keys its own stacking rules to the same 1200px. It carries a
- * second, CSS-only width — 1400px — at which the output moves *beside* the
- * input rather than beneath it. Nothing in JavaScript depends on that one, so
- * it is not mirrored here; .tool-workbench in css/index.css documents it.
+ * The width below which a tool pane stacks into one column. It must match the
+ * stacking breakpoint of .tool-workbench in css/index.css; anything that
+ * reasons about "is the layout stacked?" reads this instead of hardcoding a
+ * width.
  */
 const INCHI_STACK_BREAKPOINT = 1200;
 
 /*
  * Behaviour that differs per InChI version, keyed by the display names in
- * inchi_versions.json.
- *
- * Kept in one place because these used to be string comparisons spread over the
- * code: renaming a version in inchi_versions.json silently disabled the
- * behaviour instead of breaking anything visibly. assertVersionBehavior() now
- * reports a key that no longer matches a version.
+ * inchi_versions.json. assertVersionBehavior() reports a key that matches no
+ * version, so a rename does not silently disable the behaviour.
  */
 const VERSION_BEHAVIOR = {
   "Dev with Molecular Inorganics": {
@@ -541,12 +498,9 @@ async function addInchiOptionsForm(updateFunction) {
   targetDiv.appendChild(inchiOptions); // Add current options
 
   /*
-   * One delegated listener rather than one per checkbox: the panel is rebuilt
-   * on every version switch, and seventeen listeners would have to be rebuilt
-   * with it.
-   *
-   * Bound once: targetDiv outlives every rebuild, so re-adding it on each
-   * version switch stacked duplicate listeners on the same node.
+   * One delegated listener rather than one per checkbox, bound once: the
+   * panel's contents are rebuilt on every version switch, but targetDiv
+   * outlives them.
    */
   if (!targetDiv.dataset.changeListenerBound) {
     targetDiv.addEventListener("change", () => updateChangedOptionCount());
@@ -558,9 +512,6 @@ async function addInchiOptionsForm(updateFunction) {
 /*
  * Restore this version's defaults, which is not the same as clearing the
  * panel: an option marked data-default-checked is checked *on*.
- *
- * Takes the element to search. These used to take a tab id, from when there
- * were eight option panels; there is one after the surface is collapsed.
  */
 function resetInchiOptions(root) {
   root
@@ -593,8 +544,6 @@ function resetInchiOptions(root) {
  *
  * `:enabled` is not a lie: a disabled sub-option keeps its checked state, and
  * reading it would send the library flags the visitor cannot see.
- *
- * Takes the element to search, like the rest of these.
  */
 function getInchiOptions(root) {
   const options = [];
@@ -667,9 +616,6 @@ function applyInchiOptionsState(root, optionsState) {
 }
 
 /*
- * Update actions (when user changes inputs/options/(R)InChI version)
- */
-/*
  * The one conversion path.
  *
  * Called by every input: drawing in the editor, pasting into the field,
@@ -713,9 +659,8 @@ async function updateWorkbench() {
   }
 
   /*
-   * Superseded, not deleted. On a version switch this is the answer the
-   * visitor is comparing against, and blanking it before a cold ~1 MB
-   * WebAssembly load left them staring at empty plates.
+   * Superseded, not deleted: on a version switch this is the answer the
+   * visitor is comparing against.
    */
   markResultsStale(true);
 
@@ -727,7 +672,7 @@ async function updateWorkbench() {
 
   if (ketcher.containsReaction()) {
     showOutput("rinchi");
-    /* First reaction of the visit: start the 1.6 MB RInChI fetch before the
+    /* First reaction of the visit: start the RInChI fetch before the
      * conversion awaits it. Idempotent — loadScriptOnce caches the promise. */
     rinchiModule();
     await convertReactionFromKetcher(ketcher);
@@ -742,10 +687,9 @@ async function updateWorkbench() {
  *
  * Each notation goes to the library that reads it, in the form it was given:
  * a molfile and an SD record as molfile text, an RXN *and an RD file* as
- * reaction file text (the RInChI library reads both, which is why the RD
- * header no longer has to be sliced off), an AuxInfo through the molfile the
- * library builds from it, and a RInChI as itself — its keys are derived from
- * the pasted string rather than from a reaction redrawn out of it.
+ * reaction file text (the RInChI library reads both), an AuxInfo through the
+ * molfile the library builds from it, and a RInChI as itself — its keys are
+ * derived from the pasted string rather than from a reaction redrawn out of it.
  */
 async function convertPastedInput() {
   const options = collectInchiOptions(optionsPanel());
@@ -784,9 +728,9 @@ async function convertPastedInput() {
           return;
         }
         /*
-         * The library writes an SD record, "$$$$" line and all. Ketcher drew
-         * some of those and silently drew nothing for others (an Au complex,
-         * for one) with no error to report, so the terminator goes here.
+         * The library writes an SD record, "$$$$" line and all. Ketcher
+         * silently draws nothing for some of those (an Au complex, for one)
+         * with no error to report, so the terminator goes here.
          */
         molfile = firstSdfRecord(rebuilt);
         pastedInput.molfile = molfile;
@@ -798,8 +742,8 @@ async function convertPastedInput() {
        * Text classified as an SD file whose first record is empty — a
        * fragment opening with "$$$$" — reaches here with nothing to convert.
        * markResultsStale(true) has already dimmed the previous structure's
-       * plates, so returning in silence left that answer on screen as the
-       * answer for this paste.
+       * plates, so returning in silence would leave that answer on screen as
+       * the answer for this paste.
        */
       if (!molfile) {
         clearWorkbenchResults();
@@ -853,8 +797,8 @@ async function convertPastedInput() {
       clearRinchiResults();
       /*
        * The RInChI *is* the input, so it is written through unchanged and only
-       * its keys are derived. Round-tripping it through the editor was the one
-       * way this surface could hand back a different RInChI than it was given.
+       * its keys are derived. Round-tripping it through the editor could hand
+       * back a different RInChI than it was given.
        */
       writeResult(pastedInput.rinchi, "workbench-rinchi");
       writeResult(pastedInput.rauxinfo ?? "", "workbench-rauxinfo");
@@ -896,9 +840,8 @@ async function convertPastedInput() {
 }
 
 /*
- * A paste ran a full WebAssembly conversion and a 3D reload on every
- * keystroke. 250ms is below the threshold where a pause feels like lag and
- * above the rate anyone types molfile lines.
+ * The delay is below the threshold where a pause feels like lag and above the
+ * rate anyone types molfile lines.
  */
 const loadPastedInputDebounced = debounce(() => loadPastedInput(), 250);
 
@@ -908,10 +851,10 @@ const loadPastedInputDebounced = debounce(() => loadPastedInput(), 250);
  * Pasted text is converted *verbatim* and the editor shows it as a preview.
  * This is the point of the tool — an InChI generated here has to be the one
  * the library gives for that exact file, and routing a paste through a 2D
- * editor normalised it on the way: V3000 downgraded to V2000, coordinates
- * rescaled, hydrogens re-expressed per Ketcher's settings. A bug living in
- * the file was unreproducible, and the answer could differ from what the
- * InChI command-line tool gives for the same input.
+ * editor would normalise it on the way: V3000 downgraded to V2000,
+ * coordinates rescaled, hydrogens re-expressed per Ketcher's settings. The
+ * answer could then differ from what the InChI command-line tool gives for
+ * the same input.
  *
  * The editor stays fully editable. Touching it makes it the source again —
  * that edit is a newer intent than the paste — and the status line names the
@@ -951,17 +894,12 @@ async function onEditorChanged() {
   }
 
   /*
-   * An emptied canvas empties the paste field with it.
+   * An emptied canvas empties the paste field with it, so the text never sits
+   * beside an empty editor looking like the input.
    *
    * Keyed on the canvas going blank rather than on Ketcher's "Clear canvas"
-   * button, which lives in the iframe's React markup and would tie this to
-   * markup the app does not own. The cost of reading the state instead of the
-   * button is that erasing the last atom by hand counts too — which is the
-   * same intent expressed more slowly, and leaves the same empty canvas.
-   *
-   * Without this, clearing the canvas left a field full of molfile beside an
-   * empty editor, and the next edit would convert the drawing while the text
-   * sat there looking like the input.
+   * button, which lives in markup the app does not own. Erasing the last atom
+   * by hand counts too — the same intent expressed more slowly.
    */
   const ketcher = getKetcher("workbench-ketcher");
   const field = document.getElementById("workbench-paste");
@@ -984,9 +922,6 @@ async function onEditorChanged() {
  * but the field still holds convertible text — after an edit, or after
  * Ketcher's own clear-canvas button — that text is inert, and saying nothing
  * leaves a field full of molfile beside an empty answer with no explanation.
- * An editor that silently stopped being what gets converted, or a paste field
- * that silently stopped being read, is the exact ambiguity this surface
- * exists to remove.
  */
 function syncSourceNotes() {
   const editorNote = document.querySelector("[data-editor-role]");
@@ -1102,8 +1037,8 @@ let inputGeneration = 0;
  *
  * The bin clears the field *and* the canvas, because the two are one input as
  * far as the visitor is concerned: a preview of the text sits in the editor,
- * and emptying the box while its drawing stayed behind left the surface half
- * reset with no way to tell which half. Ketcher's own undo still brings the
+ * and emptying the box while its drawing stayed behind would leave the
+ * surface half reset with no way to tell which half. Ketcher's own undo still brings the
  * drawing back; the text does not come back, which is what a bin means.
  *
  * The canvas is emptied behind the load guard. setMolecule dispatches the
@@ -1152,26 +1087,15 @@ function syncPasteControls() {
 }
 
 /*
- * Take whatever is in the paste field into the editor.
- *
- * Everything here ends in the same place — a structure in Ketcher — so the
- * conversion that follows does not know or care how the structure arrived.
- * The three formats that are not structures (a bare InChI, a lone RAuxInfo,
- * unrecognised text) are refused by name in the status line, which is the
- * part the old tabs could not do: pasting a molfile into the AuxInfo tab
- * silently did nothing.
+ * Take whatever is in the paste field: convert it, and preview it in the
+ * editor. The formats that are not structures (a bare InChI, a lone RAuxInfo,
+ * unrecognised text) are refused by name in the status line.
  */
 async function loadPastedInput() {
   /*
    * One counter for every route that resolves a paste into a structure, bumped
    * here because this is where a new intent arrives — a keystroke, a fresh
    * paste, the bin, an emptied field.
-   *
-   * It used to be bumped inside the PubChem and SMILES branches alone, so only
-   * a second lookup could overtake the first. Clearing the field or replacing
-   * it with a molfile did not, and the reply that was already in flight landed
-   * afterwards and wrote its own record into pastedInput: the field showed one
-   * structure and the plates gave the InChI of another.
    */
   const generation = ++inputGeneration;
   const text = document.getElementById("workbench-paste").value;
@@ -1332,8 +1256,7 @@ async function loadPastedInput() {
     /*
      * Not a structure, so it cannot be the source — and neither can whatever
      * was pasted before it. Leaving the previous paste in force would show an
-     * answer derived from text the field no longer contains, which is exactly
-     * the field-and-answer disagreement this design removes. The editor takes
+     * answer derived from text the field no longer contains. The editor takes
      * over; it still holds the last preview, and the status line says why.
      */
     pastedInput = { text: "", kind: "", label: "" };
@@ -1354,14 +1277,10 @@ async function loadPastedInput() {
   syncSourceNotes();
 
   /*
-   * Convert FIRST, draw SECOND — and this order is the whole point.
-   *
-   * These bytes are converted verbatim by a library that has never heard of
-   * the editor, so the answer must not wait on the editor to render them.
-   * It did, once: the conversion was sequenced after `setMolecule` resolved,
-   * and a structure that drew correctly but whose promise settled late left
-   * the output stuck on "Reading a molfile…" with the answer already
-   * computable. The preview is a convenience; the identifier is the product.
+   * Convert FIRST, draw SECOND. These bytes are converted verbatim by a
+   * library that has never heard of the editor, so the answer must not wait on
+   * the editor to render them — `setMolecule` can settle late. The preview is
+   * a convenience; the identifier is the product.
    */
   await updateWorkbench();
   await previewPastedInput(ketcher, format.label);
@@ -1439,10 +1358,8 @@ function previewTextFor(input) {
       return input.text;
     case "rdfile": {
       /*
-       * An RD file of molecules is legal and carries no $RXN at all. An
-       * unguarded indexOf handed Ketcher the last character of the file, so
-       * the visitor was told the editor could not draw it rather than that
-       * there is no reaction in it to draw.
+       * An RD file of molecules is legal and carries no $RXN at all: nothing
+       * to draw, which is not a failure to draw.
        */
       const rxn = input.text.indexOf("$RXN");
       return rxn === -1 ? null : input.text.slice(rxn);
@@ -1492,20 +1409,11 @@ function clearWorkbenchResults() {
     "workbench-webrinchikey",
     "workbench-rauxinfo",
     "workbench-rinchi-logs",
-    /*
-     * Generated reaction file text is a result of this surface like any other
-     * plate. It survived a clear, so the RXN text for a reaction that was no
-     * longer anywhere on the workbench sat beside the blank identifiers, and
-     * the next reaction's answer appeared under it unchanged.
-     */
+    /* Generated reaction file text is a result like any other plate. */
     "workbench-reaction-file",
     "workbench-reaction-file-logs"
   );
-  /*
-   * The 3D view is a result too. It was the one plate that survived a clear,
-   * so an emptied workbench still showed a structure — with its annotation
-   * buttons live — beside eleven blank fields.
-   */
+  /* The 3D view is a result too. */
   document.getElementById("workbench-ngl-viewer")?.clearStructure();
 }
 
@@ -1514,12 +1422,7 @@ async function convertMoleculeFromKetcher(ketcher) {
   const inchiVersion = getVersion();
   setConversionStatus("busy", `Converting with InChI ${inchiVersion}…`);
 
-  /*
-   * Serialization goes through getMolfileFromKetcher, which uses Ketcher's
-   * own formatterFactory rather than Indigo. The format comes from
-   * VERSION_BEHAVIOR, not a version-name comparison; v2000 is what every
-   * version but Enhanced Stereochemistry wants.
-   */
+  /* v2000 is what every version but Enhanced Stereochemistry wants. */
   const molfileFormat = versionBehavior(inchiVersion).molfileFormat ?? "v2000";
   const molfile = await getMolfileFromKetcher(ketcher, molfileFormat);
   if (molfile === null) {
@@ -1626,8 +1529,8 @@ async function onChangeInchiVersion() {
 
 /*
  * The records of the chosen SD file, converted once. Selecting one afterwards
- * is a redraw, not a reconversion — a 2000-record file is minutes of
- * WebAssembly work and must not be repeated because someone clicked a row.
+ * is a redraw, not a reconversion — a large file is minutes of WebAssembly
+ * work and must not be repeated because someone clicked a row.
  */
 let sdfRecords = [];
 let selectedSdfRecord = -1;
@@ -1636,10 +1539,9 @@ let selectedSdfRecord = -1;
  * The version and flags the list was converted under.
  *
  * A later version or option change re-converts only the selected record, so
- * every other row becomes a claim about settings that no longer apply. The
- * old tab re-ran the whole file on every change; doing that to a 2000-record
- * file because someone ticked a checkbox is worse. The list says it is stale
- * instead, and offers to run again.
+ * every other row becomes a claim about settings that no longer apply.
+ * Re-running a large file because someone ticked a checkbox is too costly, so
+ * the list says it is stale instead, and offers to run again.
  */
 let sdfRecordsSettings = "";
 
@@ -1663,10 +1565,8 @@ function markSdfRecordsStale() {
 /*
  * Empty the record list and its export, and let go of the file itself.
  *
- * Called before reading a new file and by the bin. The bin used not to reach
- * it, so emptying the workbench left a record list of InChIKeys — with one row
- * still marked as the selected record — beside blank plates and an empty
- * field, which is the half-reset state the bin exists to avoid.
+ * Called before reading a new file and by the bin, so emptying the workbench
+ * does not leave a record list beside blank plates.
  */
 function clearSdFile() {
   const host = document.querySelector("[data-sdf-records]");
@@ -1783,10 +1683,9 @@ async function loadSdFile() {
 }
 
 /*
- * The file as one text, in the same shape old tab 4 emitted: InChI, AuxInfo
- * and InChIKey per record, blank-line separated, failures named in place.
- * This is the export — the result plate it is written into already has copy
- * and download.
+ * The file as one text: InChI, AuxInfo and InChIKey per record, blank-line
+ * separated, failures named in place. This is the export — the result plate
+ * it is written into already has copy and download.
  */
 function renderSdfExport() {
   const field = document.getElementById("workbench-sdf-export-wrapper");
@@ -1933,18 +1832,16 @@ function getSDFDelimiter(sdfText) {
 
 async function updateInchiOptions(updateFunction) {
   /*
-   * Say which version is loading, before the wait rather than after it. Every
-   * non-default version is a cold ~1 MB WebAssembly fetch and compile, because
-   * warmUp() only prefetches the default one — several seconds during which
-   * the old UI showed nothing at all.
+   * Say which version is loading, before the wait rather than after it:
+   * warmUp() only prefetches the default version, so any other is a cold
+   * WebAssembly fetch and compile.
    */
   setConversionStatus("busy", `Loading InChI ${getVersion()}…`);
   markResultsStale(true);
 
   /*
    * Snapshotted after addInchiOptionsForm has already rebuilt the panel, so
-   * this restore is a no-op — a pre-existing bug, not introduced here. Left
-   * exactly as it was; fixing it is a separate change with its own test.
+   * this restore is a no-op.
    */
   await addInchiOptionsForm(() => updateFunction());
   const optionsState = getInchiOptionsState(optionsPanel());
@@ -1981,11 +1878,7 @@ async function convertMolfileToInchiAndWriteResults(
   logTextElementId
 ) {
   const log_entries = [];
-  /*
-   * Never a bare label: an empty options set says so in words. This line read
-   * "InChI options:" with nothing after it on every default-options run, which
-   * was the entire content of the log on a successful conversion.
-   */
+  /* Never a bare label: an empty options set says so in words. */
   log_entries.push(`InChI options: ${options === "" ? "(defaults)" : options}`);
 
   let inchiResult;
@@ -2018,8 +1911,7 @@ async function convertMolfileToInchiAndWriteResults(
 
   /*
    * The outcome, in one line, always. return_code -1 is a refusal; an empty
-   * InChI with a zero return code is the same refusal without a diagnosis,
-   * which is the case that used to fall through completely silently.
+   * InChI with a zero return code is the same refusal without a diagnosis.
    */
   if (inchi === "") {
     const detail =
@@ -2125,8 +2017,6 @@ async function convertRxnfileToRinchiAndWriteResults(
   if (rinchiResult.return_code == 0 && rinchiResult.rinchi !== "") {
     /*
      * Awaited: these push their errors onto `log`, which is written out below.
-     * Without the await the writes happened after the log had been rendered, so
-     * a failing key conversion left no trace anywhere in the UI.
      */
     await Promise.all([
       convertRinchiToRinchikeyAndWriteResult(
@@ -2183,25 +2073,14 @@ async function convertRinchiToRinchikeyAndWriteResult(
 /*
  * The reverse direction: this surface's RInChI back to RXN or RD file text.
  * The RInChI comes from the plate rather than from a second paste field —
- * there is only one reaction on the surface, and asking the visitor to paste
- * back the string the app just produced was the tab's own worst feature.
+ * there is only one reaction on the surface.
  */
 async function downloadReactionFile() {
   /*
    * The pasted RInChI wins over the generated one — but only while the paste
-   * is still what is being converted.
-   *
-   * Old RInChI tab 4 converted whatever you pasted, with no round trip through
-   * an editor. Here the reaction has been drawn by Ketcher and read back, so
-   * the RInChI on the plate may not be byte-identical to the one pasted, and
-   * it is the pasted string the visitor wants a file for.
-   *
-   * Reading the field directly ignored that. Once the drawing had been edited
-   * the surface said so — the paste is labelled "Not being converted" — and
-   * this still generated the file for the pasted string. The two halves were
-   * chosen independently too, so a pasted RInChI with no RAuxInfo beside it
-   * was paired with the drawn reaction's RAuxInfo: a file whose coordinates
-   * belong to a different reaction, reported as a success.
+   * is still what is being converted. The RAuxInfo always comes from the same
+   * side as the RInChI, so the file's coordinates never belong to a different
+   * reaction.
    */
   const pasted =
     conversionSource === "paste" && pastedInput.kind === "rinchi"
@@ -2326,10 +2205,8 @@ async function getMolfileFromKetcher(ketcher, format = "v2000") {
     return await formatter.getStringFromStructureAsync(struct);
   } catch (error) {
     /*
-     * Returning null rather than raising an alert(): every caller now reports
-     * failure through the status line, which is where the rest of this app
-     * says what went wrong. An alert is the only modal interruption in the
-     * product and it cannot be read by anything that logs.
+     * Returning null rather than raising an alert(): every caller reports
+     * failure through the status line.
      */
     console.error("Ketcher could not serialize the structure", error);
     return null;
@@ -2345,8 +2222,8 @@ function onKetcherLoaded(iframeId, updateFunction, attemptsLeft = 300) {
     return;
   }
   /*
-   * Bounded, and on a timer rather than a 0 ms loop: if the editor never turns
-   * up (a failed or blocked iframe) the old version spun a core for the
+   * Bounded, and on a timer rather than a 0 ms loop, so an editor that never
+   * turns up (a failed or blocked iframe) does not spin a core for the
    * lifetime of the page.
    */
   if (attemptsLeft <= 0) {

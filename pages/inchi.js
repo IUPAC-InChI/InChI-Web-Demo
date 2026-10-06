@@ -29,9 +29,8 @@ if (typeof window !== "undefined") {
              *
              * Reading `.module` loads that version's Emscripten glue and calls
              * its factory, which returns a Promise resolving to the module
-             * object; the promise is kept, so later reads reuse it. Eagerly
-             * instantiating every entry cost ~7 MB of downloads and seven WASM
-             * compilations on page load for the one version in use.
+             * object; the promise is kept, so later reads reuse it. Only the
+             * version in use is downloaded and compiled.
              * See https://github.com/emscripten-core/emscripten/blob/fa339b76424ca9fbe5cf15faea0295d2ac8d58cc/src/settings.js#L1183
              */
             get module() {

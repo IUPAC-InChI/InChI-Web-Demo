@@ -100,10 +100,9 @@ function layerLabel(key) {
  *
  * The layer letters are not unique across a string: a non-standard InChI
  * restarts them after a /f (fixed hydrogens) or /r (reconnected metals)
- * marker, and an /i layer carries its own sublayers too. Keeping only the
- * first segment per letter therefore lost every one of those — two InChIs
- * differing only in their reconnected /h compared as identical, and the
- * comparison plate said "0 of 5 layers differ" about two different strings.
+ * marker, and an /i layer carries its own sublayers too. Keyed by letter
+ * alone, two InChIs differing only in their reconnected /h would compare as
+ * identical.
  *
  * So a marker opens a namespace and the segments after it are keyed inside
  * it. /r resets to the top level, because the reconnected structure starts a
@@ -179,7 +178,7 @@ function parseInchiLayers(inchi) {
     /*
      * "InChI=1S//q+1" has no formula at all; an empty row is noise, not a
      * layer. A repeated key inside one namespace is not legal InChI — keep
-     * the first, as before, rather than render two rows with one name.
+     * the first rather than render two rows with one name.
      */
     if (segment.key === null || seen.has(segment.key)) {
       continue;
@@ -286,14 +285,9 @@ function parseInchikeyBlocks(inchikey) {
 }
 
 /*
- * Notation marks. Drawn, in one stroke weight, from the vocabulary of a
- * structure diagram rather than from an icon font: a filled wedge points
- * toward the viewer and means confirmed, crossed hairlines mean refused, an
- * open square means in progress, and a hash marks a layer that differs.
- *
- * Authored here rather than pulled from the icon set because the icon set has
- * no wedge and no hash, and a check mark would say "valid" where this world
- * says "drawn".
+ * Notation marks, drawn from the vocabulary of a structure diagram: a filled
+ * wedge means confirmed, crossed hairlines mean refused, an open square means
+ * in progress, and a hash marks a layer that differs.
  */
 function notationMark(kind) {
   const open = '<svg class="notation-mark" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false">';
@@ -388,8 +382,7 @@ function markChangedLayers(inchi, changedKeys) {
 
   /*
    * Keyed through the same walk as the diff, so a changed main /h marks the
-   * main /h alone — marking every segment whose letter matched highlighted
-   * an identical fixed-H layer alongside it.
+   * main /h alone and not an identical fixed-H /h alongside it.
    */
   const rendered = walked.map((segment) => {
     const escaped = escapeHtml(segment.raw);
@@ -421,17 +414,8 @@ function markChangedKeyBlocks(inchikey, changedIndices) {
 }
 
 /*
- * The interface's icons, authored in one stroke weight.
- *
- * These replace the eight Bootstrap Icons glyphs the app used to pull from a
- * 121 KB webfont plus a 95 KB stylesheet declaring about 1800 icons. Two
- * reasons to draw them instead: the webfont's weight sat visibly next to the
- * authored chemistry marks in notationMark(), which is two icon systems on one
- * surface; and eight shapes do not justify that payload on a page whose first
- * load the audit measured at 7.5 MB.
- *
- * 16x16, 1.5px stroke, currentColor, no fill, square joins — the same hand as
- * the notation marks.
+ * The interface's icons, drawn in the same stroke as the notation marks so
+ * the page has one icon system.
  */
 const ICON_PATHS = {
   clipboard: "M6 2.5H10V4.5H6ZM3.5 4.5H12.5V14H3.5Z",
@@ -462,153 +446,6 @@ function icon(name, extraClass) {
   );
 }
 
-/* Self-check: `node inchi-layers.js` exits non-zero on a broken parse. */
-function demo() {
-  const assert = require("assert");
-
-  const benzene = "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H";
-  const parsed = parseInchiLayers(benzene);
-  assert.strictEqual(parsed.version, "1S");
-  assert.deepStrictEqual(
-    parsed.layers.map((layer) => layer.key),
-    ["formula", "c", "h"]
-  );
-  assert.strictEqual(parsed.layers[0].value, "C6H6");
-
-  // Canonical order, not the order the letters happened to arrive in.
-  const stereo = parseInchiLayers("InChI=1S/C4H8O/c1-3-4(2)5/h4-5H/t4-/m1/s1");
-  assert.deepStrictEqual(
-    stereo.layers.map((layer) => layer.key),
-    ["formula", "c", "h", "t", "m", "s"]
-  );
-
-  // Not an InChI: no layers, no throw.
-  assert.deepStrictEqual(parseInchiLayers("this is not a molfile").layers, []);
-  assert.deepStrictEqual(parseInchiLayers("").layers, []);
-  assert.deepStrictEqual(parseInchiLayers(undefined).layers, []);
-
-  // An empty formula segment must not be read as a layer letter.
-  const charged = parseInchiLayers("InChI=1S//q+1");
-  assert.deepStrictEqual(
-    charged.layers.map((layer) => layer.key),
-    ["q"]
-  );
-
-  // The diff is the point: same skeleton, one stereo layer apart.
-  const diff = diffInchiLayers(
-    "InChI=1S/C4H8O/c1-3-4(2)5/h4-5H/t4-/m1/s1",
-    "InChI=1S/C4H8O/c1-3-4(2)5/h4-5H/t4-/m0/s1"
-  );
-  const byKey = new Map(diff.map((row) => [row.key, row]));
-  assert.strictEqual(byKey.get("formula").status, "same");
-  assert.strictEqual(byKey.get("c").status, "same");
-  assert.strictEqual(byKey.get("m").status, "changed");
-  assert.strictEqual(byKey.get("m").before, "1");
-  assert.strictEqual(byKey.get("m").after, "0");
-
-  // A layer one version emits and the other does not.
-  const appeared = diffInchiLayers(
-    "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H",
-    "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H/b1-2+"
-  );
-  assert.strictEqual(
-    appeared.find((row) => row.key === "b").status,
-    "added"
-  );
-  assert.strictEqual(
-    diffInchiLayers(
-      "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H/b1-2+",
-      "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
-    ).find((row) => row.key === "b").status,
-    "removed"
-  );
-
-  assert.deepStrictEqual(
-    parseInchikeyBlocks("TXBHLLHHHQAFNN-UHFFFAOYSA-N").map((b) => b.value),
-    ["TXBHLLHHHQAFNN", "UHFFFAOYSA", "N"]
-  );
-  assert.deepStrictEqual(parseInchikeyBlocks("not-a-key"), []);
-
-  // Same skeleton, different stereo block: the disagreement worth seeing.
-  const keyDiff = diffInchikeyBlocks(
-    "HEFNNWSXXWATRW-JTQLQIEISA-N",
-    "HEFNNWSXXWATRW-UHFFFAOYSA-N"
-  );
-  assert.strictEqual(keyDiff[0].status, "same");
-  assert.strictEqual(keyDiff[1].status, "changed");
-  assert.strictEqual(keyDiff[1].before, "JTQLQIEISA");
-  assert.strictEqual(keyDiff[1].after, "UHFFFAOYSA");
-  assert.strictEqual(keyDiff[2].status, "same");
-  assert.deepStrictEqual(diffInchikeyBlocks("", ""), []);
-
-  /*
-   * Highlighting must never alter the string itself: strip the markup back out
-   * and it has to equal the input exactly, or someone copies a corrupted
-   * identifier into a paper.
-   */
-  const stripTags = (html) =>
-    html
-      .replace(/<[^>]*>/g, "")
-      .replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'");
-
-  const full = "InChI=1S/C4H8O/c1-3-4(2)5/h4-5H/t4-/m1/s1";
-  const marked = markChangedLayers(full, new Set(["m", "s"]));
-  assert.strictEqual(stripTags(marked), full);
-  assert.ok(marked.includes('<mark class="layer-highlight">m1</mark>'));
-  assert.ok(marked.includes('<mark class="layer-highlight">s1</mark>'));
-  assert.ok(!marked.includes('<mark class="layer-highlight">t4-</mark>'));
-
-  // the formula has no letter prefix and must still be markable
-  const formulaMarked = markChangedLayers(full, new Set(["formula"]));
-  assert.strictEqual(stripTags(formulaMarked), full);
-  assert.ok(formulaMarked.includes('<mark class="layer-highlight">C4H8O</mark>'));
-
-  // nothing changed, or not an InChI: plain escaped text, no marks
-  assert.strictEqual(markChangedLayers(full, new Set()), escapeHtml(full));
-  assert.strictEqual(
-    markChangedLayers("not an inchi", new Set(["t"])),
-    escapeHtml("not an inchi")
-  );
-
-  const key = "HEFNNWSXXWATRW-JTQLQIEISA-N";
-  const keyMarked = markChangedKeyBlocks(key, new Set([1]));
-  assert.strictEqual(stripTags(keyMarked), key);
-  assert.ok(keyMarked.includes('<mark class="layer-highlight">JTQLQIEISA</mark>'));
-  assert.ok(!keyMarked.includes('<mark class="layer-highlight">HEFNNWSXXWATRW</mark>'));
-  assert.strictEqual(markChangedKeyBlocks(key, new Set()), escapeHtml(key));
-
-  // These feed innerHTML templates, and the SD-file path puts file content there.
-  assert.strictEqual(
-    escapeHtml('<img src=x onerror="alert(1)">'),
-    "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;"
-  );
-  assert.strictEqual(escapeHtml("a & b"), "a &amp; b");
-  assert.ok(notationMark("ok").startsWith("<svg"));
-  assert.strictEqual(notationMark("nonexistent"), "");
-
-  // One icon system: every glyph the interface uses must be authored here.
-  for (const name of [
-    "clipboard",
-    "clipboard-check",
-    "clipboard-x",
-    "download",
-    "trash",
-    "x-lg",
-    "check-lg",
-    "reset",
-  ]) {
-    assert.ok(icon(name).includes("stroke-width=\"1.5\""), name);
-    assert.ok(icon(name).includes('aria-hidden="true"'), name);
-  }
-  assert.strictEqual(icon("no-such-icon"), "");
-
-  console.log("inchi-layers.js: all checks passed");
-}
-
 if (typeof module === "object" && module.exports) {
   module.exports = {
     INCHI_LAYERS,
@@ -624,7 +461,4 @@ if (typeof module === "object" && module.exports) {
     icon,
     ICON_PATHS,
   };
-  if (require.main === module) {
-    demo();
-  }
 }

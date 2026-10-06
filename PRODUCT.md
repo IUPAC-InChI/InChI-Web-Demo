@@ -11,13 +11,14 @@ web
 **Primary: InChI algorithm developers and maintainers.** Their job is comparing what different
 InChI versions produce for the same structure — across shipped releases (1.06, 1.07.5), the `dev`
 branch, and unreleased feature branches and open pull requests. When two users' needs conflict,
-this workflow wins. Confirmed by the user.
+this workflow wins.
 
-Also real, not privileged:
+Also relevant, not privileged:
+
 - **Bench chemists** — have a structure, need its identifier, convert occasionally, don't track versions.
 - **Database curators** — batch work through SD files; need reproducible option sets and tabular output.
 
-Contact route for all of them: `inchi@ac.rwth-aachen.de` (RWTH Aachen), plus GitHub issues on
+Contact route for all: `inchi@ac.rwth-aachen.de` (RWTH Aachen), plus GitHub issues on
 `IUPAC-InChI/InChI-Web-Demo`.
 
 ## Product Purpose
@@ -25,22 +26,15 @@ Contact route for all of them: `inchi@ac.rwth-aachen.de` (RWTH Aachen), plus Git
 Generate and interconvert IUPAC chemical identifiers — InChI, InChIKey, AuxInfo, RInChI and the
 three RInChIKey variants — from drawn structures, pasted molfiles, AuxInfo, or uploaded SD files.
 
-**This is a tool people depend on, not a demonstration.** Confirmed by the user: it is cited from
-papers and used in real curation workflows. "Demo" in the repository and page title is historical
-baggage, and the surface should not present itself as a toy.
+**This is a tool people depend on, not a demonstration.** It is cited from
+papers and used in curation workflows. "Demo" in the repository and page title is historical
+baggage.
 
-**The public name is "InChI Web App".** Decided by the user, who put it plainly: it is not a demo
-any more. The name also settles an inconsistency the product carried — the About surface has always
-opened with "This web application runs entirely in your browser" while the heading said "Demo".
+**The public name is "InChI Web App".**
 
-The rename is deliberately **visible text only**: the page title, the heading and the README. The
-repository slug (`InChI-Web-Demo`) and the deployed path
+The name is only relevant for user-facing text. The repository slug (`InChI-Web-Demo`) and the deployed path
 (`iupac-inchi.github.io/InChI-Web-Demo/`) are unchanged, because this tool is cited from published
-papers and GitHub does not reliably redirect Pages URLs after a rename. Nothing anyone has cited
-breaks.
-
-**Still open, for the maintainers, not for design:** whether to rename the repository and the
-deployed path as well. That needs a redirect plan and a view on the citations already in print.
+papers and GitHub does not reliably redirect Pages URLs after a rename. Nothing cited breaks.
 
 Success means a user gets a correct identifier they can trust, attribute to a specific algorithm
 version, and reproduce later.
@@ -48,7 +42,7 @@ version, and reproduce later.
 ## Positioning
 
 Multiple InChI algorithm versions — including unreleased dev branches and open PRs — runnable
-side by side, in the browser, with no install and no server. No neighbouring tool offers output
+side by side, in the browser, with no install and no server. No neighboring tool offers output
 from an open pull request against a released version for the same structure.
 
 Second, inseparable claim: **structures never leave the machine.** The C libraries are compiled to
@@ -71,15 +65,15 @@ user explicitly chooses to report.
 
 ## Capabilities and Constraints
 
-- **No backend of any kind.** No accounts, no server-side storage, no server-side compute.
+- **No backend.** No accounts, no server-side storage, no server-side compute.
 - One Emscripten WASM module per InChI version (~1 MB each, ~410 KB gzipped), loaded on demand;
   RInChI is a separate ~1.4 MB module. Eight InChI versions are currently published.
 - **All eight versions must stay selectable** — including dev branches and open PRs. They may be
-  grouped or relabelled; none may be hidden or dropped. (Confirmed constraint.)
+  grouped or relabelled; none may be hidden or dropped.
 - **Every InChI option flag must stay reachable.** Flags may be reorganised, grouped, or
-  progressively disclosed; capability may not shrink. (Confirmed constraint.)
+  progressively disclosed; capability may not shrink.
 - **Ketcher stays as the structure editor**, embedded as an iframe. Its internal appearance is not
-  ours to change and swapping editors is off the table. (Confirmed constraint.)
+  ours to change and swapping editors is off the table.
 - Errors from the WASM bridge surface as fields on the result object (`return_code`, `error`), not
   as exceptions — the UI is responsible for turning them into something a human can act on.
 - Matomo analytics (`matomo.beilstein.org`, site 10) is loaded on the page.
@@ -87,15 +81,14 @@ user explicitly chooses to report.
 ## Brand Commitments
 
 - `--inchi-brand: #00612c` is institutional colour, not a style choice. A palette may be built
-  around it; it may not be replaced. (Confirmed constraint.)
-- The InChI Trust logo and the seven funder logos on the About surface stay. (Confirmed constraint.)
+  around it; it may not be replaced.
+- The InChI Trust logo and the seven funder logos on the About surface stay.
 - Funders that must remain credited: Volkswagen Foundation, the German Research Foundation via
   NFDI4Chem (project 441958208), BMBF, the European Union / NextGenerationEU, DALIA, and the
   Beilstein-Institut.
-- **Voice, as already evidenced in the product's own error copy:** domain-fluent, plain, and
+- **Voice, as already evidenced in the product's oerror copy:** domain-fluent, plain, and
   non-blaming — it names the state, the cause and the fix in the user's own vocabulary
-  ("This drawing is not a reaction yet. Add a reaction arrow to convert it to a RInChI."). This is
-  the product's strongest existing asset and future copy should match it.
+  ("This drawing is not a reaction yet. Add a reaction arrow to convert it to a RInChI."). Future copy should match it.
 
 ## Evidence on Hand
 
@@ -112,8 +105,7 @@ user explicitly chooses to report.
 
 1. **Provenance is part of the answer.** An identifier without the version that produced it is
    incomplete. Every result should be attributable and reproducible.
-2. **Comparison is the job, not a feature.** The primary user is here to see how versions differ;
-   a design that shows one answer at a time is fighting the product.
+2. **Comparison is the job, not a feature.** The primary user is here to see how versions differ.
 3. **Nothing leaves the browser — and the one exception is disclosed where it happens,** not on
    another tab.
 4. **Expert vocabulary is correct vocabulary.** Chemists' terms stay; the fix for an intimidating
@@ -122,8 +114,8 @@ user explicitly chooses to report.
 
 ## Accessibility & Inclusion
 
-Working target: **WCAG 2.1 AA**. The user confirmed there is no formally binding standard on the
-table, and that the accessibility findings should be fixed properly rather than to a checkbox.
+Working target: **WCAG 2.1 AA**. The user confirmed there is no formally binding standard,
+and that the accessibility findings should be fixed properly rather than to a checkbox.
 
 **Open question, recorded rather than answered:** whether EU / NextGenerationEU, BMBF and DFG
 funding brings EN 301 549 or BITV 2.0 obligations. Designing to WCAG 2.1 AA keeps either answer
