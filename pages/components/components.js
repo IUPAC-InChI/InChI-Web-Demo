@@ -1,31 +1,4 @@
 /*
- * Suffix every id below `root` and rewrite the attributes that point at them.
- * A component rendered more than once ships the same static markup several
- * times; "for" and "aria-labelledby" resolve to the first matching id in the
- * document, so without scoping the second instance's label would drive the
- * first instance's control.
- */
-function scopeIds(root, suffix) {
-  root.querySelectorAll("[id]").forEach((element) => {
-    element.id = `${element.id}-${suffix}`;
-  });
-
-  ["for", "aria-labelledby", "aria-describedby", "aria-controls"].forEach(
-    (attribute) => {
-      root.querySelectorAll(`[${attribute}]`).forEach((element) => {
-        const scoped = element
-          .getAttribute(attribute)
-          .split(/\s+/)
-          .filter((id) => id)
-          .map((id) => `${id}-${suffix}`)
-          .join(" ");
-        element.setAttribute(attribute, scoped);
-      });
-    }
-  );
-}
-
-/*
  * Fetch an HTML fragment, revalidating it and reusing the result.
  *
  * These fragments are pulled in from JS rather than linked from index.html, so
