@@ -33,9 +33,8 @@ jobs:
         with:
           path: |
             pages/ngl
-          # download_packages.sh pins the versions and utils.sh holds the
-          # download itself, so a change to either invalidates this cache.
-          key: ${{ hashFiles('pages/download_packages.sh', 'pages/utils.sh') }}
+          # The hashed script contains the versions of the dependencies.
+          key: ${{ hashFiles('pages/download_packages.sh') }}
 
       - name: Download dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
@@ -46,7 +45,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: pages/ketcher
-          key: ${{ hashFiles('ketcher/react-app/**/*', 'pages/utils.sh') }}
+          key: ${{ hashFiles('ketcher/react-app/**/*') }}
 
       - name: Build Ketcher
         if: steps.cache-ketcher.outputs.cache-hit != 'true'
