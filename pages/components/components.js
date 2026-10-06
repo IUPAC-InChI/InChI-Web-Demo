@@ -851,6 +851,40 @@ class InChIResultFieldElement extends HTMLElement {
   }
 }
 
+/*
+ * A "?" (or "!") button that opens an explanation of the option next to it.
+ * The element's children are the explanation. It sits after the option's
+ * <label>, never inside it: the popover would otherwise be a label descendant,
+ * so clicking its prose would toggle the checkbox, and it would land in the
+ * label's text.
+ *
+ *   <inchi-option-help label="What “X” does"><p>…</p></inchi-option-help>
+ */
+let optionHelpCount = 0;
+
+class InChIOptionHelpElement extends HTMLElement {
+  connectedCallback() {
+    if (this.querySelector(":scope > .option-help")) {
+      return;
+    }
+
+    const panel = document.createElement("div");
+    panel.id = `option-help-${++optionHelpCount}`;
+    panel.setAttribute("popover", "");
+    panel.className = "option-help-panel";
+    panel.append(...this.childNodes);
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "option-help";
+    button.setAttribute("popovertarget", panel.id);
+    button.setAttribute("aria-label", this.getAttribute("label"));
+    button.textContent = this.getAttribute("mark") ?? "?";
+
+    this.append(button, panel);
+  }
+}
+
 class InChIOptionsElement extends HTMLElement {
   constructor() {
     super();
@@ -1454,6 +1488,7 @@ customElements.define("report-mask", ReportMaskElement);
 customElements.define("feedback-dialog", FeedbackDialogElement);
 customElements.define("inchi-version-selection", InChIVersionSelectionElement);
 customElements.define("inchi-result-field", InChIResultFieldElement);
+customElements.define("inchi-option-help", InChIOptionHelpElement);
 customElements.define("inchi-options-106", InChIOptions106Element);
 customElements.define("inchi-options-1075", InChIOptions1075Element);
 customElements.define("inchi-options-dev", InChIOptionsDevElement);

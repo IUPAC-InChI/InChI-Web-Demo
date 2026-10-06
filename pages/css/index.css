@@ -535,6 +535,10 @@ input.form-check-input {
  * data-bs-title: no accessible name, no keyboard path, and no native title
  * fallback either. They are real buttons now.
  */
+inchi-option-help {
+  display: contents;
+}
+
 .option-help {
   display: inline-flex;
   align-items: center;
@@ -542,7 +546,6 @@ input.form-check-input {
   width: 1.15rem;
   height: 1.15rem;
   padding: 0;
-  margin-left: 0.15rem;
   border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule);
   border-radius: 50%;
   background: var(--inchi-field);
