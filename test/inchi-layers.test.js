@@ -11,6 +11,9 @@ const {
   markChangedLayers,
   markChangedKeyBlocks,
   escapeHtml,
+  notationMark,
+  icon,
+  ICON_PATHS,
 } = require("../pages/inchi-layers.js");
 
 test("splits an InChI into its layers in canonical order", () => {
@@ -211,4 +214,18 @@ describe("sublayers after an /f or /r marker", () => {
  */
 test("does not append a slash to a layerless InChI", () => {
   expect(markChangedLayers("InChI=1S", new Set(["formula"]))).toBe("InChI=1S");
+});
+
+test("renders a notation mark as inline SVG and nothing for an unknown name", () => {
+  expect(notationMark("ok").startsWith("<svg")).toBe(true);
+  expect(notationMark("nonexistent")).toBe("");
+});
+
+test.each(Object.keys(ICON_PATHS))("draws the %s icon hidden from assistive tech", (name) => {
+  expect(icon(name)).toContain('stroke-width="1.5"');
+  expect(icon(name)).toContain('aria-hidden="true"');
+});
+
+test("draws nothing for an unknown icon", () => {
+  expect(icon("no-such-icon")).toBe("");
 });

@@ -599,7 +599,7 @@ animates its elevation.
 - **Do** pair every icon with a real accessible name on the control; icons are always `aria-hidden="true"` and `focusable="false"`.
 - **Do** key touch sizing to `(pointer: coarse), (any-pointer: coarse)` — a stylus 2-in-1 reports a fine primary pointer and still needs 44px targets.
 - **Do** read `INCHI_STACK_BREAKPOINT` when code needs to know whether the layout is stacked; never hardcode a width.
-- **Do** run `node pages/inchi-layers.js` after touching the layer grammar or the icon set — it self-checks both.
+- **Do** run `cd test && npx jest inchi-layers` after touching the layer grammar or the icon set.
 - **Do** run `python3 test/check_contrast.py` after touching a colour token; it fails on anything below its threshold and lists the hairline exemption separately.
 - **Do** give a control its border from `--inchi-rule`, never from `--inchi-rule-hairline` — the hairline is exempt from 3:1 precisely because nothing bounding a control uses it.
 
@@ -635,7 +635,6 @@ These are the build's own gaps, not rules to inherit.
 
 ## Verification in-repo
 
-- `node pages/inchi-layers.js` — self-check on the layer parser, the diff, the InChIKey split, HTML escaping and the icon set.
 - `cd test && npx jest` — 4 suites (`inchi`, `rinchi`, `inchi-layers`, `input-format`), 119 cases. Requires the WASM build to have run.
 - `python3 test/check_contrast.py` — every text pair at 4.5:1 and every boundary pair at 3:1, in both themes, with the hairline exemption reported separately.
 - `node <impeccable>/scripts/detect.mjs --json pages/index.html pages/components` — returns `[]`.
