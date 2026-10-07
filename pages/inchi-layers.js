@@ -293,8 +293,8 @@ function notationMark(kind) {
   const open = '<svg class="notation-mark" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false">';
   switch (kind) {
     case "ok":
-      // Filled wedge: the stereo bond that comes toward you.
-      return `${open}<path d="M2 10 L6 2 L10 10 Z" fill="currentColor"/></svg>`;
+      // Hexagon: the ring, drawn as a structure diagram draws it.
+      return `${open}<path d="M6 1.5 L9.9 3.75 L9.9 8.25 L6 10.5 L2.1 8.25 L2.1 3.75 Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="currentColor" fill-opacity="0.2"/></svg>`;
     case "error":
       // Two crossed strokes: struck out, as a notebook strikes a bad reading.
       return `${open}<path d="M2.5 2.5 L9.5 9.5 M9.5 2.5 L2.5 9.5" stroke="currentColor" stroke-width="1.75" fill="none"/></svg>`;
