@@ -808,12 +808,14 @@ inchi-option-help {
  *
  * No open/closed selector of its own: the `popover` attribute makes the
  * platform own that, along with Escape, click-outside dismissal and the top
- * layer. The UA centres it in the viewport, which is deliberate here — CSS
- * anchor positioning is not portable yet, and these panels are paragraphs of
- * prose rather than one-line tips.
+ * layer. The UA would centre it in the viewport; CSS anchor positioning is not
+ * portable yet, so the element script sets its edges next to its button, and
+ * this only lifts the UA's centring.
  */
 .option-help-panel {
-  max-width: min(32rem, calc(100vw - 2rem));
+  inset: auto;
+  margin: 0;
+  overflow: auto;
   padding: 0.75rem 1rem;
   border: var(--inchi-rule-weight-hairline) solid var(--inchi-rule-hairline);
   border-radius: var(--inchi-radius-md);

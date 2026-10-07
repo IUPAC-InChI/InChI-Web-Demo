@@ -885,6 +885,82 @@ class InChIOptionHelpElement extends HTMLElement {
     button.textContent = this.getAttribute("mark") ?? "?";
 
     this.append(button, panel);
+
+    /*
+     * A mouse opens the panel on hover too. It stays open while the pointer is
+     * on the button or the panel, so the prose can be read and scrolled, and
+     * closes a moment after it leaves both. Touch and keyboard keep the click.
+     */
+    let closeTimer;
+    const open = (event) => {
+      if (event.pointerType !== "mouse") {
+        return;
+      }
+      clearTimeout(closeTimer);
+      if (!panel.matches(":popover-open")) {
+        panel.showPopover();
+        panel.dataset.hoverOpened = "";
+      }
+    };
+    const close = (event) => {
+      if (event.pointerType !== "mouse" || !("hoverOpened" in panel.dataset)) {
+        return;
+      }
+      closeTimer = setTimeout(() => panel.hidePopover(), 200);
+    };
+    for (const target of [button, panel]) {
+      target.addEventListener("pointerenter", open);
+      target.addEventListener("pointerleave", close);
+    }
+    // A click on a hover-opened panel pins it rather than toggling it shut.
+    button.addEventListener("click", (event) => {
+      if ("hoverOpened" in panel.dataset) {
+        event.preventDefault();
+        clearTimeout(closeTimer);
+        delete panel.dataset.hoverOpened;
+      }
+    });
+    panel.addEventListener("toggle", (event) => {
+      if (event.newState === "closed") {
+        clearTimeout(closeTimer);
+        delete panel.dataset.hoverOpened;
+        window.removeEventListener("scroll", place, true);
+        window.removeEventListener("resize", place);
+      }
+    });
+
+    /*
+     * Next to the button: below it, or above it when the button sits in the
+     * lower half of the viewport, and growing towards whichever side has more
+     * room. Every edge is set from the button alone, so the panel is placed
+     * before it is shown and never flashes elsewhere first.
+     */
+    const gap = 6;
+    const margin = 8;
+    function place() {
+      const rect = button.getBoundingClientRect();
+      const vw = document.documentElement.clientWidth;
+      const vh = document.documentElement.clientHeight;
+      const below = rect.top + rect.height / 2 < vh / 2;
+      const rightward = rect.left + rect.width / 2 < vw / 2;
+      const left = Math.max(margin, rect.left);
+      const right = Math.max(margin, vw - rect.right);
+      Object.assign(panel.style, {
+        top: below ? `${rect.bottom + gap}px` : "auto",
+        bottom: below ? "auto" : `${vh - rect.top + gap}px`,
+        left: rightward ? `${left}px` : "auto",
+        right: rightward ? "auto" : `${right}px`,
+        maxWidth: `min(32rem, ${vw - (rightward ? left : right) - margin}px)`,
+        maxHeight: `${(below ? vh - rect.bottom : rect.top) - gap - margin}px`,
+      });
+    }
+    panel.addEventListener("beforetoggle", (event) => {
+      if (event.newState === "open") {
+        place();
+        window.addEventListener("scroll", place, true);
+        window.addEventListener("resize", place);
+      }
+    });
   }
 }
 
