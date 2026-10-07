@@ -75,8 +75,8 @@ const HELP_TOUR_STEPS = [
   },
   {
     selector: ".masthead-utilities",
-    title: "Help, theme and About",
-    body: "Help opens this tour again. The switch changes between light and dark, and About says who made the app and how.",
+    title: "Help, theme, About and GitHub",
+    body: "Help opens this tour again. The switch changes between light and dark, About says who made the app and how, and GitHub opens its source code.",
   },
 ];
 

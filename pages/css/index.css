@@ -1556,7 +1556,7 @@ inchi-about > h2 {
   text-decoration: none;
 }
 
-/* Help and About side by side, sharing the width under the switch. */
+/* Help, About and GitHub side by side, sharing the width under the switch. */
 .masthead-routes {
   display: flex;
   gap: 0.35rem;
