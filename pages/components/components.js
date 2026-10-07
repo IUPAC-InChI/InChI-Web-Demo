@@ -65,6 +65,11 @@ class ReportMaskElement extends InsertHTMLElement {
     this.nameInput = this.querySelector(".mask-name");
     this.descriptionInput = this.querySelector(".mask-description");
 
+    this.issueCategory = this.querySelector(".mask-issue-category");
+    this.issueMessage = this.querySelector(".mask-issue-message");
+    this.issueIdentifier = this.querySelector(".mask-issue-identifier");
+    this.issuePreview = this.querySelector("[data-mask-issue-preview]");
+
     this.openBtn.addEventListener("click", () => this.open());
     this.querySelector(".mask-close").addEventListener("click", () =>
       this.dialog.close()
@@ -73,11 +78,118 @@ class ReportMaskElement extends InsertHTMLElement {
       this.dialog.close()
     );
     this.form.addEventListener("submit", (event) => this.submit(event));
+    this.form.addEventListener("change", (event) => {
+      if (event.target.name === "maskRoute") {
+        this.showRoute(event.target.value);
+      }
+    });
+    this.issueIdentifier.addEventListener("change", () =>
+      this.renderIssuePreview()
+    );
   }
 
   open() {
     this.dialog.showModal();
-    this.nameInput.focus();
+    this.showRoute(this.route());
+  }
+
+  route() {
+    return this.form.elements.maskRoute.value;
+  }
+
+  /*
+   * Show the chosen route's fields and disable the other's, so its required
+   * fields do not block the submit.
+   */
+  showRoute(route) {
+    for (const fields of this.querySelectorAll("[data-mask-route]")) {
+      const active = fields.dataset.maskRoute === route;
+      fields.hidden = !active;
+      fields.disabled = !active;
+    }
+    this.submitBtn.textContent =
+      route === "app" ? "Open GitHub issue" : "Send report";
+    if (route === "app") {
+      this.renderIssuePreview();
+      this.issueMessage.focus();
+    } else {
+      this.nameInput.focus();
+    }
+  }
+
+  /*
+   * What the GitHub issue carries besides the message. Read from the page
+   * as it is now, so the preview and the issue cannot disagree. The
+   * identifier is the RInChI while the editor holds a reaction.
+   */
+  issueContext() {
+    const textOf = (id) => document.getElementById(id)?.textContent.trim();
+    const reaction = !document.querySelector('[data-output="rinchi"]')?.hidden;
+    let options = "";
+    try {
+      options = getInchiOptions(optionsPanel())
+        .map((o) => "-" + o)
+        .join(" ");
+    } catch (error) {
+      options = "";
+    }
+    return {
+      identifierLabel: reaction ? "RInChI" : "InChI",
+      identifier: this.issueIdentifier.checked
+        ? textOf(reaction ? "workbench-rinchi" : "workbench-inchi")
+        : "",
+      version: getVersion(),
+      options,
+      input:
+        conversionSource === "paste"
+          ? `pasted ${pastedInput.label || pastedInput.kind}`
+          : "drawn in the editor",
+      page: location.origin + location.pathname,
+      userAgent: navigator.userAgent,
+    };
+  }
+
+  renderIssuePreview() {
+    const reaction = !document.querySelector('[data-output="rinchi"]')?.hidden;
+    this.issueIdentifier.nextElementSibling.textContent = `Include the current ${
+      reaction ? "RInChI" : "InChI"
+    }`;
+    this.issuePreview.textContent = feedbackContextMarkdown(
+      this.issueContext()
+    );
+  }
+
+  /*
+   * Opened through a link click rather than window.open: it happens inside
+   * the submit's user gesture, so no popup blocker stands in the way. The
+   * clipboard write rides the same gesture.
+   */
+  openIssue() {
+    const issue = buildFeedbackIssue({
+      category: this.issueCategory.value,
+      message: this.issueMessage.value,
+      context: this.issueContext(),
+    });
+
+    let msg = null;
+    if (!issue.fitted) {
+      navigator.clipboard?.writeText(issue.clipboard).catch((error) => {
+        console.error("Copying the issue context failed", error);
+      });
+      msg =
+        "The context was too long for the link, so it was copied to your " +
+        "clipboard: paste it into the issue.";
+    }
+
+    const link = document.createElement("a");
+    link.href = issue.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.click();
+
+    this.issueMessage.value = "";
+    this.dialog.close();
+    document.querySelector("feedback-dialog")?.open({ status: "issue", msg });
   }
 
   molfileIsEmpty(molfile) {
@@ -247,6 +359,11 @@ class ReportMaskElement extends InsertHTMLElement {
   async submit(event) {
     event.preventDefault();
 
+    if (this.route() === "app") {
+      this.openIssue();
+      return;
+    }
+
     if (this.submitBtn.disabled) {
       return;
     }
@@ -321,6 +438,13 @@ class FeedbackDialogElement extends InsertHTMLElement {
         glyph: "x-lg",
         title: "Submission failed",
         message: "Your report could not be submitted.",
+      },
+      issue: {
+        iconClass: "success",
+        glyph: "check-lg",
+        title: "Issue opened on GitHub",
+        message:
+          "Check it in the new tab and submit it there; nothing is sent until you do.",
       },
     };
   }

@@ -70,8 +70,8 @@ const HELP_TOUR_STEPS = [
   },
   {
     selector: ".mask-open",
-    title: "Report a problem",
-    body: "If a result looks wrong, send the structure with a short description. This is the only thing that leaves your browser; every conversion runs locally.",
+    title: "Report a problem or send feedback",
+    body: "A wrong InChI goes privately to the InChI Trust with your structure; this is the only thing that ever leaves your browser. A bug, question or idea about the web app opens a public GitHub issue instead.",
   },
   {
     selector: ".masthead-utilities",

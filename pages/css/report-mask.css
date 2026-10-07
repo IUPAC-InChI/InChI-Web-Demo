@@ -102,3 +102,90 @@
   cursor: pointer;
   flex-shrink: 0;
 }
+
+/* The two routes, and the fields of whichever is chosen. */
+.mask-dialog fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mask-route-fields {
+  display: flex;
+  flex-direction: column;
+}
+
+.mask-route-fields[hidden] {
+  display: none;
+}
+
+.mask-dialog .mask-routes {
+  margin-bottom: 14px;
+}
+
+.mask-route {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  margin-top: 6px;
+  border: var(--inchi-rule-weight) solid var(--inchi-rule);
+  border-radius: var(--inchi-radius-sm);
+  cursor: pointer;
+}
+
+.mask-route:has(input:checked) {
+  border-color: var(--inchi-brand);
+  background: var(--inchi-brand-quiet);
+}
+
+.mask-route input {
+  margin-top: 4px;
+  flex-shrink: 0;
+  accent-color: var(--inchi-brand);
+}
+
+.mask-route-name {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.mask-route-hint {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--inchi-ink-muted);
+}
+
+.mask-dialog select {
+  margin-bottom: 12px;
+}
+
+.mask-attach {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Exactly what the issue will carry, in the identifier face. */
+.mask-issue-preview {
+  max-height: 12rem;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  overflow: auto;
+  border-radius: var(--inchi-radius-sm);
+  background: var(--inchi-field-sunken);
+  color: var(--inchi-ink);
+  font-family: var(--inchi-font-identifier);
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mask-public-note strong {
+  color: var(--inchi-error);
+}

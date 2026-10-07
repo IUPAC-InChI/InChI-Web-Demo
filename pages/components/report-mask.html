@@ -1,15 +1,21 @@
 <button type="button" class="btn btn-sm btn-outline-secondary mask-open mt-3">
-  Report a problem
+  Report a problem or send feedback
 </button>
 
 <!--
   A native <dialog> supplies the modal behaviour: focus trap, Escape to close,
   an inert page behind it and focus returned to the trigger on close.
+
+  Two routes, because they go to different people: a wrong InChI is sent
+  privately to the InChI Trust with the structure, and anything about the web
+  app itself becomes a public GitHub issue the visitor opens in their own
+  account. Each route is a fieldset; the one not chosen is disabled, which
+  also takes its required fields out of the form's validation.
 -->
 <dialog class="inchi-dialog mask-dialog" aria-labelledby="maskTitle">
   <div class="inchi-dialog-body">
     <header>
-      <h2 id="maskTitle">Report a problem</h2>
+      <h2 id="maskTitle">Report a problem or send feedback</h2>
       <button type="button" class="mask-close" aria-label="Close dialog">
         <svg
           class="app-icon"
@@ -31,55 +37,115 @@
     </header>
 
     <form>
-      <p class="mask-intro">
-        This is the only place where your structure leaves your browser. Every
-        conversion — InChI, InChIKey, RInChI, AuxInfo — runs locally and is
-        never uploaded.
-      </p>
-      <p class="mask-intro">
-        Your structure and description, along with the generated InChI,
-        InChIKey,log, and selected options are sent to the Beilstein-Institut
-        for the InChI Trust.
-      </p>
-
-      <label class="mask-label" for="nameInput"
-        >Your name or email <span class="mask-optional">(optional)</span></label
-      >
-      <input
-        type="text"
-        id="nameInput"
-        class="mask-name"
-        maxlength="200"
-        autocomplete="name"
-        placeholder="So we can follow up with you"
-      />
-
-      <label class="mask-label" for="descriptionInput"
-        >What is wrong with this structure?</label
-      >
-      <textarea
-        rows="5"
-        id="descriptionInput"
-        class="mask-description"
-        maxlength="4000"
-        placeholder="e.g. the stereo descriptor is missing for the double bond"
-        required
-      ></textarea>
-
-      <div class="disclaimer-section">
-        <label for="disclaimerCheckbox" class="disclaimer-label">
-          <input
-            type="checkbox"
-            id="disclaimerCheckbox"
-            class="disclaimer-checkbox"
-            required
-          />
-          <span
-            >I acknowledge that this report will be submitted for review and may
-            be publicly shared to improve the InChI library.</span
-          >
+      <fieldset class="mask-routes">
+        <legend class="mask-label">What is it about?</legend>
+        <label class="mask-route">
+          <input type="radio" name="maskRoute" value="inchi" checked />
+          <span>
+            <span class="mask-route-name">A wrong or unexpected InChI</span>
+            <span class="mask-route-hint"
+              >Sent privately to the InChI Trust, with your structure.</span
+            >
+          </span>
         </label>
-      </div>
+        <label class="mask-route">
+          <input type="radio" name="maskRoute" value="app" />
+          <span>
+            <span class="mask-route-name"
+              >This web app: a bug, a question or an idea</span
+            >
+            <span class="mask-route-hint"
+              >Opens a public GitHub issue. Needs a GitHub account.</span
+            >
+          </span>
+        </label>
+      </fieldset>
+
+      <fieldset class="mask-route-fields" data-mask-route="inchi">
+        <p class="mask-intro">
+          This is the only place where your structure leaves your browser.
+          Every conversion — InChI, InChIKey, RInChI, AuxInfo — runs locally
+          and is never uploaded.
+        </p>
+        <p class="mask-intro">
+          Your structure and description, along with the generated InChI,
+          InChIKey, log, and selected options are sent to the
+          Beilstein-Institut for the InChI Trust.
+        </p>
+
+        <label class="mask-label" for="nameInput"
+          >Your name or email
+          <span class="mask-optional">(optional)</span></label
+        >
+        <input
+          type="text"
+          id="nameInput"
+          class="mask-name"
+          maxlength="200"
+          autocomplete="name"
+          placeholder="So we can follow up with you"
+        />
+
+        <label class="mask-label" for="descriptionInput"
+          >What is wrong with this structure?</label
+        >
+        <textarea
+          rows="5"
+          id="descriptionInput"
+          class="mask-description"
+          maxlength="4000"
+          placeholder="e.g. the stereo descriptor is missing for the double bond"
+          required
+        ></textarea>
+
+        <div class="disclaimer-section">
+          <label for="disclaimerCheckbox" class="disclaimer-label">
+            <input
+              type="checkbox"
+              id="disclaimerCheckbox"
+              class="disclaimer-checkbox"
+              required
+            />
+            <span
+              >I acknowledge that this report will be submitted for review and
+              may be publicly shared to improve the InChI library.</span
+            >
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="mask-route-fields" data-mask-route="app" disabled hidden>
+        <label class="mask-label" for="issueCategory">Kind</label>
+        <select id="issueCategory" class="form-select mask-issue-category">
+          <option value="bug">Bug</option>
+          <option value="suggestion">Suggestion</option>
+          <option value="question">Question</option>
+        </select>
+
+        <label class="mask-label" for="issueMessage">Your message</label>
+        <textarea
+          rows="5"
+          id="issueMessage"
+          class="mask-issue-message"
+          maxlength="2000"
+          placeholder="What happened, or what would help?"
+          required
+        ></textarea>
+
+        <label class="mask-attach">
+          <input type="checkbox" class="mask-issue-identifier" checked />
+          <span>Include the current InChI</span>
+        </label>
+
+        <p class="mask-label mb-1">What gets attached</p>
+        <pre class="mask-issue-preview" data-mask-issue-preview></pre>
+
+        <p class="mask-intro mask-public-note">
+          The issue is <strong>public</strong>: anyone can read it. Nothing is
+          sent until you submit it on GitHub.
+        </p>
+      </fieldset>
+
       <div class="mask-actions">
         <button type="button" class="btn btn-outline-secondary mask-cancel">
           Cancel
