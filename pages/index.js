@@ -1074,6 +1074,34 @@ async function clearPasteField() {
 }
 
 /*
+ * Draw caffeine into an empty editor and convert it, so the Help tour has a
+ * real InChI to point at. Anything already drawn or pasted is left alone, and
+ * the sample stays after the tour.
+ *
+ * Loaded behind the guard for the same reason as clearPasteField: the load is
+ * not a user edit, and the conversion runs here so the tour can wait for it.
+ */
+async function loadTourSampleIntoEmptyEditor() {
+  const ketcher = getKetcher("workbench-ketcher");
+  const field = document.getElementById("workbench-paste");
+  if (!ketcher || !ketcher.editor.struct().isBlank() || field?.value) {
+    return;
+  }
+  loadingIntoEditor = true;
+  try {
+    await ketcher.setMolecule("CN1C=NC2=C1C(=O)N(C(=O)N2C)C");
+  } catch (error) {
+    /* The tour still runs; its steps then point at empty plates. */
+    console.error("Loading the tour sample failed", error);
+    return;
+  } finally {
+    loadingIntoEditor = false;
+  }
+  conversionSource = "editor";
+  await updateWorkbench();
+}
+
+/*
  * The clear button is offered only when there is something to clear. Called
  * on every keystroke as well as from the conversion paths, because the
  * debounce that gates conversion must not gate the button going live.

@@ -276,10 +276,25 @@ function openHelpTour() {
   show(0);
 }
 
+/*
+ * An empty editor gets caffeine first (index.js), so the InChI steps point at
+ * real layers rather than placeholders. The button is disabled while that
+ * converts, because a first conversion can wait on a cold WebAssembly module.
+ */
 if (typeof document !== "undefined") {
-  document
-    .querySelector("[data-help-open]")
-    ?.addEventListener("click", openHelpTour);
+  const help = document.querySelector("[data-help-open]");
+  help?.addEventListener("click", async () => {
+    help.disabled = true;
+    try {
+      await loadTourSampleIntoEmptyEditor();
+    } catch (error) {
+      console.error("Preparing the tour sample failed", error);
+    }
+    help.disabled = false;
+    /* Disabling dropped focus; the dialog returns it to whatever had it. */
+    help.focus();
+    openHelpTour();
+  });
 }
 
 if (typeof module === "object" && module.exports) {
