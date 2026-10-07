@@ -489,6 +489,8 @@ input.form-check-input {
     .annotation-button,
     .paste-clear,
     .theme-switch,
+    .masthead-link,
+    .help-tour-close,
     summary,
     a
   ):focus-visible {
@@ -1552,6 +1554,124 @@ inchi-about > h2 {
   border-color: var(--inchi-rule-stroke);
   color: var(--inchi-ink);
   text-decoration: none;
+}
+
+/* Help and About side by side, sharing the width under the switch. */
+.masthead-routes {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.masthead-routes > .masthead-link {
+  flex: 1;
+}
+
+/* Help is a button that opens the tour, styled as the route beside it. */
+button.masthead-link {
+  cursor: pointer;
+}
+
+/* ---- Help tour --------------------------------------------------------- */
+/*
+ * The dialog is the whole viewport and paints nothing itself: the dimming is
+ * the spotlight's box-shadow, spread out from the lit part, so the part shows
+ * through undimmed. A click on the dimmed page lands on the dialog and closes
+ * the tour.
+ */
+.help-tour {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.help-tour::backdrop {
+  background: transparent;
+}
+
+.help-tour-spotlight {
+  position: fixed;
+  border-radius: var(--inchi-radius-sm);
+  outline: var(--inchi-rule-weight-stroke) solid var(--inchi-brand);
+  box-shadow: 0 0 0 100vmax var(--inchi-backdrop);
+  pointer-events: none;
+  transition:
+    top 160ms ease-out,
+    left 160ms ease-out,
+    width 160ms ease-out,
+    height 160ms ease-out;
+}
+
+.help-tour-card {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 22rem;
+  max-width: calc(100vw - 24px);
+  padding: 1rem 1.25rem;
+  border: var(--inchi-rule-weight) solid var(--inchi-rule-stroke);
+  border-radius: var(--inchi-radius-md);
+  background: var(--inchi-field);
+  color: var(--inchi-ink);
+  box-shadow: var(--inchi-shadow-dialog);
+}
+
+.help-tour-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.help-tour-card h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.help-tour-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--inchi-ink-muted);
+}
+
+.help-tour-close {
+  display: inline-flex;
+  padding: 0.25rem;
+  border: none;
+  background: none;
+  color: var(--inchi-ink-muted);
+  cursor: pointer;
+}
+
+.help-tour-close:hover {
+  color: var(--inchi-ink);
+}
+
+.help-tour-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .help-tour-spotlight {
+    transition: none;
+  }
+}
+
+@media (pointer: coarse), (any-pointer: coarse) {
+  .help-tour-close,
+  .help-tour-controls > .btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
