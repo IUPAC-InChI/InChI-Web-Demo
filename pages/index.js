@@ -587,13 +587,18 @@ function optionsPanel() {
 
 /*
  * Snapshot the panel, so a version switch can put the visitor's settings back
- * into the panel the new version builds.
+ * into the panel the new version builds. The third entry says whether the
+ * option was still at this version's default.
  */
 function getInchiOptionsState(root) {
   const optionsState = {};
 
   root.querySelectorAll("input[data-id]").forEach((input) => {
-    optionsState[input.dataset.id] = [input.checked, input.disabled];
+    optionsState[input.dataset.id] = [
+      input.checked,
+      input.disabled,
+      input.checked === input.hasAttribute("data-default-checked"),
+    ];
   });
 
   return optionsState;
@@ -603,6 +608,10 @@ function getInchiOptionsState(root) {
  * Put a snapshot back. Applied by `data-id`, so an option the newly selected
  * version does not have is simply absent and the new panel's own default
  * stands.
+ *
+ * A radio carries over only if the visitor moved it off the default: versions
+ * differ in which radio is the default (Enhanced Stereochemistry's build
+ * selects its own), and an untouched group should get the new version's.
  */
 function applyInchiOptionsState(root, optionsState) {
   Object.entries(optionsState).forEach(([k, v]) => {
@@ -610,7 +619,9 @@ function applyInchiOptionsState(root, optionsState) {
     if (!input) {
       return; // An option this version does not have; its own default stands.
     }
-    input.checked = v[0];
+    if (!(input.type === "radio" && v[2])) {
+      input.checked = v[0];
+    }
     input.disabled = v[1];
   });
 }
