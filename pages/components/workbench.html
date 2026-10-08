@@ -124,7 +124,11 @@
     </div>
   </div>
 
-  <div class="tool-controls tool-controls-bottom">
+  <!--
+    InChI only: the RInChI build is fixed and takes no options, so the panel
+    goes with the InChI block when the editor holds a reaction (showOutput).
+  -->
+  <div class="tool-controls tool-controls-bottom" data-output="inchi">
     <inchi-version-selection
       onVersionChange="onChangeInchiVersion()"
     ></inchi-version-selection>
