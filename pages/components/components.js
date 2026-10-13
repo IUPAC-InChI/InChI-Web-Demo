@@ -337,7 +337,11 @@ class ReportMaskElement extends InsertHTMLElement {
         }
       );
       if (!response.ok) {
-        console.error("Report ingest failed", response.status, response.statusText);
+        console.error(
+          "Report ingest failed",
+          response.status,
+          response.statusText
+        );
         return {
           status: "error",
           msg:
@@ -546,7 +550,9 @@ class InChIVersionSelectionElement extends HTMLElement {
     for (const [versionName, versionConfig] of Object.entries(
       availableInchiVersions
     )) {
-      groups.get(groupFor(versionConfig.url)).push([versionName, versionConfig]);
+      groups
+        .get(groupFor(versionConfig.url))
+        .push([versionName, versionConfig]);
     }
 
     for (const groupName of groupOrder) {
@@ -579,10 +585,7 @@ class InChIVersionSelectionElement extends HTMLElement {
         : group === "Released"
           ? `${versionName} release notes`
           : "Source revision";
-      commitLink.replaceChildren(
-        document.createTextNode(`${group} · `),
-        link
-      );
+      commitLink.replaceChildren(document.createTextNode(`${group} · `), link);
     };
 
     dropdown.addEventListener("change", (event) => {
@@ -1050,7 +1053,7 @@ class InChIOptionsElement extends HTMLElement {
     }
 
     this.querySelector(
-      'input.form-check-input[data-id="includeStereo"]',
+      'input.form-check-input[data-id="includeStereo"]'
       // Optional: an options template is free to leave the checkbox out.
     )?.addEventListener("change", function () {
       optionsPanel()
@@ -1324,8 +1327,9 @@ class NGLViewerElement extends HTMLElement {
   }
 
   connectedCallback() {
-    this.annotationSelectionElement =
-      this.querySelector(".annotation-selection");
+    this.annotationSelectionElement = this.querySelector(
+      ".annotation-selection"
+    );
     const legend = this.querySelector(".annotation-legend");
 
     this.annotationButtons.forEach((button) => {
