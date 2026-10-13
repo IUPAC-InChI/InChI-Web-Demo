@@ -1268,7 +1268,17 @@ class NGLViewerElement extends HTMLElement {
      * than a tab strip. Explanations live in a <details>, not a title
      * attribute, which is mouse-only.
      */
-    this.innerHTML = `<h3 class="inchi-section-heading mt-3">Atom annotations</h3>
+    this.innerHTML = `<div class="ngl-viewer-header mt-3">
+        <h3 class="inchi-section-heading">Atom annotations</h3>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary ngl-fullscreen-button"
+          title="Toggle full screen"
+          aria-label="Toggle full screen"
+        >
+          ${icon("fullscreen-enter")}
+        </button>
+      </div>
       <fieldset class="annotation-selection mt-1">
         <legend class="visually-hidden">Atom annotations to overlay</legend>
       </fieldset>
@@ -1283,6 +1293,17 @@ class NGLViewerElement extends HTMLElement {
     this.structureKey = undefined;
     this.annotationData = undefined;
     this.annotationSelectionElement = undefined;
+    this.fullscreenButtonElement = this.querySelector(".ngl-fullscreen-button");
+    this.handleFullscreenChange = () => {
+      this.fullscreenButtonElement.innerHTML = icon(
+        document.fullscreenElement === this
+          ? "fullscreen-exit"
+          : "fullscreen-enter"
+      );
+    };
+    this.fullscreenButtonElement.addEventListener("click", () =>
+      this.toggleFullscreen()
+    );
   }
 
   /*
@@ -1332,6 +1353,8 @@ class NGLViewerElement extends HTMLElement {
     );
     const legend = this.querySelector(".annotation-legend");
 
+    document.addEventListener("fullscreenchange", this.handleFullscreenChange);
+
     this.annotationButtons.forEach((button) => {
       const buttonElement = document.createElement("button");
       buttonElement.type = "button";
@@ -1364,6 +1387,25 @@ class NGLViewerElement extends HTMLElement {
       description.textContent = button.info;
       legend.append(term, description);
     });
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener(
+      "fullscreenchange",
+      this.handleFullscreenChange
+    );
+  }
+
+  async toggleFullscreen() {
+    try {
+      if (document.fullscreenElement === this) {
+        await document.exitFullscreen();
+      } else {
+        await this.requestFullscreen();
+      }
+    } catch (error) {
+      console.error("The 3D viewer could not change fullscreen mode", error);
+    }
   }
 
   /* Put the annotation buttons back to "nothing to annotate". */
