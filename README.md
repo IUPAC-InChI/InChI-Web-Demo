@@ -51,6 +51,16 @@ or a subset with
 yarn run jest <path_to_test_file>
 ```
 
+#### UI snapshot tests
+
+We're testing for unexpected UI changes with Jest snapshot tests (<https://jestjs.io/docs/snapshot-testing>). The snapshot tests run as part of the suite, you don't have to run them explicitly. When a snapshot fails after you've made an intentional change to the UI, regenerate the snapshot with
+
+```shell
+yarn run jest --updateSnapshot
+```
+
+The subsequent snapshots tests run against the updated reference.
+
 ## Deployment
 
 You can deploy the web-demo via GitHub actions.
