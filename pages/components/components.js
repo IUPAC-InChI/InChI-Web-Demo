@@ -1263,11 +1263,37 @@ class NGLViewerElement extends HTMLElement {
       Object.keys(this.annotationColors).map((id) => [id, false])
     );
 
-    /*
-     * A labelled group, so the buttons read as independent overlays rather
-     * than a tab strip. Explanations live in a <details>, not a title
-     * attribute, which is mouse-only.
-     */
+    this.stage = undefined;
+    this.structure = undefined;
+    this.structureKey = undefined;
+    this.annotationData = undefined;
+    this.annotationSelectionElement = undefined;
+    this.fullscreenButtonElement = undefined;
+    this.handleFullscreenChange = () => {
+      this.fullscreenButtonElement.innerHTML = icon(
+        document.fullscreenElement === this
+          ? "fullscreen-exit"
+          : "fullscreen-enter"
+      );
+    };
+  }
+
+  /*
+   * Custom element constructors must not add children (document.createElement
+   * would throw), so the DOM is built on first connection instead.
+   *
+   * A labelled group, so the buttons read as independent overlays rather
+   * than a tab strip. Explanations live in a <details>, not a title
+   * attribute, which is mouse-only.
+   */
+  connectedCallback() {
+    document.addEventListener("fullscreenchange", this.handleFullscreenChange);
+
+    // Reconnecting must not build the DOM twice.
+    if (this.fullscreenButtonElement !== undefined) {
+      return;
+    }
+
     this.innerHTML = `<div class="ngl-viewer-header mt-3">
         <h3 class="inchi-section-heading">Atom annotations</h3>
         <button
@@ -1288,22 +1314,47 @@ class NGLViewerElement extends HTMLElement {
       </details>
       <div class="ngl-viewport mt-2"></div>`;
 
-    this.stage = undefined;
-    this.structure = undefined;
-    this.structureKey = undefined;
-    this.annotationData = undefined;
-    this.annotationSelectionElement = undefined;
     this.fullscreenButtonElement = this.querySelector(".ngl-fullscreen-button");
-    this.handleFullscreenChange = () => {
-      this.fullscreenButtonElement.innerHTML = icon(
-        document.fullscreenElement === this
-          ? "fullscreen-exit"
-          : "fullscreen-enter"
-      );
-    };
     this.fullscreenButtonElement.addEventListener("click", () =>
       this.toggleFullscreen()
     );
+    this.annotationSelectionElement = this.querySelector(
+      ".annotation-selection"
+    );
+    const legend = this.querySelector(".annotation-legend");
+
+    this.annotationButtons.forEach((button) => {
+      const buttonElement = document.createElement("button");
+      buttonElement.type = "button";
+      buttonElement.dataset.annotation = button.id;
+      buttonElement.classList.add(button.color);
+      buttonElement.classList.add("annotation-button");
+      buttonElement.disabled = true;
+
+      const swatch = document.createElement("span");
+      swatch.className = "annotation-swatch";
+      buttonElement.append(swatch, document.createTextNode(button.text));
+
+      // These are toggles: the pressed state has to be exposed, not just painted.
+      buttonElement.setAttribute("aria-pressed", "false");
+
+      buttonElement.addEventListener("click", () => {
+        const isActive = buttonElement.classList.toggle("active");
+        buttonElement.setAttribute("aria-pressed", String(isActive));
+        this.annotationSelection[button.id] = isActive;
+        this.annotateStructure();
+      });
+
+      this.annotationSelectionElement.appendChild(buttonElement);
+
+      const term = document.createElement("dt");
+      term.className = "apparatus";
+      term.textContent = button.text;
+      const description = document.createElement("dd");
+      description.className = "mb-2";
+      description.textContent = button.info;
+      legend.append(term, description);
+    });
   }
 
   /*
@@ -1345,48 +1396,6 @@ class NGLViewerElement extends HTMLElement {
       })();
     }
     return this.stagePromise;
-  }
-
-  connectedCallback() {
-    this.annotationSelectionElement = this.querySelector(
-      ".annotation-selection"
-    );
-    const legend = this.querySelector(".annotation-legend");
-
-    document.addEventListener("fullscreenchange", this.handleFullscreenChange);
-
-    this.annotationButtons.forEach((button) => {
-      const buttonElement = document.createElement("button");
-      buttonElement.type = "button";
-      buttonElement.dataset.annotation = button.id;
-      buttonElement.classList.add(button.color);
-      buttonElement.classList.add("annotation-button");
-      buttonElement.disabled = true;
-
-      const swatch = document.createElement("span");
-      swatch.className = "annotation-swatch";
-      buttonElement.append(swatch, document.createTextNode(button.text));
-
-      // These are toggles: the pressed state has to be exposed, not just painted.
-      buttonElement.setAttribute("aria-pressed", "false");
-
-      buttonElement.addEventListener("click", () => {
-        const isActive = buttonElement.classList.toggle("active");
-        buttonElement.setAttribute("aria-pressed", String(isActive));
-        this.annotationSelection[button.id] = isActive;
-        this.annotateStructure();
-      });
-
-      this.annotationSelectionElement.appendChild(buttonElement);
-
-      const term = document.createElement("dt");
-      term.className = "apparatus";
-      term.textContent = button.text;
-      const description = document.createElement("dd");
-      description.className = "mb-2";
-      description.textContent = button.info;
-      legend.append(term, description);
-    });
   }
 
   disconnectedCallback() {
