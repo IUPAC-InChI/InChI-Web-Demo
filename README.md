@@ -51,6 +51,24 @@ or a subset with
 yarn run jest <path_to_test_file>
 ```
 
+#### Playwright end-to-end test
+
+The Playwright tests start a local server automatically
+
+```shell
+yarn test:e2e
+```
+
+You can run the test interactively while observing the UI actions with
+
+```shell
+yarn test:e2e:ui
+```
+
+You can observe the Playwright UI in your local browser at `localhost:8080`.
+
+When you make changes to the UI that break the end-to-end tests, you can update those test by running the `generate-end-to-end-tests` skill (by typing "/generate-end-to-end-tests" in the CoPilot chat).
+
 #### UI snapshot tests
 
 We're testing for unexpected UI changes with Jest snapshot tests (<https://jestjs.io/docs/snapshot-testing>). The snapshot tests run as part of the suite, you don't have to run them explicitly. When a snapshot fails after you've made an intentional change to the UI, regenerate the snapshot with

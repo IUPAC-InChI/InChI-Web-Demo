@@ -15,6 +15,10 @@
             "userGid": "automatic"
         }
     },
+    "forwardPorts": [
+        8000,
+        8080
+    ],
     "customizations": {
         "vscode": {
             "settings": {
@@ -65,5 +69,5 @@
             ]
         }
     },
-    "postCreateCommand": "npm install -g yarn"
+    "postCreateCommand": "bash .devcontainer/install-test-dependencies.sh"
 }

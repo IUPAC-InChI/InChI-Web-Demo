@@ -22,10 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     container: emscripten/emsdk:6.0.8
     steps:
-      - name: Install yarn
-        run: npm install -g yarn
-
       - uses: actions/checkout@v7
+
+      - name: Install test dependencies
+        run: bash $GITHUB_WORKSPACE/.devcontainer/install-test-dependencies.sh
 
       - name: Cache dependencies
         id: cache-dependencies
@@ -72,8 +72,8 @@ jobs:
       - name: Test
         run: |
           cd $GITHUB_WORKSPACE/test
-          yarn install
           yarn test
+          yarn test:e2e
 
       - uses: actions/configure-pages@v6
 
