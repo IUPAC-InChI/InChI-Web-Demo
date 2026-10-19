@@ -9,7 +9,11 @@
         data-default-checked
         checked
       />
-      <label class="form-check-label">Include Stereo:</label>
+      <label
+        class="form-check-label"
+        title="Disable stereochemistry reporting when unchecked"
+        >SNon</label
+      >
     </div>
   </div>
   <div>
@@ -26,7 +30,9 @@
         data-default-checked
         checked
       />
-      <label class="form-check-label">Absolute</label>
+      <label class="form-check-label" title="Absolute stereochemistry (default)"
+        >SAbs</label
+      >
     </div>
     <div class="form-check option-indent">
       <input
@@ -38,7 +44,7 @@
         data-inchi-option-on="SRel"
         data-inchi-stereo-option
       />
-      <label class="form-check-label">Relative</label>
+      <label class="form-check-label" title="Relative stereochemistry">SRel</label>
     </div>
     <div class="form-check option-indent">
       <input
@@ -50,7 +56,7 @@
         data-inchi-option-on="SRac"
         data-inchi-stereo-option
       />
-      <label class="form-check-label">Racemic</label>
+      <label class="form-check-label" title="Racemic stereochemistry">SRac</label>
     </div>
     <div class="form-check option-indent">
       <input
@@ -62,7 +68,9 @@
         data-inchi-option-on="SUCF"
         data-inchi-stereo-option
       />
-      <label class="form-check-label">From chiral flag</label>
+      <label class="form-check-label" title="Use stereochemistry from chiral flag"
+        >SUCF</label
+      >
     </div>
     </fieldset>
   </div>
@@ -76,8 +84,10 @@
     data-inchi-option-on="SUU"
     data-inchi-stereo-option
   />
-  <label class="form-check-label"
-    >Always include omitted/undefined stereo</label
+  <label
+    class="form-check-label"
+    title="Always include omitted/undefined stereo"
+    >SUU</label
   >
 </div>
 <div class="form-check option-indent">
@@ -89,8 +99,10 @@
     data-inchi-option-on="SLUUD"
     data-inchi-stereo-option
   />
-  <label class="form-check-label"
-    >Different marks for unknown/undefined stereo</label
+  <label
+    class="form-check-label"
+    title="Different marks for unknown/undefined stereo"
+    >SLUUD</label
   >
 </div>
 <div class="form-check option-indent">
@@ -102,7 +114,9 @@
     data-inchi-option-on="NEWPSOFF"
     data-inchi-stereo-option
   />
-  <label class="form-check-label"
-    >Both ends of wedge point to stereocenters</label
+  <label
+    class="form-check-label"
+    title="Both ends of wedge point to stereocenters"
+    >NEWPSOFF</label
   >
 </div>
