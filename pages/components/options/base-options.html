@@ -7,7 +7,7 @@
     data-default-checked
     checked
   />
-  <label class="form-check-label">Mobile H Perception</label>
+  <label class="form-check-label" title="Mobile H perception">FixedH</label>
 </div>
 <div class="form-check">
   <input
@@ -16,8 +16,10 @@
     type="checkbox"
     data-inchi-option-on="DoNotAddH"
   />
-  <label class="form-check-label">Do not add implicit H atoms</label>
-  <inchi-option-help label="What “Do not add implicit H atoms” does">
+  <label class="form-check-label" title="Do not add implicit H atoms"
+    >DoNotAddH</label
+  >
+  <inchi-option-help label="What “DoNotAddH” does">
     <p>
       If enabled, all hydrogens in the input structure are treated as explicit
       hydrogens. Reflects the <i>doNotAddH</i> option in the InChI command line
@@ -38,7 +40,7 @@
     type="checkbox"
     data-inchi-option-on="RecMet"
   />
-  <label class="form-check-label">Include Bonds to Metal</label>
+  <label class="form-check-label" title="Include bonds to metal">RecMet</label>
 </div>
 <div class="form-check">
   <input
@@ -47,7 +49,7 @@
     type="checkbox"
     data-inchi-option-on="Polymers"
   />
-  <label class="form-check-label">Treat polymers:</label>
+  <label class="form-check-label" title="Treat polymers">Polymers</label>
 </div>
 <div class="form-check option-indent">
   <input
@@ -60,8 +62,10 @@
     data-default-disabled
     disabled
   />
-  <label class="form-check-label"
-    >No pre-edits of original polymer structure</label
+  <label
+    class="form-check-label"
+    title="No pre-edits of original polymer structure"
+    >NoEdits</label
   >
 </div>
 <div class="form-check option-indent">
@@ -75,7 +79,7 @@
     data-default-disabled
     disabled
   />
-  <label class="form-check-label">Enable CRU folding</label>
+  <label class="form-check-label" title="Enable CRU folding">FoldCRU</label>
 </div>
 <div class="form-check option-indent">
   <input
@@ -88,7 +92,9 @@
     data-default-disabled
     disabled
   />
-  <label class="form-check-label">Disable CRU frame shift</label>
+  <label class="form-check-label" title="Disable CRU frame shift"
+    >NoFrameShift</label
+  >
 </div>
 <div class="form-check">
   <input
@@ -97,8 +103,12 @@
     type="checkbox"
     data-inchi-option-on="NPZz"
   />
-  <label class="form-check-label">Allow non-polymer Zz pseudoatoms</label>
-  <inchi-option-help label="What “Allow non-polymer Zz pseudoatoms” does">
+  <label
+    class="form-check-label"
+    title="Allow non-polymer Zz pseudoatoms"
+    >NPZz</label
+  >
+  <inchi-option-help label="What “NPZz” does">
     <p>
       The "Zz" or "*" ("star") pseudoatom is a generic placeholder designating
       an entity of undefined, unknown or variable nature. It is typically used
