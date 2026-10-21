@@ -973,8 +973,12 @@ class InChIOptionsElement extends HTMLElement {
   }
 
   async postCreate(updateFunction, inchiVersion) {
+    const paths = [
+      ...this.componentPaths,
+      "components/options/reset-options.html",
+    ];
     const htmlFragments = await Promise.all(
-      this.componentPaths.map(async (path) => {
+      paths.map(async (path) => {
         try {
           return await loadFragment(path);
         } catch (error) {
