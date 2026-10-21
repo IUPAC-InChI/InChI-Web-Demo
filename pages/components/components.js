@@ -1106,9 +1106,9 @@ class InChIOptions106Element extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
+      "components/options/base-options.html",
       "components/options/106-options.html",
       "components/options/stereo-base-options.html",
-      "components/options/base-options.html",
     ];
   }
 }
@@ -1116,9 +1116,9 @@ class InChIOptions1075Element extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
+      "components/options/base-options.html",
       "components/options/tautomer-options.html",
       "components/options/stereo-base-options.html",
-      "components/options/base-options.html",
     ];
   }
 }
@@ -1126,9 +1126,9 @@ class InChIOptionsDevElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
+      "components/options/base-options.html",
       "components/options/tautomer-options.html",
       "components/options/stereo-base-options.html",
-      "components/options/base-options.html",
     ];
   }
 }
@@ -1136,10 +1136,10 @@ class InChIOptionsDevMoInElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
+      "components/options/base-options.html",
       "components/options/tautomer-options.html",
       "components/options/latest-moin-options.html",
       "components/options/stereo-base-options.html",
-      "components/options/base-options.html",
     ];
   }
 }
@@ -1147,9 +1147,9 @@ class InChIOptionsDevEnhancedStereoElement extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
+      "components/options/base-options.html",
       "components/options/tautomer-options.html",
       "components/options/latest-enhanced-stereo-options.html",
-      "components/options/base-options.html",
     ];
   }
 }
@@ -1157,10 +1157,10 @@ class InChIOptionsNoMetalH extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
+      "components/options/base-options.html",
       "components/options/tautomer-options.html",
       "components/options/latest-moin-options.html",
       "components/options/stereo-base-options.html",
-      "components/options/base-options.html",
     ];
   }
 }
@@ -1168,10 +1168,10 @@ class InChIOptionsExplicitZeroValence extends InChIOptionsElement {
   constructor() {
     super();
     this.componentPaths = [
+      "components/options/base-options.html",
       "components/options/tautomer-options.html",
       "components/options/latest-moin-options.html",
       "components/options/stereo-base-options.html",
-      "components/options/base-options.html",
     ];
   }
 }
