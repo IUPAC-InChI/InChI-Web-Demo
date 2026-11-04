@@ -972,7 +972,7 @@ class InChIOptionsElement extends HTMLElement {
     super();
   }
 
-  async postCreate(updateFunction, inchiVersion) {
+  async postCreate(updateFunction) {
     const paths = [
       ...this.componentPaths,
       "components/options/reset-options.html",
@@ -1024,17 +1024,6 @@ class InChIOptionsElement extends HTMLElement {
 
     this.appendChild(boundingBox);
 
-    /*
-     * Both blocks below tolerate a missing input: a fragment that failed to
-     * load above is replaced by a warning, and must not take the rest of
-     * postCreate (the radio group, the change listeners) down with it.
-     */
-    const npzz = this.querySelector('input[data-id="NPZz"]');
-    if (versionBehavior(inchiVersion).checkNPZzByDefault && npzz) {
-      npzz.checked = true;
-      npzz.setAttribute("data-default-checked", ""); // A default: "Reset" restores it.
-    }
-
     this.querySelector(
       'input.form-check-input[data-id="includeStereo"]'
       // Optional: an options template is free to leave the checkbox out.
@@ -1055,8 +1044,13 @@ class InChIOptionsElement extends HTMLElement {
         .forEach((input) => {
           input.disabled = !this.checked;
         });
-      panel.querySelector('input.form-check-input[data-id="NPZz"]').checked =
-        this.checked;
+      // Dev has no NPZz box: it is always on there.
+      const npzz = panel.querySelector(
+        'input.form-check-input[data-id="NPZz"]'
+      );
+      if (npzz) {
+        npzz.checked = this.checked;
+      }
     });
 
     this.querySelector("[data-reset-inchi-options]")?.addEventListener(
@@ -1086,6 +1080,7 @@ class InChIOptions106Element extends InChIOptionsElement {
     super();
     this.componentPaths = [
       "components/options/base-options.html",
+      "components/options/npzz-options.html",
       "components/options/106-options.html",
       "components/options/stereo-base-options.html",
     ];
@@ -1096,6 +1091,7 @@ class InChIOptions1075Element extends InChIOptionsElement {
     super();
     this.componentPaths = [
       "components/options/base-options.html",
+      "components/options/npzz-options.html",
       "components/options/tautomer-options.html",
       "components/options/stereo-base-options.html",
     ];
@@ -1117,6 +1113,7 @@ class InChIOptionsDevEnhancedStereoElement extends InChIOptionsElement {
     super();
     this.componentPaths = [
       "components/options/base-options.html",
+      "components/options/npzz-options.html",
       "components/options/tautomer-options.html",
       "components/options/latest-enhanced-stereo-options.html",
     ];

@@ -449,9 +449,8 @@ const INCHI_STACK_BREAKPOINT = 1200;
 const VERSION_BEHAVIOR = {
   Dev: {
     // Dev handles molecular inorganics by default, and they need every
-    // hydrogen label drawn in Ketcher. NPZz is on by default in Dev as well.
+    // hydrogen label drawn in Ketcher.
     showAllHydrogenLabels: true,
-    checkNPZzByDefault: true,
   },
   "Dev with Enhanced Stereochemistry": {
     // Enhanced stereochemistry is only representable in V3000.
@@ -487,7 +486,7 @@ async function addInchiOptionsForm(updateFunction) {
   const inchiOptions = document.createElement(
     availableInchiVersions[inchiVersion].optionsTemplateId
   );
-  await inchiOptions.postCreate(updateFunction, inchiVersion);
+  await inchiOptions.postCreate(updateFunction);
 
   const targetDiv = optionsPanel();
   targetDiv.innerHTML = ""; // Remove previous options
