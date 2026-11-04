@@ -1035,27 +1035,6 @@ class InChIOptionsElement extends HTMLElement {
       npzz.setAttribute("data-default-checked", ""); // A default: "Reset" restores it.
     }
 
-    /*
-     * The polymer build exists to exercise polymer handling, so its polymer
-     * options start on and enabled instead of behind "Treat polymers".
-     */
-    if (versionBehavior(inchiVersion).polymerOptionsOn) {
-      const treatPolymers = this.querySelector(
-        'input[data-id="treatPolymers"]'
-      );
-      if (treatPolymers) {
-        treatPolymers.checked = true;
-        treatPolymers.setAttribute("data-default-checked", "");
-      }
-
-      this.querySelectorAll(
-        "input.form-check-input[data-inchi-polymer-option]"
-      ).forEach((input) => {
-        input.disabled = false;
-        input.removeAttribute("data-default-disabled");
-      });
-    }
-
     this.querySelector(
       'input.form-check-input[data-id="includeStereo"]'
       // Optional: an options template is free to leave the checkbox out.
@@ -1128,17 +1107,7 @@ class InChIOptionsDevElement extends InChIOptionsElement {
     this.componentPaths = [
       "components/options/base-options.html",
       "components/options/tautomer-options.html",
-      "components/options/stereo-base-options.html",
-    ];
-  }
-}
-class InChIOptionsDevMoInElement extends InChIOptionsElement {
-  constructor() {
-    super();
-    this.componentPaths = [
-      "components/options/base-options.html",
-      "components/options/tautomer-options.html",
-      "components/options/latest-moin-options.html",
+      "components/options/legacy-metal-options.html",
       "components/options/stereo-base-options.html",
     ];
   }
@@ -1150,28 +1119,6 @@ class InChIOptionsDevEnhancedStereoElement extends InChIOptionsElement {
       "components/options/base-options.html",
       "components/options/tautomer-options.html",
       "components/options/latest-enhanced-stereo-options.html",
-    ];
-  }
-}
-class InChIOptionsNoMetalH extends InChIOptionsElement {
-  constructor() {
-    super();
-    this.componentPaths = [
-      "components/options/base-options.html",
-      "components/options/tautomer-options.html",
-      "components/options/latest-moin-options.html",
-      "components/options/stereo-base-options.html",
-    ];
-  }
-}
-class InChIOptionsExplicitZeroValence extends InChIOptionsElement {
-  constructor() {
-    super();
-    this.componentPaths = [
-      "components/options/base-options.html",
-      "components/options/tautomer-options.html",
-      "components/options/latest-moin-options.html",
-      "components/options/stereo-base-options.html",
     ];
   }
 }
@@ -1563,14 +1510,8 @@ customElements.define("inchi-option-help", InChIOptionHelpElement);
 customElements.define("inchi-options-106", InChIOptions106Element);
 customElements.define("inchi-options-1075", InChIOptions1075Element);
 customElements.define("inchi-options-dev", InChIOptionsDevElement);
-customElements.define("inchi-options-dev-moin", InChIOptionsDevMoInElement);
 customElements.define(
   "inchi-options-dev-enhanced-stereo",
   InChIOptionsDevEnhancedStereoElement
-);
-customElements.define("inchi-options-no-metal-h", InChIOptionsNoMetalH);
-customElements.define(
-  "inchi-options-explicit-zero-valence",
-  InChIOptionsExplicitZeroValence
 );
 customElements.define("inchi-ngl-viewer", NGLViewerElement);
