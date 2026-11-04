@@ -3,11 +3,7 @@
 global.inchiModule106 = require("../pages/inchi/inchi-web106.js");
 global.inchiModule1075 = require("../pages/inchi/inchi-web-1075.js");
 global.inchiModuleDev = require("../pages/inchi/inchi-web-dev.js");
-global.inchiModuleDevMoIn = require("../pages/inchi/inchi-web-dev-moin.js");
 global.inchiModuleDevEnhancedStereo = require("../pages/inchi/inchi-web-dev-enhanced-stereo.js");
-global.inchiModuleNoMetalH = require("../pages/inchi/inchi-web-no-metal-h.js");
-global.inchiModuleExplicitZeroValence = require("../pages/inchi/inchi-web-explicit-zero-valence.js");
-global.inchiModulePolymerSupport = require("../pages/inchi/inchi-web-polymer-support.js");
 
 // Mock availableInchiVersions for global availability during testing.
 const loadInchiVersions = () => {
@@ -28,11 +24,7 @@ const versions = [
   ["1.06"],
   ["1.07.5"],
   ["Dev"],
-  ["Dev with Molecular Inorganics"],
   ["Dev with Enhanced Stereochemistry"],
-  ["No Metal Hydrogens"],
-  ["Explicit Zero Valence"],
-  ["Polymer Support"],
 ];
 
 const {

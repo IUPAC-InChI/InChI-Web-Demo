@@ -21,39 +21,11 @@
     "commit": "dev",
     "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
   },
-  "Dev with Molecular Inorganics": {
-    "module": "inchiModuleDevMoIn",
-    "name": "inchi-web-dev-moin",
-    "optionsTemplateId": "inchi-options-dev-moin",
-    "commit": "cf3d80578b76ef9711eb1dd626afd2b95aaeee0c",
-    "url": "https://github.com/IUPAC-InChI/InChI/tree/Extension/Bond_handling"
-  },
   "Dev with Enhanced Stereochemistry": {
     "module": "inchiModuleDevEnhancedStereo",
     "name": "inchi-web-dev-enhanced-stereo",
     "optionsTemplateId": "inchi-options-dev-enhanced-stereo",
-    "commit": "4f94b95588b7a97ca64602be11ee98168b6a89c9",
+    "commit": "2404d2191b141754fefa30ae6fd278bea199ee21",
     "url": "https://github.com/IUPAC-InChI/InChI/pull/251"
-  },
-  "No Metal Hydrogens": {
-    "module": "inchiModuleNoMetalH",
-    "name": "inchi-web-no-metal-h",
-    "optionsTemplateId": "inchi-options-no-metal-h",
-    "commit": "dev",
-    "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
-  },
-  "Explicit Zero Valence": {
-    "module": "inchiModuleExplicitZeroValence",
-    "name": "inchi-web-explicit-zero-valence",
-    "optionsTemplateId": "inchi-options-explicit-zero-valence",
-    "commit": "5c499d356c10e408d441f2ff79438cea092da7d1",
-    "url": "https://github.com/IUPAC-InChI/InChI/pull/230"
-  },
-  "Polymer Support": {
-    "module": "inchiModulePolymerSupport",
-    "name": "inchi-web-polymer-support",
-    "optionsTemplateId": "inchi-options-dev",
-    "commit": "877f7538e4194ef54c0f512b23ebc33291bccea1",
-    "url": "https://github.com/IUPAC-InChI/InChI/pull/258"
   }
 }

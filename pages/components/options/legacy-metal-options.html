@@ -1,0 +1,36 @@
+<div class="form-check">
+  <input
+    data-id="LegacyMetalHandling"
+    class="form-check-input"
+    type="checkbox"
+    data-inchi-option-on="LegacyMetalHandling"
+  />
+  <label
+    class="form-check-label"
+    title="Legacy salt and metal-bond handling"
+    >LegacyMetalHandling</label
+  >
+  <inchi-option-help label="What “LegacyMetalHandling” does">
+    <p>
+      This version handles molecular inorganics by default. Enable this option
+      to use the legacy salt and metal-bond handling instead. It switches
+      molecular inorganics off and produces non-standard InChI.
+    </p>
+    <p>
+      The functionality for molecular inorganics is a work in progress. You can
+      expect to encounter warnings. For an improved experience when working
+      with inorganic structures, consider the following tips:
+    </p>
+    <ul>
+      <li>
+        Input crystal structures as molfiles. Convert the CIF to a molfile,
+        e.g. using Mercury (CCDC), or codcif2sdf (cod-tools).
+      </li>
+      <li>
+        In the structure editor, for donor atoms beyond nitrogen, change the
+        valence (i.e. coordination number) of the atoms accordingly by
+        right-clicking the corresponding atoms.
+      </li>
+    </ul>
+  </inchi-option-help>
+</div>

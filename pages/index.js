@@ -447,15 +447,11 @@ const INCHI_STACK_BREAKPOINT = 1200;
  * version, so a rename does not silently disable the behaviour.
  */
 const VERSION_BEHAVIOR = {
-  "Dev with Molecular Inorganics": {
-    // Molecular inorganics need every hydrogen label drawn in Ketcher.
+  Dev: {
+    // Dev handles molecular inorganics by default, and they need every
+    // hydrogen label drawn in Ketcher. NPZz is on by default in Dev as well.
     showAllHydrogenLabels: true,
     checkNPZzByDefault: true,
-  },
-  "Polymer Support": {
-    // The polymer build is only interesting with polymer handling switched on.
-    checkNPZzByDefault: true,
-    polymerOptionsOn: true,
   },
   "Dev with Enhanced Stereochemistry": {
     // Enhanced stereochemistry is only representable in V3000.
