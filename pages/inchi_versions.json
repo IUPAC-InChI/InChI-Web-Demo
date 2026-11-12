@@ -18,7 +18,7 @@
     "module": "inchiModuleDev",
     "name": "inchi-web-dev",
     "optionsTemplateId": "inchi-options-dev",
-    "commit": "dev",
+    "commit": "7f26903d206ba9cfb0f2dddb7703fa6af09a038e",
     "url": "https://github.com/IUPAC-InChI/InChI/commits/dev"
   },
   "Dev with Enhanced Stereochemistry": {
