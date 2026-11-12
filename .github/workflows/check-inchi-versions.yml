@@ -1,0 +1,28 @@
+name: Check for new InChI commits
+
+# Checks whether the commits pinned in pages/inchi_versions.json are the latest
+# commits behind their URLs, and opens an issue for each outdated entry.
+# See check-inchi-versions.sh for details.
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  check-inchi-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check InChI versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: .github/workflows/check-inchi-versions.sh pages/inchi_versions.json

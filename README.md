@@ -93,6 +93,7 @@ The web-demo allows for the selection of different InChI versions.
 Those versions are configured in [inchi_versions.json](./pages/inchi_versions.json).
 Each version is pinned to a specific commit.
 You can change the commit that's associated with a version by editing the version's `commit` entry.
+A [daily workflow](.github/workflows/check-inchi-versions.yml) checks whether each pinned `commit` is still the latest commit behind the version's `url`, and opens an issue if a newer commit is available.
 Once you've changed the commit, you can re-compile the web-assembly module of the version:
 
 ```shell
