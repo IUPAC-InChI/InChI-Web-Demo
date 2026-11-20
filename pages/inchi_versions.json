@@ -25,7 +25,7 @@
     "module": "inchiModuleDevEnhancedStereo",
     "name": "inchi-web-dev-enhanced-stereo",
     "optionsTemplateId": "inchi-options-dev-enhanced-stereo",
-    "commit": "2404d2191b141754fefa30ae6fd278bea199ee21",
+    "commit": "bdc49d47eeffe33d0614ea4cb81d3048875ba622",
     "url": "https://github.com/IUPAC-InChI/InChI/pull/251"
   }
 }
