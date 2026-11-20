@@ -62,7 +62,7 @@ exports[`InChIWorkbenchElement markup matches the snapshot 1`] = `
 <div class="tool-workbench">
   <div class="tool-input">
     <div class="ratio ketcher">
-      <iframe id="workbench-ketcher" title="Structure and reaction editor" class="w-100" src="ketcher/index.html" onload="onKetcherLoaded('workbench-ketcher', () => onEditorChanged())"></iframe>
+      <iframe id="workbench-ketcher" title="Structure and reaction editor" class="w-100" src="ketcher/index.html" onload="onKetcherLoaded('workbench-ketcher', () => onEditorChanged(), onWorkbenchEditorReady)"></iframe>
     </div>
     <!--
       Shown only when a paste is being converted verbatim and the editor is

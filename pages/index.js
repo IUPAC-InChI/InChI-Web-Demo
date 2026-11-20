@@ -1121,6 +1121,19 @@ function syncPasteControls() {
 }
 
 /*
+ * Input that arrived before the editor existed was left waiting: a paste was
+ * turned away with "not ready", and an SD file's first record was never drawn,
+ * so it never converted. Take it up now that the editor is here.
+ */
+function onWorkbenchEditorReady() {
+  if (document.getElementById("workbench-paste")?.value) {
+    loadPastedInput();
+  } else if (selectedSdfRecord >= 0) {
+    selectSdfRecord(selectedSdfRecord);
+  }
+}
+
+/*
  * Take whatever is in the paste field: convert it, and preview it in the
  * editor. The formats that are not structures (a bare InChI, a lone RAuxInfo,
  * unrecognised text) are refused by name in the status line.
@@ -2247,12 +2260,18 @@ async function getMolfileFromKetcher(ketcher, format = "v2000") {
   }
 }
 
-function onKetcherLoaded(iframeId, updateFunction, attemptsLeft = 300) {
+function onKetcherLoaded(
+  iframeId,
+  updateFunction,
+  onReady = () => {},
+  attemptsLeft = 300
+) {
   const ketcher = getKetcher(iframeId);
 
   // Chrome fires the onload event too early, so we have to wait until 'ketcher' exists.
   if (ketcher) {
     ketcher.editor.subscribe("change", updateFunction);
+    onReady();
     return;
   }
   /*
@@ -2265,7 +2284,8 @@ function onKetcherLoaded(iframeId, updateFunction, attemptsLeft = 300) {
     return;
   }
   setTimeout(
-    () => onKetcherLoaded(iframeId, updateFunction, attemptsLeft - 1),
+    () =>
+      onKetcherLoaded(iframeId, updateFunction, onReady, attemptsLeft - 1),
     100
   );
 }

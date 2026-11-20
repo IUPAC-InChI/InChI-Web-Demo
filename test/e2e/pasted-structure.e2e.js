@@ -37,3 +37,22 @@ for (const [name, text, pubchemLookup = false] of PASTE_CASES) {
     await expectMoleculeOutputs(page);
   });
 }
+
+test("converts a paste made before the editor has loaded", async ({ page }) => {
+  /* Hold the editor's bundle back so the paste lands before it starts. */
+  let releaseEditor;
+  const editorHeld = new Promise((resolve) => (releaseEditor = resolve));
+  await page.route("**/ketcher/static/js/main.*.js", async (route) => {
+    await editorHeld;
+    await route.continue();
+  });
+
+  /* "load" would wait for the held-back iframe. */
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.getByText("Paste a structure", { exact: true }).click();
+  await page.locator("#workbench-paste").fill(WATER_MOLFILE);
+  await expect(page.locator("[data-status]")).toContainText("not ready");
+
+  releaseEditor();
+  await expectMoleculeOutputs(page);
+});
